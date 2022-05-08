@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Authors>fyziktom</Authors>
+    <Company>VEFramework</Company>
+    <Product>BlazorClippy</Product>
+    <Description>Our hero...Mr. Clippy... is back to help us in the Blazor :) 
+The simple wrapper for the clippyjs package.</Description>
+    <PackageProjectUrl>https://veframework.com</PackageProjectUrl>
+    <PackageIcon>clippy.PNG</PackageIcon>
+    <RepositoryUrl>https://github.com/fyziktom/BlazorClippy</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Blazor Clippy MSWord Hero Helper</PackageTags>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>0.1.0</FileVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\programovani\Blazor\Clippy\BlazorClippy\BlazorClippy\wwwroot\clippy.PNG">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.3" />
+  </ItemGroup>
+
+</Project>

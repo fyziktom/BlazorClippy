@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32414.248
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClippy.Demo", "BlazorClippy.Demo\BlazorClippy.Demo.csproj", "{5BDB83AF-F3C2-442E-AF76-9FCC9AE26199}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorClippy", "BlazorClippy\BlazorClippy.csproj", "{D4528062-90AA-4DD5-A1E0-A87BFE1437BF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5BDB83AF-F3C2-442E-AF76-9FCC9AE26199}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BDB83AF-F3C2-442E-AF76-9FCC9AE26199}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BDB83AF-F3C2-442E-AF76-9FCC9AE26199}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BDB83AF-F3C2-442E-AF76-9FCC9AE26199}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4528062-90AA-4DD5-A1E0-A87BFE1437BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4528062-90AA-4DD5-A1E0-A87BFE1437BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4528062-90AA-4DD5-A1E0-A87BFE1437BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4528062-90AA-4DD5-A1E0-A87BFE1437BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8154943C-7CD7-42E7-AF57-667C8C9E8069}
+	EndGlobalSection
+EndGlobal
