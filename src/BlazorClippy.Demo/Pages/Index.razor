@@ -8,6 +8,11 @@
         <button class="btn btn-primary" onclick="@(async () => await clippy.Load())">Load</button>
     </div>
 </div>
+<div class="row">
+    <div class="col">
+        <button class="btn btn-primary" onclick="@(async () => await Welcome())">Welcome</button>
+    </div>
+</div>
 <div class="row" style="margin-top:2px;">
     <div class="col">
         <button class="btn btn-primary" onclick="@(async () => await clippy.AnimateRandom())">Animate Random</button>
@@ -38,3 +43,15 @@
         <button class="btn btn-primary" onclick="@(async () => await clippy.GestureAt(50,50))">Gesture At 50,50</button>
     </div> 
 </div>
+
+@code {
+    async Task Welcome()
+    {
+        await clippy.PlayAnimation(ClippyAnimations.GetAttention);
+        await clippy.Speak("Hello All Blazor Lovers :)");
+        await clippy.Speak("I can help your users. You know I can do that :)");
+        await clippy.PlayAnimation(ClippyAnimations.CheckingSomething);
+        await clippy.Speak("I helped whole generation of people with PC :)");
+        await clippy.PlayAnimation(ClippyAnimations.GoodBye);
+    }
+}
