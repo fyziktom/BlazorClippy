@@ -1,57 +1,89 @@
 ﻿@page "/"
 @inject ClippyService clippy
+@inject AppData AppData
 
 <PageTitle>Clippy Demo</PageTitle>
 
-<div class="row">
-    <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await clippy.Load())">Load</button>
-    </div>
-</div>
-<div class="row">
-    <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await Welcome())">Welcome</button>
-    </div>
-</div>
+<hr />
+<p></p>
+<h3>Watson Clippy</h3>
+<p></p>
 <div class="row" style="margin-top:2px;">
     <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await clippy.AnimateRandom())">Animate Random</button>
+        <button class="btn btn-primary w-100" onclick="@LoadWatson">Load Watson</button>
     </div>
 </div>
-<div class="row" style="margin-top:2px;">    
-    <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await clippy.PlayAnimation(ClippyAnimations.GoodBye))">Play GoodBye</button>
+@if (!string.IsNullOrEmpty(sessionId))
+{
+    <div class="row" style="margin-top:10px;">
+        <div class="col">
+            <h6>SessionId: @sessionId</h6>
+        </div>
     </div>
-</div>
-<div class="row" style="margin-top:2px;">    
-    <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await clippy.PlayAnimation(ClippyAnimations.CheckingSomething))">Play Checking something</button>
+    <div class="row" style="margin-top:10px;">
+        <div class="col">
+            <input type="text" value="@question" @oninput="(EventArgs) => { SetValue(EventArgs.Value.ToString());}" @onkeypress="onInputKeyPress" style="min-width:100%;" />
+        </div>
     </div>
-</div>
-<div class="row" style="margin-top:2px;">    
-    <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await clippy.PlayAnimation(ClippyAnimations.Thinking))">Play Thinking</button>
+    
+    <div class="row" style="margin-top:5px;">
+        <div class="col">
+            <button class="btn btn-primary" onclick="@(async () => await AskWatson(question))">Ask Watson</button>
+        </div>
     </div>
-</div>
-<div class="row" style="margin-top:2px;">    
-    <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await clippy.Speak("Hello All Blazor Lovers :)"))">Speak Text</button>
-    </div>
-</div>
-<div class="row" style="margin-top:2px;">    
-    <div class="col">
-        <button class="btn btn-primary" onclick="@(async () => await clippy.GestureAt(50,50))">Gesture At 50,50</button>
-    </div> 
-</div>
+}
 
 @code {
-    async Task Welcome()
+    string sessionId = "";
+    string question = "";
+    string response = "";
+   
+    async Task Load()
     {
-        await clippy.PlayAnimation(ClippyAnimations.GetAttention);
-        await clippy.Speak("Hello All Blazor Lovers :)");
-        await clippy.Speak("I can help your users. You know I can do that :)");
-        await clippy.PlayAnimation(ClippyAnimations.CheckingSomething);
-        await clippy.Speak("I helped whole generation of people with PC :)");
-        await clippy.PlayAnimation(ClippyAnimations.GoodBye);
+        await clippy.Load();
+    }
+
+    private void SetValue(string value)
+    {
+        if (value != null)
+            question = value;
+        else
+            question = string.Empty;
+    }
+
+    async Task onInputKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await AskWatson(question);
+    }
+
+    async Task LoadWatson()
+    {
+        // load clippy
+        await Load();
+
+        var res = await clippy.StartWatsonSession(clippy.WatsonApiUrl);
+        if (res.Item1)
+            sessionId = res.Item2;
+
+        Console.WriteLine("Session Id: " + sessionId);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task AskWatson(string inputquestion)
+    {
+        var resp = await clippy.AskWatson(inputquestion, sessionId);
+        if (resp.Item1)
+        {
+            await clippy.Speak(resp.Item2);
+            response = resp.Item2;
+            question = "";
+        }
+        else
+        {
+            Console.WriteLine("Cannot get answer for the question:" + inputquestion);
+            response = "Cannot get answer for the question.";
+        }
+        await InvokeAsync(StateHasChanged);
     }
 }

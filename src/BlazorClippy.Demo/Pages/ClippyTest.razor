@@ -1,0 +1,66 @@
+﻿@page "/clippytest"
+@inject ClippyService clippy
+@inject HttpClient httpClient
+@inject AppData AppData
+
+<PageTitle>Clippy Example Actions</PageTitle>
+
+@if (!loaded)
+{
+    <div class="row" style="margin-top:2px;">
+        <div class="col">
+            <span>Click to load button to start clippy please.</span>
+        </div>
+    </div>
+}
+<div class="row">
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await Load())">Load</button>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await Welcome())">Welcome</button>
+    </div>
+</div>
+<div class="row" style="margin-top:2px;">
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await clippy.AnimateRandom())">Animate Random</button>
+    </div>
+</div>
+<div class="row" style="margin-top:2px;">
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await clippy.PlayAnimation(ClippyAnimations.GoodBye))">Play GoodBye</button>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await clippy.PlayAnimation(ClippyAnimations.CheckingSomething))">Play Checking something</button>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await clippy.PlayAnimation(ClippyAnimations.Thinking))">Play Thinking</button>
+    </div>
+</div>
+<div class="row" style="margin-top:2px;">
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await clippy.Speak("Hello All Blazor Lovers :)"))">Speak Text</button>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await clippy.GestureAt(50,50))">Gesture At 50,50</button>
+    </div>
+</div>
+
+@code {
+    bool loaded = false;
+
+    async Task Load()
+    {
+        await clippy.Load();
+        loaded = true;
+    }
+    async Task Welcome()
+    {
+        await clippy.PlayAnimation(ClippyAnimations.GetAttention);
+        await clippy.Speak("Hello All Blazor Lovers :)");
+        await clippy.Speak("I can help your users. You know I can do that :)");
+        await clippy.PlayAnimation(ClippyAnimations.CheckingSomething);
+        await clippy.Speak("I helped whole generation of people with PC :)");
+        await clippy.PlayAnimation(ClippyAnimations.GoodBye);
+    }
+}

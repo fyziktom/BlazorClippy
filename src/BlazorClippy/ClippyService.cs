@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BlazorClippy.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace BlazorClippy
@@ -56,15 +58,72 @@ namespace BlazorClippy
     public class ClippyService
     {
         private readonly IJSRuntime js;
+        private readonly HttpClient httpClient;
+         
+        bool loaded = false;
+        private WatsonService watsonService;
 
-        public ClippyService(IJSRuntime js)
+        public string WatsonApiUrl { get; set; } = "https://blazorclippydemoserver20221101171158.azurewebsites.net/api";
+        public string SessionId { get; set; } = string.Empty;
+
+        public ClippyService(IJSRuntime js, IServiceProvider serviceProvider)
         {
             this.js = js;
+            this.httpClient = serviceProvider.GetRequiredService<HttpClient>();
         }
-        
+
+        public async Task<(bool, string)> StartWatsonSession(string apiurlbase)
+        {
+            watsonService = new WatsonService(httpClient);
+            WatsonApiUrl = apiurlbase;
+
+            if (watsonService == null)
+                return (false, "Load Watson first please.");
+
+            var res = await watsonService.StartWatsonSession(WatsonApiUrl);
+            if (res.Item1)
+                if (Guid.TryParse(res.Item2, out var si))
+                    SessionId = si.ToString();
+
+            return res;
+        }
+
+        public async Task<(bool,string)> AskWatson(string question, string sessionId = "", bool speak = false, string apiurlbase = "")
+        {
+
+            if (string.IsNullOrEmpty(WatsonApiUrl) && string.IsNullOrEmpty(apiurlbase))
+                return (false, "Fill the api url base please.");
+            else if (string.IsNullOrEmpty(WatsonApiUrl) && !string.IsNullOrEmpty(apiurlbase))
+                WatsonApiUrl = apiurlbase;
+
+            if (!string.IsNullOrEmpty(sessionId))
+            {
+                if (Guid.TryParse(sessionId, out var si))
+                    SessionId = si.ToString();
+            }
+            else if (string.IsNullOrEmpty(SessionId) && string.IsNullOrEmpty(sessionId))
+                await StartWatsonSession(WatsonApiUrl);
+
+            if (watsonService != null && !string.IsNullOrEmpty(watsonService.WatsonApiUrl))
+            {
+                var res = await watsonService.AskWatson(question, SessionId);
+                if (res.Item1)
+                {
+                    if (speak)
+                        await Speak(res.Item2);
+
+                    return res;
+                }
+            }
+            return (false, string.Empty);
+        }
+
         public async Task Load()
         {
-            await js.InvokeVoidAsync("blazorClippy.load");
+            if (!loaded)
+                await js.InvokeVoidAsync("blazorClippy.load");
+
+            loaded = true;
         }
         public async Task AnimateRandom()
         {
