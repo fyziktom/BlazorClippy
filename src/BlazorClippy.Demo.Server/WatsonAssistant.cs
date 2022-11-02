@@ -1,8 +1,11 @@
-﻿using IBM.Cloud.SDK.Core.Authentication.Bearer;
+﻿using BlazorClippy.AI;
+using IBM.Cloud.SDK.Core.Authentication.Bearer;
 using IBM.Cloud.SDK.Core.Authentication.Iam;
+using IBM.Cloud.SDK.Core.Http;
 using IBM.Watson.Assistant.v2;
 using IBM.Watson.Assistant.v2.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +20,7 @@ namespace BlazorClippy.Demo.Server
         public string SessionId { get; set; } = string.Empty;
         public string AssistantId { get; set; } = string.Empty;
         public DateTime LastQuestionAsked { get; set; } = DateTime.UtcNow;
+        public WatsonMessageRecordsHandler MessageRecordHandler { get; set; } = new WatsonMessageRecordsHandler();
 
         public async Task<(bool, string)> SendMessage(string message, string assistantId, string sessionId)
         {
@@ -36,20 +40,22 @@ namespace BlazorClippy.Demo.Server
                 }
                 );
 
-                try
+                var recordId = MessageRecordHandler.AddRecord(sessionId, message);
+                MessageRecordHandler.MarkRecordAsProcessing(recordId);
+                if (!string.IsNullOrEmpty(recordId))
                 {
-                    //Console.WriteLine(result.Response);
-                    if (result.Result.Output.Generic != null)
+                    try
                     {
-                        var res = result.Result.Output.Generic.FirstOrDefault();
-                        if (res != null && res.ResponseType == "text")
-                            return (true, res.Text);
+                        MessageRecordHandler.SaveResponseToRecord(recordId, result);
+                        var res = MessageRecordHandler.GetMessageRecordById(recordId);
+                        if (res != null)
+                            return (true, res.TextResponse);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Cannot parse the response object. " + ex.Message);
-                    return (false, ex.Message);
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Cannot parse the response object. " + ex.Message);
+                        return (false, ex.Message);
+                    }
                 }
                 return (false, string.Empty);
             }
@@ -94,6 +100,16 @@ namespace BlazorClippy.Demo.Server
                 Console.WriteLine("Cannot connect to assistant service: " + ex.Message);
                 return (false, ex.Message);
             }
+        }
+
+        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
+        {
+            return MessageRecordHandler.GetMessageHistory(sessionId);
+        }
+
+        public WatsonMessageRequestRecord GetMessageById(string recordId)
+        {
+            return MessageRecordHandler.GetMessageRecordById(recordId);
         }
     }
 }

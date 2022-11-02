@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BlazorClippy.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
+using Newtonsoft.Json;
 
 namespace BlazorClippy
 {
@@ -116,6 +117,43 @@ namespace BlazorClippy
                 }
             }
             return (false, string.Empty);
+        }
+
+        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
+        {
+            return watsonService.GetMessageHistory(sessionId);
+        }
+        public WatsonMessageRequestRecord GetMessageById(string recordId)
+        {
+            return watsonService.GetMessageById(recordId);
+        }
+
+        public async Task BackupConversation(string sessionId, bool aslist = false)
+        {
+            var filename = $"Backup-SessionId-{sessionId}_Time_" + DateTime.UtcNow.ToString("dd-MM-yyyyThh_mm_ss") + ".txt";
+            var backupData = GetMessageHistory(sessionId).ToList();
+            backupData.Reverse();
+            if (backupData != null)
+            {
+                var result = string.Empty;
+                if (!aslist)
+                {
+                    result += $"WebUrl: {WatsonApiUrl}\n";
+                    result += $"SessionId: {sessionId}\n";
+                    result += "--------------------------------------------------------\n";
+                    result += "--------------------------------------------------------\n\n";
+                    foreach (var message in backupData)
+                    {
+                        result += $"DateTime: {message.Timestamp.ToString("MM.dd.yyyy hh:mm:ss")}\n";
+                        result += $"Question:\n\t{message.Question}\nAnswer:\n\t{message.TextResponse}\n";
+                        result += "--------------------------------------------------------\n";
+                    }
+                }
+                else
+                    result = JsonConvert.SerializeObject(filename, Formatting.Indented);
+
+                await js.InvokeVoidAsync("blazorClippy.downloadText", result, filename);
+            }
         }
 
         public async Task Load()

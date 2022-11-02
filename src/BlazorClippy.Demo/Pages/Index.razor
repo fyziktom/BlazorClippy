@@ -13,6 +13,7 @@
         <button class="btn btn-primary w-100" onclick="@LoadWatson">Load Watson</button>
     </div>
 </div>
+
 @if (!string.IsNullOrEmpty(sessionId))
 {
     <div class="row" style="margin-top:10px;">
@@ -25,10 +26,90 @@
             <input type="text" value="@question" @oninput="(EventArgs) => { SetValue(EventArgs.Value.ToString());}" @onkeypress="onInputKeyPress" style="min-width:100%;" />
         </div>
     </div>
-    
+
+    <div class="row" style="margin-top:10px;">
+        <div class="col">
+            <h6>Type your question here</h6>
+        </div>
+    </div>
     <div class="row" style="margin-top:5px;">
         <div class="col">
             <button class="btn btn-primary" onclick="@(async () => await AskWatson(question))">Ask Watson</button>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top:15px;">
+        <div class="col">
+            <h5>Session Message History</h5>
+        </div>
+        <div class="col clearfix" style="margin-left:15px;">
+            <button class="btn btn-light float-end" onclick="@BackupConversation"><i class="oi oi-data-transfer-download" /></button>
+        </div>
+    </div>
+    <hr />
+    <div class="row" style="margin-top:5px;">
+        <div class="col">
+            <div class="row" style="margin-top:5px;">
+                <div class="col">
+                    <span>Questions</span>
+                </div>
+                <div class="col">
+                    <span>Answers</span>
+                </div>
+            </div>
+
+            @if (clippy != null)
+            {
+                var first = true;
+                @foreach (var message in clippy.GetMessageHistory(sessionId))
+                {
+                    if (first)
+                    {
+                        <div class="row" style="margin-top:5px;">
+                            <div class="col">
+                                <h6>
+                                    Latest Message
+                                </h6>
+                            </div>
+                        </div>
+                    }
+                    <div class="row" style="margin-top:5px;">
+                        <div class="col">
+                            <span>@(
+                          message.Timestamp.ToString("MM.dd.yyyy hh:mm:ss")
+                          )</span>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:5px;">
+                        <div class="col w-100" style="min-width: 280px;">
+                            <div class="card bg-opacity-25 bg-info">
+                                <div class="card-body">
+                                    <p class="card-text">@message.Question</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col w-100" style="min-width: 280px;">
+                            <div class="card bg-opacity-25 bg-warning">
+                                <div class="card-body">
+                                    <p class="card-text">@message.TextResponse</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (first)
+                    {
+                        <hr />
+                        <div class="row" style="margin-top:5px;">
+                            <div class="col">
+                                <h6>
+                                    Older Messages
+                                </h6>
+                            </div>
+                        </div>
+                        first = false;
+                    }
+                }
+            }
         </div>
     </div>
 }
@@ -37,7 +118,7 @@
     string sessionId = "";
     string question = "";
     string response = "";
-   
+
     async Task Load()
     {
         await clippy.Load();
@@ -72,10 +153,34 @@
 
     async Task AskWatson(string inputquestion)
     {
+        var maxsentenses = 3;
+
         var resp = await clippy.AskWatson(inputquestion, sessionId);
         if (resp.Item1)
         {
-            await clippy.Speak(resp.Item2);
+            var split = resp.Item2.Split('.');
+            if (split != null && split.Length > 0)
+            {
+                if (split.Length <= maxsentenses)
+                    await clippy.Speak(resp.Item2);
+                else
+                {
+                    var splitcount = 0;
+                    var speak = string.Empty;
+                    foreach(var sentense in split)
+                    {
+                        speak += sentense + ". ";
+                        splitcount++;
+                        if (splitcount >= maxsentenses)
+                        {
+                            await clippy.Speak(speak);
+                            speak = string.Empty;
+                            splitcount = 0;
+                        }
+                    }
+                }
+            }
+
             response = resp.Item2;
             question = "";
         }
@@ -85,5 +190,10 @@
             response = "Cannot get answer for the question.";
         }
         await InvokeAsync(StateHasChanged);
+    }
+
+    async Task BackupConversation()
+    {
+        await clippy.BackupConversation(sessionId, false);
     }
 }
