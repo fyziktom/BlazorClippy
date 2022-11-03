@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.Assistant.v2\IBM.Watson.Assistant.v2.csproj" />
+    <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.LanguageTranslator.v3\IBM.Watson.LanguageTranslator.v3.csproj" />
+    <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.TextToSpeech.v1\IBM.Watson.TextToSpeech.v1.csproj" />
+  </ItemGroup>
+
+</Project>

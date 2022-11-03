@@ -35,12 +35,7 @@ The simple wrapper for the clippyjs package.</Description>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.10" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.Assistant.v2\IBM.Watson.Assistant.v2.csproj" />
-    <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.LanguageTranslator.v3\IBM.Watson.LanguageTranslator.v3.csproj" />
-    <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.TextToSpeech.v1\IBM.Watson.TextToSpeech.v1.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>

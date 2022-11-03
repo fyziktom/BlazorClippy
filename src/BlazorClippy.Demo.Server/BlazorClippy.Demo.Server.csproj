@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorClippyWatson\BlazorClippyWatson.csproj" />
     <ProjectReference Include="..\BlazorClippy\BlazorClippy.csproj" />
   </ItemGroup>
 

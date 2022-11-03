@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlazorClippy.AI
+namespace BlazorClippyWatson.AI
 {
     public class WatsonTextToSpeech
     {

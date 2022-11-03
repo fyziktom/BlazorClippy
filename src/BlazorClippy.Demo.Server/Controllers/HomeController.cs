@@ -1,5 +1,4 @@
-﻿using BlazorClippy.AI;
-using IBM.Watson.TextToSpeech.v1.Model;
+﻿using BlazorClippyWatson.AI;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;

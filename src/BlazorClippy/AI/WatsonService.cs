@@ -1,6 +1,4 @@
-﻿using IBM.Cloud.SDK.Core.Http;
-using IBM.Watson.Assistant.v2.Model;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;

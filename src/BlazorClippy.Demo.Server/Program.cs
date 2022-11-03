@@ -1,5 +1,6 @@
 using BlazorClippy;
 using BlazorClippy.AI;
+using BlazorClippyWatson.AI;
 using BlazorClippy.Demo.Server;
 using BlazorClippy.Demo.Server.Data;
 using Microsoft.AspNetCore.Components;

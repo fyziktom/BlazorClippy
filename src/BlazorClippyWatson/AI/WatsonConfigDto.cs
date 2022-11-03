@@ -1,4 +1,4 @@
-﻿namespace BlazorClippy.Demo.Server
+﻿namespace BlazorClippyWatson.AI
 {
     public class WatsonConfigDto
     {

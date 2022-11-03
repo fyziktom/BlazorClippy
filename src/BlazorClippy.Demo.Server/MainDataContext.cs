@@ -1,5 +1,5 @@
 ﻿
-using BlazorClippy.AI;
+using BlazorClippyWatson.AI;
 using System.Collections.Concurrent;
 
 namespace BlazorClippy.Demo.Server

@@ -1,5 +1,4 @@
-﻿using BlazorClippy.AI;
-using IBM.Cloud.SDK.Core.Authentication.Bearer;
+﻿using IBM.Cloud.SDK.Core.Authentication.Bearer;
 using IBM.Cloud.SDK.Core.Authentication.Iam;
 using IBM.Cloud.SDK.Core.Http;
 using IBM.Watson.Assistant.v2;
@@ -11,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlazorClippy.AI
+namespace BlazorClippyWatson.AI
 {
     public class WatsonAssistant
     {

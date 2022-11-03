@@ -1,6 +1,4 @@
-﻿using IBM.Cloud.SDK.Core.Http;
-using IBM.Watson.Assistant.v2.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,32 +24,8 @@ namespace BlazorClippy.AI
         private string _textResponse = string.Empty;
         public string TextResponse
         {
-            get 
-            { 
-                if (string.IsNullOrEmpty(_textResponse) && Response != null && Response.Result != null)
-                {
-                    try
-                    {
-                        if (Response.Result.Output.Generic != null)
-                        {
-                            var res = Response.Result.Output.Generic.FirstOrDefault();
-                            if (res != null && res.ResponseType == "text")
-                            {
-                                _textResponse = res.Text;
-                                return res.Text;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Cannot parse the response object. " + ex.Message);
-                        return string.Empty;
-                    }
-                }
-                return _textResponse; 
-            }
+            get => _textResponse; 
             set => _textResponse = value;
         }
-        public DetailedResponse<MessageResponse> Response { get; set; } = new DetailedResponse<MessageResponse>();
     }
 }
