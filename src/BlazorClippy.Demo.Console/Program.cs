@@ -1,6 +1,8 @@
 ﻿using BlazorClippyWatson.AI;
 using BlazorClippyWatson.Analzyer;
+using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
+using System.ComponentModel.DataAnnotations;
 
 Console.WriteLine("Hello, World! I am Watson Replay Console demo");
 
@@ -21,9 +23,12 @@ var entities = assistant.GetMessagesEntities().ToList();
 // create analyzer
 var analyzer = new WatsonAssistantAnalyzer();
 
+/////////////////////////////////
+// define data items which should be explored
+#region dataitemsdefinition
 // create data items which should be captured
 var dataitems = new List<AnalyzedObjectDataItem>();
-dataitems.Add( new AnalyzedObjectDataItem()
+dataitems.Add(new AnalyzedObjectDataItem()
 {
     Name = "dokumentace3dModel",
     IsWhenAllOnly = true,
@@ -49,10 +54,44 @@ dataitems.Add(new AnalyzedObjectDataItem()
         new RuntimeIntent(){ Intent = "my_máme" }
     }
 });
-dataitems.Add( new AnalyzedObjectDataItem()
+dataitems.Add(new AnalyzedObjectDataItem()
+{
+    Name = "material produktu",
+    IsWhenAllOnly = true,
+    Entities = new List<RuntimeEntity>()
+    {
+        new RuntimeEntity(){ Entity = "materiál", Value = "" },
+        new RuntimeEntity(){ Entity = "produkt", Value = "produkt" },
+    }
+});
+dataitems.Add(new AnalyzedObjectDataItem()
+{
+    Name = "material komponenty",
+    IsWhenAllOnly = true,
+    Entities = new List<RuntimeEntity>()
+    {
+        new RuntimeEntity(){ Entity = "materiál", Value = "" },
+        new RuntimeEntity(){ Entity = "komponenta", Value = "komponenta" },
+    }
+});
+dataitems.Add(new AnalyzedObjectDataItem()
+{
+    Name = "maji server",
+    IsWhenAllOnly = true,
+    Entities = new List<RuntimeEntity>()
+    {
+        new RuntimeEntity(){ Entity = "itinfrastruktura", Value = "server" },
+    },
+    Intents = new List<RuntimeIntent>()
+    {
+        new RuntimeIntent(){ Intent = "my_máme" }
+    }
+});
+dataitems.Add(new AnalyzedObjectDataItem()
 {
     Name = "Velikost produktu",
-    Entities = new List<RuntimeEntity>() 
+    IsWhenAllOnly = true,
+    Entities = new List<RuntimeEntity>()
     {
         new RuntimeEntity(){ Entity = "produkt", Value = "produkt" }
     },
@@ -61,7 +100,7 @@ dataitems.Add( new AnalyzedObjectDataItem()
         new RuntimeIntent(){ Intent = "velikost_produktu" }
     }
 });
-dataitems.Add( new AnalyzedObjectDataItem()
+dataitems.Add(new AnalyzedObjectDataItem()
 {
     Name = "kategorie elektroniky",
     Entities = new List<RuntimeEntity>()
@@ -69,7 +108,7 @@ dataitems.Add( new AnalyzedObjectDataItem()
         new RuntimeEntity(){ Entity = "elektronika", Value = "" }
     }
 });
-dataitems.Add( new AnalyzedObjectDataItem()
+dataitems.Add(new AnalyzedObjectDataItem()
 {
     Name = "pajeni",
     Intents = new List<RuntimeIntent>()
@@ -78,10 +117,29 @@ dataitems.Add( new AnalyzedObjectDataItem()
     }
 });
 
+
+
 // add dataitems to analyzer
-foreach(var di in dataitems)
+foreach (var di in dataitems)
     analyzer.AddDataItem(di);
 
+#endregion
+////////////////////////////
+
+
+var combinations = analyzer.GetHashesOfAllCombinations();
+
+foreach(var combo in combinations)
+{
+    Console.WriteLine($"Hash: {combo.Key}, Combo: {combo.Value}");
+}
+
+/*
+Console.WriteLine("Press enter to exit...");
+Console.ReadLine();
+return;
+*/
+var cryptHandler = new MD5();
 var dis = new List<string>();
 foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assistant.SessionId))
 {
@@ -89,13 +147,19 @@ foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assista
     Console.WriteLine($"--------------{message.Timestamp.ToString("MM.dd.yyyy hh:mm:ss")}----------------");
 
     // add markers to question before "send" to Watson to do not repeat answer for already mentioned/captured dataitem
-    var question = $"{message.Question} &Markers: ";
+    var questionextension = $"&Markers: ";
     foreach (var d in dis)
-        question += $"{d}  ";
+        questionextension += $"{d}  ";
 
+    cryptHandler.Value = questionextension;
+    var hash = cryptHandler.FingerPrint;
     // when there is some dataitems already matched we should send info to Watson by sending changed question (with added markers).
     if (dis.Count > 0)
-        Console.WriteLine($"Question: {question}");
+    {
+        Console.WriteLine($"Question Extension: {questionextension}");
+        Console.WriteLine($"Question Extension Hash: {hash}");
+        Console.WriteLine($"Question: {message.Question} {hash}");       
+    }
     else
         Console.WriteLine($"Question: {message.Question}");
 
@@ -108,6 +172,11 @@ foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assista
     var matchresult = analyzer.MatchDataItems(message);
     // get new list of identified items
     dis = analyzer.GetIdentifiedDataItemsDetailedMarkers();
+
+    if (analyzer.DataItemsCombinations.ContainsKey(hash))
+    {
+        Console.WriteLine($"Identified Sequence of parameters: {hash}!\n");
+    }
 
     // just output of what is already captured
     Console.WriteLine("Identified DataItems:\n");

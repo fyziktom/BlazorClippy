@@ -1,4 +1,5 @@
 ﻿using BlazorClippyWatson.AI;
+using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using Newtonsoft.Json;
 using System;
@@ -11,6 +12,13 @@ namespace BlazorClippyWatson.Analzyer
 {
     public class AnalyzedObjectDataItem
     {
+        public AnalyzedObjectDataItem() 
+        {
+            cryptHandler = new MD5();
+        }
+        private MD5? cryptHandler;
+        private readonly object _lock = new object();
+
         public string Name { get; set; } = string.Empty;
 
         [JsonIgnore]
@@ -30,13 +38,25 @@ namespace BlazorClippyWatson.Analzyer
         }
         [JsonIgnore]
         public string CapturedMarker { get => $"marker_{NameWithoutUnsuportedChars}"; }
+        public string CapturedMarkerHash
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    cryptHandler.Value = CapturedMarker;
+                    var hash = cryptHandler.FingerPrint;
+                    return hash;
+                }
+            }
+        }
         [JsonIgnore]
         public string FoundIntentsTotal 
         { 
             get
             {
                 var res = "";
-                foreach(var i in FoundIntents)
+                foreach(var i in FoundIntents.OrderBy(e => e.Value.Intent))
                 {
                     res += $"#{i.Value.Intent};" + "+";
                 }
@@ -52,7 +72,7 @@ namespace BlazorClippyWatson.Analzyer
             get
             {
                 var res = "";
-                foreach (var e in FoundEntities)
+                foreach (var e in FoundEntities.OrderBy(e => e.Value.Entity + e.Value.Value))
                 {
                     res += $"@{e.Key};" + "+";
                 }
@@ -62,6 +82,18 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
         public string CapturedMarkerDetailed { get => $"marker_{NameWithoutUnsuportedChars}&&{FoundIntentsTotal}&&{FoundEntitiesTotal}"; }
+        public string CapturedMarkerDetailedHash
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    cryptHandler.Value = CapturedMarkerDetailed;
+                    var hash = cryptHandler.FingerPrint;
+                    return hash;
+                }
+            }
+        }
         
         public List<RuntimeEntity> Entities { get; set; } = new List<RuntimeEntity>();
         public Dictionary<string, RuntimeEntity> FoundEntities { get; set; } = new Dictionary<string, RuntimeEntity>();
@@ -121,6 +153,75 @@ namespace BlazorClippyWatson.Analzyer
             }
 
             return (ints, ents);
+        }
+
+        public List<string> GetAllDetailedMarksCombination()
+        {
+            var intentsCombinations = new List<string>();
+            var entitiesCombinations = new List<string>();
+
+            var lastCombo = string.Empty;
+            foreach(var intent in Intents)
+            {
+                var combo = lastCombo + $"#{intent.Intent};" + "+";
+                if (!string.IsNullOrEmpty(combo))
+                    combo = combo.Remove(combo.Length - 1, 1);
+                lastCombo = combo;
+                intentsCombinations.Add(lastCombo);
+            }
+
+            lastCombo = string.Empty;
+            foreach (var entity in Entities)
+            {
+                var combo = lastCombo + $"@{entity.Entity}:{entity.Value};" + "+";
+                if (!string.IsNullOrEmpty(combo))
+                    combo = combo.Remove(combo.Length - 1, 1);
+                lastCombo = combo;
+                entitiesCombinations.Add(lastCombo);
+            }
+
+            var final = new List<string>();
+            foreach(var icombo in intentsCombinations)
+            {
+                if (!final.Contains(icombo))
+                    final.Add(icombo);
+
+                var combo = icombo;
+                foreach (var ecombo in entitiesCombinations)
+                {
+                    if (icombo != ecombo)
+                    {
+                        if (!final.Contains(ecombo))
+                            final.Add(ecombo);
+
+                        combo = icombo + " " + ecombo;
+                        if (!final.Contains(combo))
+                            final.Add(combo);
+                    }
+                }
+            }
+            /*
+            foreach (var ecombo in entitiesCombinations)
+            {
+                if (!final.Contains(ecombo))
+                    final.Add(ecombo);
+
+                var combo = ecombo;
+                foreach (var icombo in intentsCombinations)
+                {
+                    if (icombo != ecombo)
+                    {
+                        if (!final.Contains(icombo))
+                            final.Add(icombo);
+
+                        combo = ecombo + " " + icombo;
+                        if (!final.Contains(combo))
+                            final.Add(combo);
+                    }
+                }
+            }
+            */
+            return final;
         }
     }
 }

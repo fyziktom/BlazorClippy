@@ -1,4 +1,5 @@
 ﻿@using BlazorClippyWatson.Analzyer
+@using BlazorClippyWatson.Common
 @using IBM.Watson.Assistant.v2.Model
 
 @page "/"
@@ -159,7 +160,7 @@
                 </div>
                 <div class="row" style="margin-top:15px;">
                     <div class="col">
-                        <h6>Captured Detailed Marked: @item.CapturedMarkerDetailed</h6>
+                        <h6>Actual Detailed Marked Hash: @item.CapturedMarkerDetailedHash</h6>
                     </div>
                 </div>
                 <div class="row" style="margin-top:10px;">
@@ -236,6 +237,7 @@
     string watsonApiUrl = "https://localhost:7008/api";//"https://blazorclippydemoserver20221101171158.azurewebsites.net/api";
     WatsonAssistantAnalyzer analyzer = new WatsonAssistantAnalyzer();
     List<string> lastCapturedDataItems = new List<string>();
+    MD5 cryptHandler = new MD5();
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -376,12 +378,15 @@
     {
         var maxsentenses = 3;
 
-        var question = $"{inputquestion} &Markers: ";
+        var questionextension = $"&Markers: ";
         foreach (var d in lastCapturedDataItems)
-            question += $"{d}  ";
+            questionextension += $"{d}  ";
+
+        cryptHandler.Value = questionextension;
+        var hash = cryptHandler.FingerPrint;
 
         if (lastCapturedDataItems.Count > 0)
-            inputquestion = question;
+            inputquestion = inputquestion + " " + hash;
 
         var resp = await clippy.AskWatson(inputquestion, sessionId);
         if (resp.Item1)

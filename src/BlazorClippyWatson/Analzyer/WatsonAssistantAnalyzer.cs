@@ -1,4 +1,5 @@
 ﻿using BlazorClippyWatson.AI;
+using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using Newtonsoft.Json;
 using System;
@@ -14,15 +15,24 @@ namespace BlazorClippyWatson.Analzyer
     {
         public ConcurrentDictionary<string, AnalyzedObjectDataItem> DataItems { get; set; } = new ConcurrentDictionary<string, AnalyzedObjectDataItem>();
 
+        public IOrderedEnumerable<KeyValuePair<string, AnalyzedObjectDataItem>> DataItemsOrderedByName { get => DataItems.OrderBy(e => e.Value.Name); }
+
+        public Dictionary<string, string> DataItemsCombinations { get; set; } = new Dictionary<string, string>();
         public void AddDataItem(AnalyzedObjectDataItem dataItem)
         {
             if (!DataItems.ContainsKey(dataItem.CapturedMarker))
+            {
                 DataItems.TryAdd(dataItem.CapturedMarker, dataItem);
+                RefreshCombinations();
+            }            
         }
         public void RemoveDataItem(string dataItemMarker)
         {
             if (DataItems.TryRemove(dataItemMarker, out var di))
+            {
+                RefreshCombinations();
                 return;
+            }
         }
         public AnalyzedObjectDataItem GetDataItem(string dataItemMarker)
         {
@@ -39,7 +49,10 @@ namespace BlazorClippyWatson.Analzyer
         public void AddDataItemIntent(string dataItemMarker, RuntimeIntent intent)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
+            {
                 di.Intents.Add(intent);
+                RefreshCombinations();
+            }
         }
         public void RemoveDataItemIntent(string dataItemMarker, string intent)
         {
@@ -50,13 +63,17 @@ namespace BlazorClippyWatson.Analzyer
                 {
                     var index = di.Intents.IndexOf(dintent);
                     di.Intents.RemoveAt(index);
+                    RefreshCombinations();
                 }
             }
         }
         public void AddDataItemEntity(string dataItemMarker, RuntimeEntity entity)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
+            {
                 di.Entities.Add(entity);
+                RefreshCombinations();
+            }
         }
 
         public void RemoveDataItemEntity(string dataItemMarker, string entity, string value)
@@ -68,6 +85,7 @@ namespace BlazorClippyWatson.Analzyer
                 {
                     var index = di.Entities.IndexOf(dentity);
                     di.Entities.RemoveAt(index);
+                    RefreshCombinations();
                 }
             }
         }
@@ -76,7 +94,7 @@ namespace BlazorClippyWatson.Analzyer
         {
             var result = new List<string>();
 
-            foreach (var dataitem in DataItems)
+            foreach (var dataitem in DataItemsOrderedByName)
             {
                 var res = dataitem.Value.IsMessageInterestMatch(message);
                 if (res.Item1.Count > 0 || res.Item2.Count > 0)
@@ -89,7 +107,7 @@ namespace BlazorClippyWatson.Analzyer
         {
             var result = new List<string>();
 
-            foreach (var dataitem in DataItems)
+            foreach (var dataitem in DataItemsOrderedByName)
             {
                 if(dataitem.Value.IsIdentified && !result.Contains(dataitem.Key))
                     result.Add(dataitem.Key);
@@ -101,7 +119,7 @@ namespace BlazorClippyWatson.Analzyer
         {
             var result = new List<string>();
 
-            foreach (var dataitem in DataItems)
+            foreach (var dataitem in DataItemsOrderedByName)
             {
                 if (dataitem.Value.IsIdentified && !result.Contains(dataitem.Key))
                     result.Add(dataitem.Value.CapturedMarker);
@@ -111,7 +129,7 @@ namespace BlazorClippyWatson.Analzyer
 
         public IEnumerable<AnalyzedObjectDataItem> GetIdentifiedDataItems()
         {
-            foreach (var dataitem in DataItems)
+            foreach (var dataitem in DataItemsOrderedByName)
             {
                 if (dataitem.Value.IsIdentified)
                     yield return dataitem.Value;
@@ -122,7 +140,7 @@ namespace BlazorClippyWatson.Analzyer
         {
             var result = new List<string>();
 
-            foreach (var dataitem in DataItems)
+            foreach (var dataitem in DataItemsOrderedByName)
             {
                 if (dataitem.Value.IsIdentified && !result.Contains(dataitem.Key))
                     result.Add(dataitem.Value.CapturedMarkerDetailed);
@@ -144,6 +162,75 @@ namespace BlazorClippyWatson.Analzyer
                 foreach (var item in import)
                     DataItems.TryAdd(item.Key, item.Value);
             }
+        }
+
+        public void RefreshCombinations()
+        {
+            var res = GetHashesOfAllCombinations();
+            if (res != null)
+                DataItemsCombinations = new Dictionary<string, string>(res);
+        }
+        public Dictionary<string, string> GetHashesOfAllCombinations()
+        {
+            var cryptHandler = new MD5();
+
+            var result = new Dictionary<string, string>();
+            var combos = new List<List<string>>();
+
+            foreach (var dataitem in DataItemsOrderedByName)
+            {
+                var res = dataitem.Value.GetAllDetailedMarksCombination();
+                combos.Add(res);
+            }
+
+            for (var i = 0; i < combos.Count; i++)
+            {
+                var icombo = combos[i];
+                for (var k = 0; k < combos.Count; k++)
+                {
+                    if (i != k)
+                    {
+                        var kcombo = combos[k];
+
+                        var ikcombo = new List<string>();
+                        foreach (var icomb in icombo)
+                        {
+                            foreach (var kcomb in kcombo)
+                            {
+                                if (icomb != kcomb && !kcomb.Contains(icomb) && !icomb.Contains(kcomb))
+                                {
+                                    var ikc = icomb + " " + kcomb;
+                                    if (!ikcombo.Contains(ikc))
+                                        ikcombo.Add(ikc);
+                                }
+                                
+                            }
+                        }
+                        foreach (var kcomb in kcombo)
+                        {
+                            foreach (var icomb in icombo)
+                            {
+                                if (kcomb != icomb && !kcomb.Contains(icomb) && !icomb.Contains(kcomb))
+                                {
+                                    var kic = kcomb + " " + icomb;
+                                    if (!ikcombo.Contains(kic))
+                                        ikcombo.Add(kic);
+                                }
+                            }
+                        }
+
+                        foreach(var ikc in ikcombo)
+                        {
+                            cryptHandler.Value = ikc;
+                            var hash = cryptHandler.FingerPrint;
+                            if (!result.ContainsKey(hash))
+                                result.Add(hash, ikc);
+                        }
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
