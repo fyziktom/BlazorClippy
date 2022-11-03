@@ -14,9 +14,18 @@ namespace BlazorClippyWatson.Analzyer
 {
     public class WatsonAssistantAnalyzer
     {
+        public WatsonAssistantAnalyzer()
+        {
+            cryptHandler = new MD5();
+        }
+        private MD5? cryptHandler;
+        private readonly object _lock = new object();
+
         private List<string> LastMatchedDataItemsState = new List<string>();
+        [JsonIgnore]
         public bool IsSomeMatch { get => LastMatchedDataItemsState.Count > 0; }
-        public static string MarkerExtensionStartDefault {get => "&Markers: ";}
+        public static string MarkerExtensionStartDefault { get => "&Markers: ";}
+        
         public ConcurrentDictionary<string, AnalyzedObjectDataItem> DataItems { get; set; } = new ConcurrentDictionary<string, AnalyzedObjectDataItem>();
 
         public IOrderedEnumerable<KeyValuePair<string, AnalyzedObjectDataItem>> DataItemsOrderedByName { get => DataItems.OrderBy(e => e.Value.Name); }
@@ -33,6 +42,19 @@ namespace BlazorClippyWatson.Analzyer
                 }
                 return questionextension ;
             } 
+        }
+        
+        public string MarkerExtensionHash
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    cryptHandler.Value = MarkerExtension;
+                    var hash = cryptHandler.FingerPrint;
+                    return hash;
+                }
+            }
         }
         public Dictionary<string, string> DataItemsCombinations { get; set; } = new Dictionary<string, string>();
         public void AddDataItem(AnalyzedObjectDataItem dataItem)

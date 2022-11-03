@@ -152,6 +152,12 @@
         </div>
         @if (analyzer != null && analyzer.DataItems.Count > 0)
         {
+            <div class="row" style="margin-top:15px;">
+                <div class="col">
+                    <h6>Actual Hash: @analyzer.MarkerExtensionHash</h6>
+                </div>
+            </div>
+            <hr />
             @foreach (var item in analyzer.DataItems.Values)
             {
                 <div class="row" style="margin-top:10px;">

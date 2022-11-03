@@ -38,6 +38,7 @@ namespace BlazorClippyWatson.Analzyer
         }
         [JsonIgnore]
         public string CapturedMarker { get => $"marker_{NameWithoutUnsuportedChars}"; }
+        [JsonIgnore]
         public string CapturedMarkerHash
         {
             get
@@ -81,7 +82,9 @@ namespace BlazorClippyWatson.Analzyer
                 return res;
             }
         }
+        [JsonIgnore]
         public string CapturedMarkerDetailed { get => $"marker_{NameWithoutUnsuportedChars}&&{FoundIntentsTotal}&&{FoundEntitiesTotal}"; }
+        [JsonIgnore]
         public string CapturedMarkerDetailedHash
         {
             get
