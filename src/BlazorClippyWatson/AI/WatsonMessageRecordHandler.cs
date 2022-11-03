@@ -66,11 +66,16 @@ namespace BlazorClippyWatson.AI
             }
         }
 
-        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
+        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId, bool descending = false)
         {
-            return MessageRecords.Where(mr => mr.Key.Contains(sessionId))
-                                 .Select(mr => mr.Value)
-                                 .OrderByDescending(mr => mr.Timestamp);
+            if (descending)
+                return MessageRecords.Where(mr => mr.Key.Contains(sessionId))
+                                     .Select(mr => mr.Value)
+                                     .OrderByDescending(mr => mr.Timestamp);
+            else
+                return MessageRecords.Where(mr => mr.Key.Contains(sessionId))
+                                .Select(mr => mr.Value)
+                                .OrderBy(mr => mr.Timestamp);
         }
 
         public WatsonMessageRequestRecord GetMessageRecordById(string recordId)
@@ -79,6 +84,82 @@ namespace BlazorClippyWatson.AI
                 return wrr;
             else
                 return null;
+        }
+
+        public IEnumerable<List<RuntimeIntent>> GetMessagesIntents(string sessionId)
+        {
+            return MessageRecords.Where(mr => mr.Key.Contains(sessionId))
+                                 .Select(mr => mr.Value)
+                                 .OrderByDescending(mr => mr.Timestamp)
+                                 .Where(mr => mr.Response != null)
+                                 .Select(mr => mr.Response)
+                                 .Where(r => r.Result.Output != null)
+                                 .Select(r => r.Result.Output)
+                                 .Where(r => r.Intents != null)
+                                 .Select(r => r.Intents)
+                                 .AsEnumerable();
+        }
+
+        public IEnumerable<WatsonMessageRequestRecord> GetMessagesByIntents(List<RuntimeIntent> intents, string sessionId)
+        {
+            var msgs = MessageRecords.Where(mr => mr.Key.Contains(sessionId))
+                                     .Select(mr => mr.Value)
+                                     .OrderByDescending(mr => mr.Timestamp);
+
+            var intentsNames = intents.Where(i => i.Intent != null).Select(i => i.Intent);
+
+            foreach(var msg in msgs)
+            {
+                if (msg.Response != null && msg.Response.Result != null && msg.Response.Result.Output != null)
+                {
+                    if (msg.Response.Result.Output.Intents != null)
+                    {
+                        foreach(var intent in msg.Response.Result.Output.Intents)
+                        {
+                            if (intentsNames.Contains(intent.Intent))
+                                yield return msg.Clone();
+                        }
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<WatsonMessageRequestRecord> GetMessagesByEntities(List<RuntimeEntity> entities, string sessionId)
+        {
+            var msgs = MessageRecords.Where(mr => mr.Key.Contains(sessionId))
+                                     .Select(mr => mr.Value)
+                                     .OrderByDescending(mr => mr.Timestamp);
+
+            var entitiesNames = entities.Where(i => i.Entity != null).Select(i => i.Entity);
+
+            foreach (var msg in msgs)
+            {
+                if (msg.Response != null && msg.Response.Result != null && msg.Response.Result.Output != null)
+                {
+                    if (msg.Response.Result.Output.Intents != null)
+                    {
+                        foreach (var entity in msg.Response.Result.Output.Intents)
+                        {
+                            if (entitiesNames.Contains(entity.Intent))
+                                yield return msg.Clone();
+                        }
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<List<RuntimeEntity>> GetMessagesEntities(string sessionId)
+        {
+            return MessageRecords.Where(mr => mr.Key.Contains(sessionId))
+                                 .Select(mr => mr.Value)
+                                 .OrderByDescending(mr => mr.Timestamp)
+                                 .Where(mr => mr.Response != null)
+                                 .Select(mr => mr.Response)
+                                 .Where(r => r.Result.Output != null)
+                                 .Select(r => r.Result.Output)
+                                 .Where(r => r.Entities != null)
+                                 .Select(r => r.Entities)
+                                 .AsEnumerable();
         }
     }
 }

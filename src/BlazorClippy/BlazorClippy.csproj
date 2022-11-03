@@ -39,6 +39,10 @@ The simple wrapper for the clippyjs package.</Description>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.Assistant.v2\IBM.Watson.Assistant.v2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>

@@ -53,5 +53,58 @@ namespace BlazorClippyWatson.AI
             set => _textResponse = value;
         }
         public DetailedResponse<MessageResponse> Response { get; set; } = new DetailedResponse<MessageResponse>();
+
+        /// <summary>
+        /// Fill object
+        /// </summary>
+        /// <param name="record"></param>
+        public void Fill(WatsonMessageRequestRecord record)
+        {
+            foreach (var param in typeof(WatsonMessageRequestRecord).GetProperties())
+            {
+                try
+                {
+                    if (param.CanWrite)
+                    {
+                        var value = param.GetValue(record);
+                        var paramname = param.Name;
+                        var pr = typeof(WatsonMessageRequestRecord).GetProperties().FirstOrDefault(p => p.Name == paramname);
+                        if (pr != null)
+                            pr.SetValue(this, value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Cannot load parameter." + ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clone
+        /// </summary>
+        public WatsonMessageRequestRecord Clone()
+        {
+            var res = new WatsonMessageRequestRecord(SessionId, Question);
+            foreach (var param in typeof(WatsonMessageRequestRecord).GetProperties())
+            {
+                try
+                {
+                    if (param.CanWrite)
+                    {
+                        var value = param.GetValue(this);
+                        var paramname = param.Name;
+                        var pr = typeof(WatsonMessageRequestRecord).GetProperties().FirstOrDefault(p => p.Name == paramname);
+                        if (pr != null)
+                            pr.SetValue(res, value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Cannot load parameter. " + ex.Message);
+                }
+            }
+            return res;
+        }
     }
 }

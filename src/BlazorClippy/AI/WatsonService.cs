@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,6 +13,11 @@ using System.Xml.Linq;
 
 namespace BlazorClippy.AI
 {
+    public class QuestionResponseDto
+    {
+        public string answer { get; set; } = string.Empty;
+        public WatsonMessageRequestRecord? MessageRecord { get; set; }
+    }
     public class WatsonService
     {
         public WatsonService(HttpClient client, string url)
@@ -41,7 +47,7 @@ namespace BlazorClippy.AI
                 return (false, string.Empty);
         }
 
-        public async Task<(bool,string)> AskWatson(string inputquestion, string sessionId)
+        public async Task<(bool,QuestionResponseDto?)> AskWatson(string inputquestion, string sessionId)
         {
             var data = new
             {
@@ -56,14 +62,27 @@ namespace BlazorClippy.AI
             var resp = await res.Content.ReadAsStringAsync();
             if (!string.IsNullOrEmpty(resp))
             {
-                MessageRecordHandler.SaveResponseToRecord(recordId, resp);
-                return (true, resp);
+                try
+                {
+                    var result = JsonConvert.DeserializeObject<QuestionResponseDto>(resp);
+                    if (result != null && result.MessageRecord != null)
+                    {
+                        MessageRecordHandler.SaveResponseToRecord(recordId, result.MessageRecord.Response);
+                        return (true, result);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("cannot parse the response of question request.");
+                    return (false, null);
+                }
             }
             else
             {
                 Console.WriteLine("Cannot get answer for the question:" + inputquestion);
-                return (false, string.Empty);
+                return (false, null);
             }
+            return (false, null);
         }
 
         public async Task<(bool, string)> Translate(string text, string translateModel = "cs-en")

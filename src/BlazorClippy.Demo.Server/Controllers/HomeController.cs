@@ -1,4 +1,5 @@
 ﻿using BlazorClippyWatson.AI;
+using IBM.Watson.Assistant.v2.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -95,13 +96,18 @@ namespace BlazorClippy.Demo.Server.Controlers
             public string sessionId { get; set; } = string.Empty;
             public string text { get; set; } = string.Empty;
         }
+        public class QuestionResponseDto
+        {
+            public string answer { get; set; } = string.Empty;
+            public WatsonMessageRequestRecord? MessageRecord { get; set; }
+        }
 
         [HttpPost("AskWatson")]
         //[AllowCrossSiteJsonAttribute]
-        public async Task<string> AskQuestion([FromBody] Question data)
+        public async Task<QuestionResponseDto> AskQuestion([FromBody] Question data)
         {
             if (string.IsNullOrEmpty(data.text))
-                return "Please fill some question in property text.";
+                return new QuestionResponseDto() { answer = "Please fill some question in property text." };
 
             if (!MainDataContext.Assistants.ContainsKey(data.sessionId))
                 data.sessionId = await StartWatsonSession();
@@ -110,7 +116,75 @@ namespace BlazorClippy.Demo.Server.Controlers
             {
                 var res = await wa.SendMessage(data.text, MainDataContext.WatsonConfig.AssistantId, data.sessionId);
                 if (res.Item1)
-                    return res.Item2;                    
+                    return new QuestionResponseDto() { answer = res.Item2.Item1, MessageRecord = res.Item2.Item2 };                    
+            }
+            return new QuestionResponseDto();
+        }
+
+        public class GetSessionRequestDto
+        {
+            public string sessionId { get; set; } = string.Empty;
+        }
+
+        [HttpPost("GetMessagesIntents")]
+        //[AllowCrossSiteJsonAttribute]
+        public async Task<List<List<RuntimeIntent>>> GetMessagesIntents([FromBody] GetSessionRequestDto data)
+        {
+            if (string.IsNullOrEmpty(data.sessionId))
+                return new List<List<RuntimeIntent>>();
+
+            if (MainDataContext.Assistants.TryGetValue(data.sessionId, out var wa))
+            {
+                return wa.GetMessagesIntents().ToList();
+            }
+            return new List<List<RuntimeIntent>>();
+        }
+
+        [HttpPost("GetMessagesEntities")]
+        //[AllowCrossSiteJsonAttribute]
+        public async Task<List<List<RuntimeEntity>>> GetMessagesEntities([FromBody] GetSessionRequestDto data)
+        {
+            if (string.IsNullOrEmpty(data.sessionId))
+                return new List<List<RuntimeEntity>>();
+
+            if (MainDataContext.Assistants.TryGetValue(data.sessionId, out var wa))
+            {
+                return wa.GetMessagesEntities().ToList();
+            }
+            return new List<List<RuntimeEntity>>();
+        }
+
+        [HttpPost("ExportMessageHistory")]
+        //[AllowCrossSiteJsonAttribute]
+        public string ExportMessageHistory([FromBody] GetSessionRequestDto data)
+        {
+            if (string.IsNullOrEmpty(data.sessionId))
+                return "Please fill the sessionId.";
+
+            if (MainDataContext.Assistants.TryGetValue(data.sessionId, out var wa))
+            {
+                return wa.ExportMessageHistory();
+            }
+            return string.Empty;
+        }
+
+        public class ImportMessageHistoryRequestDto : GetSessionRequestDto
+        {
+            public string data { get; set; } = string.Empty;
+        }
+        [HttpPost("ImportMessageHistory")]
+        //[AllowCrossSiteJsonAttribute]
+        public string ImportMessageHistory([FromBody] ImportMessageHistoryRequestDto data)
+        {
+            if (string.IsNullOrEmpty(data.sessionId))
+                return "Please fill the sessionId.";
+            if (string.IsNullOrEmpty(data.data))
+                return "Please fill the data.";
+
+            if (MainDataContext.Assistants.TryGetValue(data.sessionId, out var wa))
+            {
+                wa.ImportMessageHistory(data.data);
+                return "OK";
             }
             return string.Empty;
         }

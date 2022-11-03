@@ -88,11 +88,11 @@ namespace BlazorClippy
             return res;
         }
 
-        public async Task<(bool,string)> AskWatson(string question, string sessionId = "", bool speak = false, string apiurlbase = "")
+        public async Task<(bool,QuestionResponseDto?)> AskWatson(string question, string sessionId = "", bool speak = false, string apiurlbase = "")
         {
 
             if (string.IsNullOrEmpty(WatsonApiUrl) && string.IsNullOrEmpty(apiurlbase))
-                return (false, "Fill the api url base please.");
+                return (false, null);
             else if (string.IsNullOrEmpty(WatsonApiUrl) && !string.IsNullOrEmpty(apiurlbase))
                 WatsonApiUrl = apiurlbase;
 
@@ -110,12 +110,12 @@ namespace BlazorClippy
                 if (res.Item1)
                 {
                     if (speak)
-                        await Speak(res.Item2);
+                        await Speak(res.Item2.answer);
 
                     return res;
                 }
             }
-            return (false, string.Empty);
+            return (false, null);
         }
 
         public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)

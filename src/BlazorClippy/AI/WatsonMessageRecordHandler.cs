@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IBM.Cloud.SDK.Core.Http;
+using IBM.Watson.Assistant.v2.Model;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +35,23 @@ namespace BlazorClippy.AI
                 wrr.Processing = false;
                 wrr.Finished = true;
                 wrr.Success = success;
+            }
+        }
+        public void SaveResponseToRecord(string id, DetailedResponse<MessageResponse>? response)
+        {
+            if (response == null)
+                return;
+
+            if (MessageRecords.TryGetValue(id, out var wrr))
+            {
+                wrr.Response = response;
+                wrr.Processing = false;
+                wrr.Finished = true;
+
+                if (response != null)
+                    wrr.Success = true;
+                else
+                    wrr.Success = false;
             }
         }
         public void SaveResponseToRecord(string id, string response)
