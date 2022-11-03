@@ -1,4 +1,8 @@
-﻿@page "/"
+﻿@using BlazorClippyWatson.Analzyer
+@using BlazorClippyWatson.Common
+@using IBM.Watson.Assistant.v2.Model
+
+@page "/"
 @inject ClippyService clippy
 @inject AppData AppData
 
@@ -14,134 +18,329 @@
     </div>
 </div>
 
-@if (!string.IsNullOrEmpty(sessionId))
-{
-    <div class="row" style="margin-top:10px;">
-        <div class="col">
-            <h6>SessionId: @sessionId</h6>
-        </div>
-    </div>
-    <div class="row" style="margin-top:10px;">
-        <div class="col">
-            <input type="text" value="@question" @oninput="(EventArgs) => { SetValue(EventArgs.Value.ToString());}" @onkeypress="onInputKeyPress" style="min-width:100%;" />
-        </div>
-    </div>
+<div class="row" style="margin-top:10px;">
+    <div class="col">
 
-    <div class="row" style="margin-top:10px;">
-        <div class="col">
-            <h6>Type your question here</h6>
-        </div>
-    </div>
-    <div class="row" style="margin-top:5px;">
-        <div class="col">
-            <button class="btn btn-primary" onclick="@(async () => await AskWatson(question))">Ask Watson</button>
-        </div>
-    </div>
+        @if (!string.IsNullOrEmpty(sessionId))
+        {
+            <div class="row" style="margin-top:10px;">
+                <div class="col">
+                    <h6>SessionId: @sessionId</h6>
+                </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+                <div class="col">
+                    <input type="text" value="@question" @oninput="(EventArgs) => { SetValue(EventArgs.Value.ToString());}" @onkeypress="onInputKeyPress" style="min-width:100%;" />
+                </div>
+            </div>
 
-    <div class="row" style="margin-top:15px;">
-        <div class="col">
-            <h5>Session Message History</h5>
-        </div>
-        <div class="col clearfix" style="margin-left:15px;">
-            <button class="btn btn-light float-end" onclick="@BackupConversation"><i class="oi oi-data-transfer-download" /></button>
-            
-        </div>
-    </div>
-    <hr />
-    @if (!string.IsNullOrEmpty(response))
-    {
-        <div class="row" style="margin-top:15px;">
-            <div class="col">
-                <h5>Listen last message in English</h5>
+            <div class="row" style="margin-top:10px;">
+                <div class="col">
+                    <h6>Type your question here</h6>
+                </div>
             </div>
-            <div class="col clearfix" style="margin-left:15px;">
-                @if (!string.IsNullOrEmpty(audiodata))
-                {
-                    <audio autoplay
-                       controls
-                       src="@audiodata" 
-                       type="audio/wav" 
-                       name="media" 
-                       title="Respond" 
-                       style="min-height: 30px; max-height: 60px; width: 100%; min-width: 150px; max-width: 500px;" />
-                }
-                <button class="btn btn-light float-end" onclick="@PlayLastMessage"><i class="oi oi-play-circle" /></button>
-            </div>
-        </div>
-    }
-    <hr />
-    <div class="row" style="margin-top:5px;">
-        <div class="col">
             <div class="row" style="margin-top:5px;">
                 <div class="col">
-                    <span>Questions</span>
-                </div>
-                <div class="col">
-                    <span>Answers</span>
+                    <button class="btn btn-primary" onclick="@(async () => await AskWatson(question))">Ask Watson</button>
                 </div>
             </div>
 
-            @if (clippy != null)
+            <div class="row" style="margin-top:15px;">
+                <div class="col">
+                    <h5>Session Message History</h5>
+                </div>
+                <div class="col clearfix" style="margin-left:15px;">
+                    <button class="btn btn-light float-end" onclick="@BackupConversation"><i class="oi oi-data-transfer-download" /></button>
+
+                </div>
+            </div>
+            <hr />
+            @if (!string.IsNullOrEmpty(response))
             {
-                var first = true;
-                @foreach (var message in clippy.GetMessageHistory(sessionId))
-                {
-                    if (first)
-                    {
-                        <div class="row" style="margin-top:5px;">
-                            <div class="col">
-                                <h6>
-                                    Latest Message
-                                </h6>
-                            </div>
-                        </div>
-                    }
+                <div class="row" style="margin-top:15px;">
+                    <div class="col">
+                        <h5>Listen last message in English</h5>
+                    </div>
+                    <div class="col clearfix" style="margin-left:15px;">
+                        @if (!string.IsNullOrEmpty(audiodata))
+                        {
+                            <audio autoplay
+                       controls
+                       src="@audiodata"
+                       type="audio/wav"
+                       name="media"
+                       title="Respond"
+                       style="min-height: 30px; max-height: 60px; width: 100%; min-width: 150px; max-width: 500px;" />
+                        }
+                        <button class="btn btn-light float-end" onclick="@PlayLastMessage"><i class="oi oi-play-circle" /></button>
+                    </div>
+                </div>
+            }
+            <hr />
+            <div class="row" style="margin-top:5px;">
+                <div class="col">
                     <div class="row" style="margin-top:5px;">
                         <div class="col">
-                            <span>@(
-                          message.Timestamp.ToString("MM.dd.yyyy hh:mm:ss")
-                          )</span>
+                            <span>Questions</span>
+                        </div>
+                        <div class="col">
+                            <span>Answers</span>
                         </div>
                     </div>
-                    <div class="row" style="margin-top:5px;">
-                        <div class="col w-100" style="min-width: 280px;">
-                            <div class="card bg-opacity-25 bg-info">
-                                <div class="card-body">
-                                    <p class="card-text">@message.Question</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col w-100" style="min-width: 280px;">
-                            <div class="card bg-opacity-25 bg-warning">
-                                <div class="card-body">
-                                    <p class="card-text">@message.TextResponse</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @if (first)
+
+                    @if (clippy != null)
                     {
-                        <hr />
-                        <div class="row" style="margin-top:5px;">
+                        var first = true;
+                        @foreach (var message in clippy.GetMessageHistory(sessionId))
+                        {
+                            if (first)
+                            {
+                                <div class="row" style="margin-top:5px;">
+                                    <div class="col">
+                                        <h6>
+                                            Latest Message
+                                        </h6>
+                                    </div>
+                                </div>
+                            }
+                            <div class="row" style="margin-top:5px;">
+                                <div class="col">
+                                    <span>
+                                        @(message.Timestamp.ToString("MM.dd.yyyy hh:mm:ss"))
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:5px;">
+                                <div class="col w-100" style="min-width: 280px;">
+                                    <div class="card bg-opacity-25 bg-info">
+                                        <div class="card-body">
+                                            <p class="card-text">@message.Question</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col w-100" style="min-width: 280px;">
+                                    <div class="card bg-opacity-25 bg-warning">
+                                        <div class="card-body">
+                                            <p class="card-text">@message.TextResponse</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (first)
+                            {
+                                <hr />
+                                <div class="row" style="margin-top:5px;">
+                                    <div class="col">
+                                        <h6>
+                                            Older Messages
+                                        </h6>
+                                    </div>
+                                </div>
+                                first = false;
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col">
+        <div class="row" style="margin-top:15px;">
+            <div class="col">
+                <h5>Identified Items</h5>
+            </div>
+        </div>
+        @if (analyzer != null && analyzer.DataItems.Count > 0)
+        {
+            @foreach (var item in analyzer.DataItems.Values)
+            {
+                <div class="row" style="margin-top:10px;">
+                    <div class="col">
+                        <h6>Name: @item.Name</h6>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col">
+                        <h6>Actual Detailed Marked Hash: @item.CapturedMarkerDetailedHash</h6>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:10px;">
+                    <div class="col">
+                        <h6>Is Identified: @item.IsIdentified</h6>
+                    </div>
+                </div>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col">
+                        <div class="row" style="margin-top:10px;">
                             <div class="col">
-                                <h6>
-                                    Older Messages
-                                </h6>
+                                <h6>Intents:</h6>
                             </div>
                         </div>
-                        first = false;
-                    }
-                }
+                        @foreach (var intent in item.Intents)
+                        {
+                            @if (item.FoundIntents.ContainsKey(intent.Intent))
+                            {
+                                <div class="row" style="margin-top:3px;">
+                                    <div class="col">
+                                        <span>#@intent.Intent <i class="oi oi-check bg-success" /></span>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row" style="margin-top:3px;">
+                                    <div class="col">
+                                        <span>#@intent.Intent</span>
+                                    </div>
+                                </div>
+                            }
+
+                        }
+                    </div>
+                    <div class="col">
+                        <div class="row" style="margin-top:10px;">
+                            <div class="col">
+                                <h6>Entities:</h6>
+                            </div>
+                        </div>
+                        @foreach (var entity in item.Entities)
+                        {
+                            @if (item.FoundEntities.ContainsKey($"{entity.Entity}:{entity.Value}"))
+                            {
+                                <div class="row" style="margin-top:3px;">
+                                    <div class="col">
+                                        <span>@("@")@entity.Entity:@entity.Value <i class="oi oi-check bg-success" /></span>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row" style="margin-top:3px;">
+                                    <div class="col">
+                                        <span>@("@")@entity.Entity:@entity.Value</span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <hr />
             }
-        </div>
+        }
     </div>
-}
+</div>
 
 @code {
     string sessionId = "";
     string question = "";
     string response = "";
     string audiodata = "";
+    WatsonAssistantAnalyzer analyzer = new WatsonAssistantAnalyzer();
+    List<string> lastCapturedDataItems = new List<string>();
+    MD5 cryptHandler = new MD5();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // create data items which should be captured
+            var dataitems = new List<AnalyzedObjectDataItem>();
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "dokumentace3dModel",
+                    IsWhenAllOnly = true,
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "podklady", Value = "3d model" }
+                    },
+                    Intents = new List<RuntimeIntent>()
+                    {
+                        new RuntimeIntent(){ Intent = "my_máme" }
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "dokumentaceVykres",
+                    IsWhenAllOnly = true,
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "podklady", Value = "výkres" },
+                    },
+                    Intents = new List<RuntimeIntent>()
+                    {
+                        new RuntimeIntent(){ Intent = "my_máme" }
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "material produktu",
+                    IsWhenAllOnly = true,
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "materiál", Value = "" },
+                        new RuntimeEntity(){ Entity = "produkt", Value = "produkt" },
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "material komponenty",
+                    IsWhenAllOnly = true,
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "materiál", Value = "" },
+                        new RuntimeEntity(){ Entity = "komponenta", Value = "komponenta" },
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "maji server",
+                    IsWhenAllOnly = true,
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "itinfrastruktura", Value = "server" },
+                    },
+                    Intents = new List<RuntimeIntent>()
+                    {
+                        new RuntimeIntent(){ Intent = "my_máme" }
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "Velikost produktu",
+                    IsWhenAllOnly = true,
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "produkt", Value = "produkt" }
+                    },
+                    Intents = new List<RuntimeIntent>()
+                    {
+                        new RuntimeIntent(){ Intent = "velikost_produktu" }
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "kategorie elektroniky",
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "elektronika", Value = "" }
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "pajeni",
+                    Intents = new List<RuntimeIntent>()
+                    {
+                        new RuntimeIntent(){ Intent = "kontrola_pájení" }
+                    }
+                });
+
+            // add dataitems to analyzer
+            foreach (var di in dataitems)
+                analyzer.AddDataItem(di);
+
+        }
+        base.OnAfterRender(firstRender);
+    }
 
     async Task Load()
     {
@@ -179,33 +378,70 @@
     {
         var maxsentenses = 3;
 
+        var questionextension = $"&Markers: ";
+        foreach (var d in lastCapturedDataItems)
+            questionextension += $"{d}  ";
+
+        cryptHandler.Value = questionextension;
+        var hash = cryptHandler.FingerPrint;
+
+        if (lastCapturedDataItems.Count > 0)
+            inputquestion = inputquestion + " " + hash;
+
         var resp = await clippy.AskWatson(inputquestion, sessionId);
         if (resp.Item1)
         {
-            var split = resp.Item2.Split('.');
-            if (split != null && split.Length > 0)
+            if (resp.Item2 != null)
             {
-                if (split.Length <= maxsentenses)
-                    await clippy.Speak(resp.Item2);
-                else
+                var mr = new BlazorClippyWatson.AI.WatsonMessageRequestRecord(sessionId, inputquestion);
+                foreach (var param in typeof(BlazorClippy.AI.WatsonMessageRequestRecord).GetProperties())
                 {
-                    var splitcount = 0;
-                    var speak = string.Empty;
-                    foreach(var sentense in split)
+                    try
                     {
-                        speak += sentense + ". ";
-                        splitcount++;
-                        if (splitcount >= maxsentenses)
+                        if (param.CanWrite)
                         {
-                            await clippy.Speak(speak);
-                            speak = string.Empty;
-                            splitcount = 0;
+                            var value = param.GetValue(resp.Item2.MessageRecord);
+                            var paramname = param.Name;
+                            var pr = typeof(BlazorClippyWatson.AI.WatsonMessageRequestRecord).GetProperties().FirstOrDefault(p => p.Name == paramname);
+                            if (pr != null)
+                                pr.SetValue(mr, value);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Cannot load parameter." + ex.Message);
+                    }
+                }
+
+                var matchresult = analyzer.MatchDataItems(mr);
+                // get new list of identified items
+                lastCapturedDataItems = analyzer.GetIdentifiedDataItemsDetailedMarkers();
+
+                response = resp.Item2.answer;
+                var split = resp.Item2.answer.Split('.');
+                if (split != null && split.Length > 0)
+                {
+                    if (split.Length <= maxsentenses)
+                        ;// await clippy.Speak(resp.Item2);
+                    else
+                    {
+                        var splitcount = 0;
+                        var speak = string.Empty;
+                        foreach (var sentense in split)
+                        {
+                            speak += sentense + ". ";
+                            splitcount++;
+                            if (splitcount >= maxsentenses)
+                            {
+                                //await clippy.Speak(speak);
+                                speak = string.Empty;
+                                splitcount = 0;
+                            }
                         }
                     }
                 }
             }
 
-            response = resp.Item2;
             question = "";
         }
         else
