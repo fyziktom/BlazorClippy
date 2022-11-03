@@ -1,0 +1,238 @@
+co znamená NFT?,Co_je_to
+jak si mám vysvětlit geometrickou neostrost?,Co_je_to
+jak chápete pojem rozlišení?,Co_je_to
+Co je blockchain?,Co_je_to
+nechápu pojem geometrické rozostření.,Co_je_to
+co je entita?,Co_je_to
+můžete mi prosím vysvětlit co je IPFS?,Co_je_to
+vysvětlil byste mi co je to rentgenka?,Co_je_to
+co znamená anodové napětí?,Co_je_to
+co si představit pod pojmem manipulace?,Co_je_to
+vysvětlíš mi prosím co je scintilátor?,Co_je_to
+co to je rentgen?,Co_je_to
+kdo je to jára cimrman?,Co_je_to
+Kdo je elita národa?,Co_je_to
+Kdo pomůže vyřešit každý problém?,Co_je_to
+v jakém formátu je obrázek z detektoru?,detektor_formát_dat
+v jakém formátu je obrázek z RTG?,detektor_formát_dat
+jaký vliv má formát dat při ukládání snímků?,detektor_formát_dat
+jaká data jdou z detektoru?,detektor_formát_dat
+co jsou to 16 bitová data?,detektor_formát_dat
+proč potřebujeme 16 bitů a nestačí 8 bitů?,detektor_formát_dat
+jak se přenáší data z detektoru?,detektor_připojení
+jak se přenesou data z detektoru?,detektor_připojení
+jak je detektor připojený k PC?,detektor_připojení
+jaké má mít detektor rozlišení?,detektor_rozlišení
+je rozlišení detektoru pro nás důležité?,detektor_rozlišení
+jak zjistím jaké potřebuji rozlišení detektoru?,detektor_rozlišení
+jaká je velikost pixelů u rtg snímku?,detektor_rozlišení
+pokud potřebujeme vidět detail 1mm jaké potřebujeme rozlišení detektoru?,detektor_rozlišení
+lze definovat rozlišení detektoru?,detektor_rozlišení
+Jaké potřebujeme rozlišení?,detektor_rozlišení
+jaký typ scintilátoru je vhodný v této aplikaci?,detektor_scintilátor
+neomezí tento scintilátor rozlišení detektoru?,detektor_scintilátor
+stačí rychlost scintilátoru pro tuto expoziční dobu?,detektor_scintilátor
+jaký scintilátor je potřeba pro toto rozlišení detektoru,detektor_scintilátor
+jaké typy detektorů lze použít?,detektor_typ
+jakým způsobem se bude snímat obraz?,detektor_typ
+jaký je vhodný typ detektoru?,detektor_typ
+jaký detektor potřebuji?,detektor_typ
+můžete mi doporučit detektor pro takovou aplikaci?,detektor_typ
+lze vybrat vhodný detektor?,detektor_typ
+jaké typy detektorů jsou dostupné?,detektor_typ
+lze použít různé typy detektorů?,detektor_typ
+u pájení této komponenty vzniká problém,kontrola_pájení
+kontrolujeme pájení nožiček hallovy sondy,kontrola_pájení
+problematické je především pájení,kontrola_pájení
+je potřeba zkontrolovat zapájení tohoto mikrospínače,kontrola_pájení
+kontrolujeme pájení u všech součástek,kontrola_pájení
+kontrola pájení je u nás důležitá,kontrola_pájení
+kontrolujeme pájené spoje,kontrola_pájení
+je nutné zkontrolovat zapájení této komponenty,kontrola_pájení
+zajímá nás porozita v pájce,kontrola_pájení
+bylo by možné vidět prasklinu v pájeném spoji?,kontrola_pájení
+půjde se podívat na pájený spoj?,kontrola_pájení
+lze zkontrolovat mikrospínač?,kontrola_pájení
+dá se překontrolovat osazená deska pomocí rentgenu?,kontrola_pájení
+ahoj. je možné rentgenovat elektroniku?,kontrola_pájení
+potřebujeme se podívat na letovaný spoj,kontrola_pájení
+chtěli bychom zkontrolovat zaletování spoje.,kontrola_pájení
+lze využít rentgen pro kontrolu pájení?,kontrola_pájení
+my potřebujeme kontrolovat sváry,kontrola_svárů
+svaření této části je potřeba zkontrolovat,kontrola_svárů
+u každého produktu je potřeba zkontrolovat sváry,kontrola_svárů
+sváry musíme kontrolovat podle norem,kontrola_svárů
+náš produkt se svařuje,kontrola_svárů
+tento svár je potřeba zkontrolovat,kontrola_svárů
+kontroluje se hloubka provaření a také porozita či praskliny ve sváru,kontrola_svárů
+hledáme praskliny ve sváru,kontrola_svárů
+u tohoto produktu se musí zkontrolovat provaření,kontrola_svárů
+je nutné zkontrolovat správnost provaření sváru,kontrola_svárů
+řešíme jak se podívat dovnitř na konkrétní komponentu,kontrola_umístění_komponenty
+před rozebráním produktu potřebujeme vidět pozici komponent,kontrola_umístění_komponenty
+zajímá nás umístění dílu po kompletaci,kontrola_umístění_komponenty
+nevíme jestli je pružina ve správné pozici,kontrola_umístění_komponenty
+zajímá nás pozice této komponenty,kontrola_umístění_komponenty
+ten mikrospínač může být špatně uložený a pak nebude fungovat správně,kontrola_umístění_komponenty
+chtěli bychom analyzovat co se děje při běhu produktu uvnitř,kontrola_umístění_komponenty
+jakým způsobem zvětším předmět?,manipulace_pozicování
+je možné díl v rentgenu otáčet?,manipulace_pozicování
+jak se předmětem pohybuje uvnitř rentgenu?,manipulace_pozicování
+lze předmětem v rentgenu posunovat?,manipulace_pozicování
+je možné změnit pozici i po zavření rentgenu?,manipulace_pozicování
+lze zajistit při vytažení předmětu z rentgenu jeho vytřídění?,manipulace_vyložení
+můžeme automaticky separovat produkty?,manipulace_vyložení
+jak vyndám produkt?,manipulace_vyložení
+lze produkty vyjmout automaticky?,manipulace_vyložení
+Musím zavřít dveře po vložení předmětu do rentgenu?,manipulace_založení
+jak založím produkt?,manipulace_založení
+jakým způsobem se vkládá produkt do RTG?,manipulace_založení
+Je možné vložit předmět do RTG automaticky?,manipulace_založení
+lze použít robota pro zakládání dílů?,manipulace_založení
+produkt je vyroben z kovu,materiál_produktu
+no tělo je primárně z abs,materiál_produktu
+tělo je z plastu ale jsou uvnitř kovové komponenty,materiál_produktu
+je to nějaká slitina kovů,materiál_produktu
+komponenta je vyrobena ze železa,materiál_produktu
+celé tělo produktu je z hliníku,materiál_produktu
+náš výrobek je primárně z plastů,materiál_produktu
+máme finance,my_máme
+ve výrobě máme zařazenou vizuální kontrolu,my_máme
+v procesu výroby máme rentgen,my_máme
+rentgen už u nás ve výrobě máme,my_máme
+k tomu u nás je IT oddělení,my_máme
+detektor už máme,my_máme
+máme dostatek dat,my_máme
+sepsané procesy máme,my_máme
+máme nepořádek v datech,my_máme
+ukládáme všechna data,my_máme
+jsme vybaveni dostatečným počtem vzorků,my_máme
+na to máme ajťáky,my_máme
+máme na to technika,my_máme
+disponujeme dvěma rentgeny,my_máme
+máme složité procesy,my_máme
+my máme dostatek vzorků,my_máme
+my máme identity management,my_máme
+máme orchestrační platformu,my_máme
+k tomu u nás slouží hlavní server,my_máme
+my máme centrální server,my_máme
+my máme starý rentgen,my_máme
+běží nám databáze na serveru,my_máme
+jede nám software na serveru,my_máme
+máme sdílené uložiště,my_máme
+máme FTP,my_máme
+můžeme si dát call?,onlinecall
+můžeme si zavolat?,onlinecall
+je možné si s vámi zavolat?,onlinecall
+mohli bychom si dát online call?,onlinecall
+Lze odhadnout parametry pro naskenování této komponenty?,parametry
+Jaké je vhodné napětí a proud pro rentgenování tohoto dílu?,parametry
+Lze tuto komponentu skenovat při anodovém napětí 100kV?,parametry
+Lze nastavit i větší anodový proud nebo 1mA bude stačit?,parametry
+jaké napětí nastavit pro tento produkt?,parametry
+kolik kV bych měl nastavit pro kov,parametry
+jaké napětí mám zvolit na rentgence?,parametry
+jaká energie má být na rentgence?,parametry
+Jak mám nastavit parametry na RTG?,parametry
+Jaké mám nastavit anodové napětí a proud pro tento produkt?,parametry
+Jaké nastavit parametry RTG?,parametry
+kolik kV bys pro tento produkt nastavil?,parametry
+kolik kilovoltů má být nastaveno?,parametry
+při kolika kV se to rentgenuje?,parametry
+při jakém napětí rentgenovat tuto součástku?,parametry
+my potřebujeme kolimátor,potřeba_nečeho
+my musíme mít digitální snímač,potřeba_nečeho
+data musí být digitální,potřeba_nečeho
+potřebujeme automatický přenos dat,potřeba_nečeho
+snímky musí být vyhodnoceny automaticky,potřeba_nečeho
+data musí být zpracovány automaticky,potřeba_nečeho
+záloha musí být automatická,potřeba_nečeho
+potřebujeme automaticky vyhodnotit snímky,potřeba_nečeho
+Potřebujeme digitální detektor,potřeba_nečeho
+my chceme tento rentgen,potřeba_nečeho
+my chceme data v digitální podobě,potřeba_nečeho
+my potřebujeme ukládat data u nás,potřeba_nečeho
+my chceme uložit snímky na cloudu,potřeba_nečeho
+my potřebujeme analyzovat data,potřeba_nečeho
+my chceme mikrofokus rentgenku,potřeba_nečeho
+jaký typ rentgenky bychom měli zvolit pro rentgenování železa?,rentgenka_typ
+v čem se liší tyto typy rentgenek?,rentgenka_typ
+jaké jsou typy rentgenek?,rentgenka_typ
+Jakou mám zvolit rentgenku?,rentgenka_typ
+bude zde vhodnější rentgenka s reflexní nebo transmistní anodou?,rentgenka_typ
+je lepší použít otevřenou nebo uzavřenou rentgenku?,rentgenka_typ
+je pro nás vhodná mikrofokus rentgenka?,rentgenka_typ
+jaké typy rentgenek můžeme použít?,rentgenka_typ
+existuje více typů rentgenek?,rentgenka_typ
+jak často se rentgenka udržuje?,rentgenka_údržba
+vyžaduje rentgenka údržbu?,rentgenka_údržba
+musí údržbu rentgenky dělat specialista?,rentgenka_údržba
+lze vymvěnit rentgenku?,rentgenka_údržba
+kolik stojí údržba rentgenky?,rentgenka_údržba
+jak je to se stíněním rtg?,rentgen_stínění
+je to bezpečné?,rentgen_stínění
+lze takový výkon bezpečně odstínit?,rentgen_stínění
+jaké stínění bude v takovém případě potřeba?,rentgen_stínění
+Jak se rentgen odstíní?,rentgen_stínění
+Je rentgenování bezpečné?,rentgen_stínění
+budeme potřebovat nějakou ochranu před zářením?,rentgen_stínění
+je stínění dostatečné?,rentgen_stínění
+není to nebezpečné?,rentgen_stínění
+není nebezpečné pracovat s rentgenem?,rentgen_stínění
+Je možné stát vedle rentgenu během jeho provozu?,rentgen_stínění
+kolik MB má jeden obrázek?,ukládání_dat
+jakým způsobem si obrázky uložíme?,ukládání_dat
+jakou velikost má rtg snímek?,ukládání_dat
+kam se snímky ukládají?,ukládání_dat
+kde můžeme uchovávat RTG snímky?,ukládání_dat
+lze efektivně ukládat RTG snímky?,ukládání_dat
+lze komprimovat rtg snímky?,ukládání_dat
+kolik budeme potřebovat prostoru na rok?,ukládání_dat
+ahoj,úvod
+jsem tu správně pro radu?,úvod
+měl byste minutku?,úvod
+mohl bych mít pár dotazů?,úvod
+dokázal byste mi pomoci ohledně mých dotazů?,úvod
+chtěl bych se na něco zeptat.,úvod
+mám problém. můžete mi pomoci?,úvod
+měl byste prosím chvíli prostor na pár dotazů?,úvod
+"potřeboval bych zjistit, jestli by mi vaše aplikace pomohla.",úvod
+můžu se prosím zeptat na nějaké detaily ohledně vaší aplikace?,úvod
+mohl bych se zeptat na pár věcí ohledně rentgenování?,úvod
+dobrý den. mohl byste mi prosím poradit?,úvod
+ahoj. potřeboval bych poradit.,úvod
+měl byste čas na krátkou konzultaci?,úvod
+dobrý den. Mohl bych se s vámi pobavit o inspekci našich výrobků?,úvod
+lze s vámi probrat něco ohledně inspekce ve výrobě?,úvod
+"dobrý den. Mám pár dotazů ohledně inspekce v naší výrobě, mohl byste mi poradit?",úvod
+zdravím,úvod
+dobrý den,úvod
+měli bychom být schopni rozeznat prasklinu o šířce 1mm,velikost_detailu
+my potřebujeme vidět detail 100um.,velikost_detailu
+je nutné rozlišit detail o velikosti 20um,velikost_detailu
+chtěli bychom vidět detaily pod 1mm,velikost_detailu
+"potřebujeme vidět voidy o průměru 0,1mm",velikost_detailu
+náš výrobek je malinký,velikost_produktu
+náš produkt není veliký. jedná se o zámek do auta,velikost_produktu
+výrobek má asi 5cm v průměru,velikost_produktu
+náš produkt je dlouhý,velikost_produktu
+nás produkt má 100mm x 100mm x 50mm,velikost_produktu
+náš produkt je cca 10cm tlustý,velikost_produktu
+"jedná se o nárazník, takže je velký",velikost_produktu
+podukt je malý,velikost_produktu
+lze využít rentgen pro kontrolu našeho produktu?,využiji_rentgen
+Můžu nějak zjistit proč produkt nefunguje?,využiji_rentgen
+Existuje metoda jak tento výrobek lépe prozkoumat?,využiji_rentgen
+Jak zjistím co je uvnitř?,využiji_rentgen
+Můžu se nějak podívat dovnitř?,využiji_rentgen
+Jak se podívám na pozici této komponenty?,využiji_rentgen
+Lze zjistit jak je připájený tento spoj?,využiji_rentgen
+Jakým způsobem se lze podívat do nějakého předmětu?,využiji_rentgen
+Jak se můžu podívat skrze ten kryt?,využiji_rentgen
+můžeme se přesvědčit jestli je komponenta na svém místě?,využiji_rentgen
+potřeboval bych se zeptat na něco ohledně kontroly produktů,využiji_rentgen
+zajímám se o rentgenování,využiji_rentgen
+ahoj. potřebuji kontrolovat produkt,využiji_rentgen
+potřbovali bychom kontrolovat vypínač.,využiji_rentgen
+lze zkontrolovat tuto komponentu?,využiji_rentgen
+"zvažujeme kontrolu produktu. myslíte, že je to možné?",využiji_rentgen

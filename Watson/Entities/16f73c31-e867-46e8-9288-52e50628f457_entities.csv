@@ -1,0 +1,90 @@
+defekt,prasklina,trhlina,ruptura,přerušení,roztržení,zlomenina
+defekt,void,bublina,porozita,prázdné místo,díra
+defekt,obecný,chybný,závada,chyba,poškození
+defekt,studený spoj,studeňák,špatné zapájení,přepálená pájka,nesprávné pájení,nekvalitní spoj,špatné propojení
+detektor,scintilátor,převaděč,transformátor záření,převaděč záření,scintilační panel,scintilační folie,zesilovač záření
+detektor,detektor,snímač,snímací zařízení,detekční zařízení
+detektor,detekční element,pixel,detektor,snímací element
+elektronika,transformátor,trafo,trafák
+elektronika,plošný spoj,dps,pcb,dpska,plošňák,deska plošných spojů,pcbčko
+elektronika,dioda,ledka,LED,usměrňovač,svítící element,svítící prvek
+elektronika,tranzistor,trand,JFET,FET,IGBT,výkonovej trand,NPN,PNP
+elektronika,kondenzátor,kondík,kond,kapacitor
+elektronika,rezistor,odpor
+elektronika,mikroprocesor,mcu,čip,mcučko,cpu,cpučko,uP,mikro cpu
+elektronika,piny,nožičky,piny čipu,vývody
+elektronika,cívka,tlumivka,cívečka,induktor
+elektronika,pájení,letování,připájení,přiletování,naletování
+elektronika,klasické nožičky,THT,klasické vývody,vývody skrz desku,nožičky skrze desku
+elektronika,smd,povrchová montáž,surface mounted device,smdčka,přímo na desku,povrchové piny
+itinfrastruktura,firewall,zabezpečení přístupu,řízení přístupu,omezení portů,omezení připojení
+itinfrastruktura,kabel,ethernetový kabel,propojovací kabel,šňůra,vedení
+itinfrastruktura,cloud,vzdálené uložiště,vzdálený server,vzdálený PC,remote uložiště,remote server
+itinfrastruktura,tagy,RFID,NFC,radiové čipy,bezdrátové čipy,bezdrátové značky,RF značky
+itinfrastruktura,RPI,raspberry pi,malina,raspberíčko,RPIčko,raspberry
+itinfrastruktura,monitor,display,displej,screen,plocha,monitoru,na displeji,na screenu,obrazovka
+itinfrastruktura,server,hlavní počítač,centrální pc,centrální prostředí,centrální cloud
+itinfrastruktura,notebook,laptop,ntb,přenosný počítač
+itinfrastruktura,mobil,smartphone,telefon,mobilní telefon,foun,na mobilu,na telefonu,telefonem,mobilem
+itinfrastruktura,myš,mouse,dvojklik,pravé tlačítko myši,levé tlačítko myši,připojení myši
+itinfrastruktura,router,propojovač,switch,ústředna,rack s portama,reck s portama
+itinfrastruktura,počítač,pc,kompl,compl,computer,kompjůtr
+ittsoftware,hosting,provoz služby,hostování služby,zpřístupnění služby
+ittsoftware,zdrojový kód,instrukce programu,struktura aplikace,dokumentace aplikace,oteřený kód pro změnu aplikace,možnost změny aplikace,možnost úprav aplikace,upravování UI,upravování UX,upravování uživatelského rozhraní
+ittsoftware,browser,prohlížeč,webový prohlížeč,webový browser,chrome,firefox,brave,edge,explorer,web,zobrazení stránky,zobrazení webu,překladač html,interpret html
+ittsoftware,backup,záloha,zálohování,kopie,zkopírování,zabezpečení dat,uschování dat,ochrana dat
+ittsoftware,ransomware,šifrovací vir,zašifrování dat,vyděračský vir
+ittsoftware,local,lokální uložiště,lokální pc,soukromý počítač,osobní počítač,osobní prostředí,tento počítač
+ittsoftware,databáze,SQL,db,PostgreSQL,SQLite,MSSQL,mikrosoftí databázi,databázi od microsoftu,databázi od ms,relační databáze,historian databáze
+ittsoftware,IoT,Internet of the Things,internet věcí,senzorika,MQTT,OPC UA,Publisher subscriber komunikace
+ittsoftware,NFT,Non Fungible Token,NFTs,NFTčka,Token,nezaměnitelný token
+ittsoftware,aplikace,apka,software,instance,služba
+ittsoftware,FTP,File Transfer Protocol,Uložiště dat,sdílení dat,souborové uložiště dat
+ittsoftware,IPFS,Inter Planetary File System,distribuované uložiště souborů,uložiště souborů,uložiště větších dat,uložiště obrázků,uložení snímků,sdílení snímk,sdílení obrázků
+ittsoftware,UI,Uživatelský interface,Uživatelské prostředí,vzhled aplikace,User interface,ovládací prvky,tlačítko,interfejs
+ittsoftware,blockchain,DLT,decentralizovaná účetní kniha,distributed ledger technology,persistentní uspořádání dat,decentralizovaná databáze,nezměnitelná databáze
+ittsoftware,node,základna blockchainu,základna IPFS,spojovací bod
+ittsoftware,UX,user experience,pocit uživatele,zkušenosti uživatele,pocit z aplikace,způsob využití software,ovládání aplikace
+ittsoftware,deployment,vydání služby,vydání software,instalace software,spuštění software,spuštění služby,vydání aplikace,instalace aplikace,nastavení prostředí,spuštění celého prostředí,spuštění všech služeb,správa všech služeb,správa aplikací
+ittsoftware,OpenSource,svobodný software,otevřený sotware,otevřený kód,veřejný zdrojový kód,svoboda
+ittsoftware,licence,povolení,token,BSD,MIT,GNU/GPL,Apache,souhlas
+ittsoftware,orchestrační platforma,propojovací software,orchestrační software,node-red,ThingWorx,PowerBI
+ittsoftware,transakce,zápis,přenos dat,přenesení dat,převedení dat,poslání dat,poslání záznamu,přeposlání záznamu,přeposlání dat,zapsání dat,zapsání záznamu
+Jára_Cimrman,jára,cimrman,věděc výzkumník vynálezce,elita národa,všeobecná inspirace,studnice vědění,největší čech,příbuzný Satoshi Nakamoto
+komponenta,komponenta,díl,součástka,subkomponenta,dílec,tohleto,tento malý díl,tato malá součástka,tato část produktu,díl v produktu,součástka ve výrobku
+malý_produkt,malý,malinký,menší,drobný,ne moc velký
+manipulace,manipulace,vložení předmětu,vyndání předmětu,zasunutí produktu,rotace produktu,otáčení předmětem,separace kusů,ruční založení produktu,vložení zkoumaného předmětu,vložení dílu,rotace dílem
+marker_material_komponenta,A15C349E431178F32DEB53DA75CF99EE
+marker_material_produkt,149FBC92EDE978D6379CEEE222FE45DD
+marker_material_produkt_komponenta,170B3E75312C6A47669FD4E48BC43DDA,BBE290B016CBAB9F4B4C23D2A41A36DF
+marker_mat_komp_rozmery_prod
+materiál,težký kov,slitina,železo,železné,kovové,trvdý materiál,těžký kov,kov,z kovu,ze železa,z oceli,ocel,ocelový,titanový,titan,olovo,olověný,z olova,z titanu
+materiál,plast,abs,umělohmotný,plastový,z plastu,umělá hmota,z umělé hmoty,z plastiku,epoxid,z epoxidu,pet,pvc,PU,polyurethan,z polyurethanu
+materiál,lehký kov,hliník,al,hliníkový,al slitina,hořčík,Mg slitina,lehkého kovu
+parametry_RTG,rtg parametry,napětí na rentgence,proud rentgenkou,velikost ohniska,primární filtrace,sekundární filtrace,rozložení scény,geometrická neostrost,rozlišení detektoru,citlivost detektoru,rozlišení obrazu,výkon na rentgence,napětí na anodě,anodové napětí,anodový proud,proud anodou,tvar ohniska,náklon anody,spektrum záření,typ rentgenky,typ detektoru
+počítač,počítač,pc,notebook,kompl,compl,computer,kompjůtr
+podklady,výkres,výkresovou dokumentaci,plán produktu,nákres produktu
+podklady,rozměry,velikost,výška šířka délka
+podklady,vzorové snímky,RTG snímky,NG snímky,OK snímky,snímek s chybou
+podklady,3d model,3D data,model,STL,STLko,CAD data,digitální model
+podklady,schéma,zapojení
+produkt,produkt,výrobek,zařízení,součástka,zkoumaný předmět,testovaný výrobek
+rentgen,filament,žhavící vlákno,vlákno katody,žhavená katoda,katoda
+rentgen,zákony,normy,zákony,SÚJB,Státní úřad pro jadernou bezpečnost,drobný zdroj,zdroj ionizujícího záření,jednoduchý zdroj,povolení,povolení k provozu,licence,schválení
+rentgen,kolimátor,zaměřovač,omezovač svazku,omezení svazku záření,oříznutí svazku,oříznutí záření
+rentgen,poziční systém,pozičák,manipulátor,robot,handler,cnc systém,pozicování
+rentgen,stínění,ochrana,olovo,krytí,odstínění,zabezpečení
+rentgen,rentgen,xray,rtg,x-ray,paprskyX,roentgen,CT
+rentgenka,rentgenka,zdroj záření,generátor,zdroj,RTG,rentgenová lampa
+rentgenka,anodové napětí,napětí na rentgence,anode voltage,napětí na rtg,napětí na anodě,urychlovací napětí,napětí rentgenky,kV na rentgence,kV na RTG
+rentgenka,ohnisko,spot,terčík
+rentgenka,anodový proud,proud rentgenkou,proud anodou,rtg proud,mA rentgenkou
+snímek,geometrická neostrost,rozostření,rozmazání
+snímek,bitová hloubka,hloubka dat,počet bitů,počet bitů na pixel,bitová hloubka na pixel,stupně šedi,odstíny šedi,dynamika obrazu
+snímek,rozlišení,počet pixelů,rozměr v pixelech,výška a šířka v pixelech,počet MPx,počet megapixelů
+snímek,expoziční čas,délka expozice,délka snímání,čas snímání,doba akvizice snímku,akviziční čas,doba expozice,doba akvizice
+snímek,snímek,obrázek,image,obrazová data
+snímek,digitální filtry,filtr,doostření,medián,snížení šumu,odstranění šumu,detekce hran,edge detection,zvýraznění hran,binarizace,threshold,obrazvení obrázku,pseudobarvení,výšková mapa,zvýšení čitelnosti obrázku,postprocessing
+snímek,zvětšení,zvýšení rozlišení,přiblížení detailu,zaměření detailu,prozkoumání detalu,prozkoumání konkrétní oblasti,přiblížení oblasti
+svár,svár,svařené místo,svařenec,místo svaru,provaření,svaření,spojení
+velký_produkt,velký,veliký,obří,rozměrný,dlouhý,neforemný,objemný,větší
