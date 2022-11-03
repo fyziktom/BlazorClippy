@@ -378,14 +378,12 @@
     {
         var maxsentenses = 3;
 
-        var questionextension = $"&Markers: ";
-        foreach (var d in lastCapturedDataItems)
-            questionextension += $"{d}  ";
+        var questionextension = analyzer.MarkerExtension;
 
         cryptHandler.Value = questionextension;
         var hash = cryptHandler.FingerPrint;
 
-        if (lastCapturedDataItems.Count > 0)
+        if (analyzer.IsSomeMatch)
             inputquestion = inputquestion + " " + hash;
 
         var resp = await clippy.AskWatson(inputquestion, sessionId);

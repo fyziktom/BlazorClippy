@@ -140,21 +140,19 @@ Console.ReadLine();
 return;
 */
 var cryptHandler = new MD5();
-var dis = new List<string>();
+
 foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assistant.SessionId))
 {
     Console.WriteLine("-------------Message------------------");
     Console.WriteLine($"--------------{message.Timestamp.ToString("MM.dd.yyyy hh:mm:ss")}----------------");
 
     // add markers to question before "send" to Watson to do not repeat answer for already mentioned/captured dataitem
-    var questionextension = $"&Markers: ";
-    foreach (var d in dis)
-        questionextension += $"{d}  ";
+    var questionextension = analyzer.MarkerExtension;
 
     cryptHandler.Value = questionextension;
     var hash = cryptHandler.FingerPrint;
     // when there is some dataitems already matched we should send info to Watson by sending changed question (with added markers).
-    if (dis.Count > 0)
+    if (analyzer.IsSomeMatch)
     {
         Console.WriteLine($"Question Extension: {questionextension}");
         Console.WriteLine($"Question Extension Hash: {hash}");
@@ -171,7 +169,7 @@ foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assista
     // result of match will be considered in next question. Before next send to Watson it will add the markers
     var matchresult = analyzer.MatchDataItems(message);
     // get new list of identified items
-    dis = analyzer.GetIdentifiedDataItemsDetailedMarkers();
+    var dis = analyzer.GetIdentifiedDataItemsDetailedMarkers();
 
     if (analyzer.DataItemsCombinations.ContainsKey(hash))
     {

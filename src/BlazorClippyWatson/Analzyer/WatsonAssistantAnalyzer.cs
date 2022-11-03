@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,10 +14,26 @@ namespace BlazorClippyWatson.Analzyer
 {
     public class WatsonAssistantAnalyzer
     {
+        private List<string> LastMatchedDataItemsState = new List<string>();
+        public bool IsSomeMatch { get => LastMatchedDataItemsState.Count > 0; }
+        public static string MarkerExtensionStartDefault {get => "&Markers: ";}
         public ConcurrentDictionary<string, AnalyzedObjectDataItem> DataItems { get; set; } = new ConcurrentDictionary<string, AnalyzedObjectDataItem>();
 
         public IOrderedEnumerable<KeyValuePair<string, AnalyzedObjectDataItem>> DataItemsOrderedByName { get => DataItems.OrderBy(e => e.Value.Name); }
 
+        public string MarkerExtension 
+        { 
+            get
+            {
+                var questionextension = MarkerExtensionStartDefault;
+                if (LastMatchedDataItemsState.Count > 0)
+                {
+                    foreach (var d in LastMatchedDataItemsState)
+                        questionextension += $"{d}  ";
+                }
+                return questionextension ;
+            } 
+        }
         public Dictionary<string, string> DataItemsCombinations { get; set; } = new Dictionary<string, string>();
         public void AddDataItem(AnalyzedObjectDataItem dataItem)
         {
@@ -129,11 +146,16 @@ namespace BlazorClippyWatson.Analzyer
 
         public IEnumerable<AnalyzedObjectDataItem> GetIdentifiedDataItems()
         {
+            var result = new List<string>();
             foreach (var dataitem in DataItemsOrderedByName)
             {
                 if (dataitem.Value.IsIdentified)
+                {
+                    result.Add(dataitem.Value.CapturedMarkerDetailed);
                     yield return dataitem.Value;
+                }
             }
+            LastMatchedDataItemsState = result;
         }
 
         public List<string> GetIdentifiedDataItemsDetailedMarkers()
@@ -145,6 +167,7 @@ namespace BlazorClippyWatson.Analzyer
                 if (dataitem.Value.IsIdentified && !result.Contains(dataitem.Key))
                     result.Add(dataitem.Value.CapturedMarkerDetailed);
             }
+            LastMatchedDataItemsState = result;
             return result;
         }
 
