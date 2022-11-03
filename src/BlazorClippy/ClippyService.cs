@@ -63,8 +63,7 @@ namespace BlazorClippy
          
         bool loaded = false;
         private WatsonService watsonService;
-
-        public string WatsonApiUrl { get; set; } = "https://blazorclippydemoserver20221101171158.azurewebsites.net/api";
+        public string WatsonApiUrl { get; set; } = "https://localhost:7008/api";
         public string SessionId { get; set; } = string.Empty;
 
         public ClippyService(IJSRuntime js, IServiceProvider serviceProvider)
@@ -75,7 +74,7 @@ namespace BlazorClippy
 
         public async Task<(bool, string)> StartWatsonSession(string apiurlbase)
         {
-            watsonService = new WatsonService(httpClient);
+            watsonService = new WatsonService(httpClient, apiurlbase);
             WatsonApiUrl = apiurlbase;
 
             if (watsonService == null)
@@ -126,6 +125,15 @@ namespace BlazorClippy
         public WatsonMessageRequestRecord GetMessageById(string recordId)
         {
             return watsonService.GetMessageById(recordId);
+        }
+
+        public async Task<(bool, string)> Translate(string text, string translateModel = "cs-en")
+        {
+            return await watsonService.Translate(text, translateModel);
+        }
+        public async Task<(bool, string)> Synthetise(string text, string voice = "en-US_LisaV3Voice")
+        {
+            return await watsonService.Synthetise(text, voice);
         }
 
         public async Task BackupConversation(string sessionId, bool aslist = false)

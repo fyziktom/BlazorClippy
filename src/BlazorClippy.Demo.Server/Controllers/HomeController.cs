@@ -1,9 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BlazorClippy.AI;
+using IBM.Watson.TextToSpeech.v1.Model;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Http.Headers;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace BlazorClippy.Demo.Server.Controlers
-{
+{   /*
     public class AllowCrossSiteJsonAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
@@ -21,6 +28,27 @@ namespace BlazorClippy.Demo.Server.Controlers
             base.OnActionExecuting(filterContext);
         }
     }
+    */
+    /*
+    public class AllowCrossSiteAudioAttribute : ActionFilterAttribute
+    {
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        {
+            var ctx = filterContext.HttpContext;
+            ctx.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            ctx.Response.Headers.Add("Access-Control-Allow-Headers", "*");
+            if (ctx.Response.Headers.ContainsKey("content-type"))
+                ctx.Response.Headers["content-type"] = "audio/wav";
+            else
+                ctx.Response.Headers.Add("content-type", "audio/wav");
+
+            var hds = ctx.Response.Headers.ToList();
+            ctx.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+            base.OnActionExecuting(filterContext);
+        }
+    
+    }
+    */
 
     [Route("api")]
     [ApiController]
@@ -28,7 +56,7 @@ namespace BlazorClippy.Demo.Server.Controlers
     {
         
         [HttpGet("StartWatsonSession")]
-        [AllowCrossSiteJsonAttribute]
+        //[AllowCrossSiteJsonAttribute]
         public async Task<string> StartWatsonSession()
         {
             var wa = new WatsonAssistant();
@@ -70,7 +98,7 @@ namespace BlazorClippy.Demo.Server.Controlers
         }
 
         [HttpPost("AskWatson")]
-        [AllowCrossSiteJsonAttribute]
+        //[AllowCrossSiteJsonAttribute]
         public async Task<string> AskQuestion([FromBody] Question data)
         {
             if (string.IsNullOrEmpty(data.text))
@@ -86,6 +114,92 @@ namespace BlazorClippy.Demo.Server.Controlers
                     return res.Item2;                    
             }
             return string.Empty;
+        }
+
+        public class TranslateRequest
+        {
+            public string text { get; set; } = string.Empty;
+            public string translateModel { get; set; } = "cs-en";
+        }
+
+        [HttpPost("Translate")]
+        //[AllowCrossSiteJsonAttribute]
+        public async Task<string> Translate([FromBody] TranslateRequest data)
+        {
+            if (string.IsNullOrEmpty(data.text))
+                return "Please fill some text in property text.";
+
+                var res = await MainDataContext.Translator.Translate(data.text, data.translateModel);
+                if (res.Item1)
+                    return res.Item2;
+            
+            return string.Empty;
+        }
+
+        [HttpPost("GetVoices")]
+        //[AllowCrossSiteJsonAttribute]
+        public async Task<List<string>> GetVoices()
+        {
+            var res = await MainDataContext.TextToSpeech.GetVoices();
+            if (res.Item1)
+            {
+                return res.Item2;
+            }
+            return new List<string>();
+        }
+
+        public class SyntethizeRequest
+        {
+            public string text { get; set; } = string.Empty;
+            public string voice { get; set; } = string.Empty;
+        }
+
+        [HttpPost("Syntethise")]
+        [Produces("audio/wav")]
+        public async Task<FileStreamResult> Syntethise([FromBody] SyntethizeRequest data)
+        {
+            if (string.IsNullOrEmpty(data.text))
+                data.text = "Musíš vyplnit nějaký text.";
+
+            if (data.voice == "string")
+                data.voice = string.Empty;
+            if (data.text == "string")
+                data.text = string.Empty;
+
+            /*
+            var folder = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "tmprecords");
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            var filename = Path.Join(folder, $"record-{DateTime.UtcNow.ToString("yyyy-MM-ddThh_mm_ss_ff")}.wav");
+            */
+            try
+            {
+                var res = await MainDataContext.TextToSpeech.Synthesize(data.text, data.voice);
+
+                if (res.Item1)
+                {
+                    if (res.Item2 != null)
+                    {
+                        try
+                        {
+                            var memory = new MemoryStream(res.Item2);
+                            memory.Position = 0;
+                            return File(memory, "audio/wav", $"message.wav", true);
+                        }
+                        catch (Exception ex)
+                        {
+                            return null;
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Cannot get text.", ex.Message);
+                return null;
+            }
+            return null;
         }
     }
 }

@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlazorClippy.Demo.Server
+namespace BlazorClippy.AI
 {
     public class WatsonAssistant
     {
@@ -70,8 +70,6 @@ namespace BlazorClippy.Demo.Server
         {
             if (Service == null)
                 return (false, "Please initiate the Service.");
-
-            //var res = Service.GetSkills(assistantId);
 
             var result = Service.CreateSession(
                 assistantId: assistantId

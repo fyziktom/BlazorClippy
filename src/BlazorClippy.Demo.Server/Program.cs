@@ -1,4 +1,5 @@
 using BlazorClippy;
+using BlazorClippy.AI;
 using BlazorClippy.Demo.Server;
 using BlazorClippy.Demo.Server.Data;
 using Microsoft.AspNetCore.Components;
@@ -11,12 +12,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7008/api") });
+builder.Services.AddScoped<ClippyService>();
 builder.Services.AddMvc(options => options.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 builder.Services.AddSwaggerGen();
 
 var config = builder.Configuration.GetSection("WatsonConfig").Get<WatsonConfigDto>();
 if (config != null)
+{
     MainDataContext.WatsonConfig = config;
+    MainDataContext.TextToSpeech = new WatsonTextToSpeech(config.SpeechToTextApiKey, 
+                                                          config.SpeechToTextUrl, 
+                                                          config.SpeechToTextVoice);
+
+    MainDataContext.Translator = new WatsonTranslator(config.TranslatorApiKey,
+                                                      config.TranslatorUrl);
+}
 
 var app = builder.Build();
 

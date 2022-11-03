@@ -15,9 +15,11 @@
 </Router>
 
 @code {
-
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
-        clippy.WatsonApiUrl = AppData.WatsonApiUrl;
+        if (firstRender)
+            clippy.WatsonApiUrl = AppData.WatsonApiUrl;
+
+        base.OnAfterRender(firstRender);
     }
 }
