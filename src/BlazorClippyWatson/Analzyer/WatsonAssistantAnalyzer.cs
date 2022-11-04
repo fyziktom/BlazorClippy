@@ -15,11 +15,8 @@ namespace BlazorClippyWatson.Analzyer
 {
     public class WatsonAssistantAnalyzer
     {
-        public WatsonAssistantAnalyzer()
-        {
-            cryptHandler = new MD5();
-        }
-        private MD5? cryptHandler;
+        private CryptographyHelpers cryptHelper = new CryptographyHelpers();
+        
         private readonly object _lock = new object();
 
         private List<string> LastMatchedDataItemsState = new List<string>();
@@ -53,8 +50,7 @@ namespace BlazorClippyWatson.Analzyer
             {
                 lock (_lock)
                 {
-                    cryptHandler.Value = MarkerExtension;
-                    var hash = cryptHandler.FingerPrint;
+                    var hash = cryptHelper.GetHash(MarkerExtension);
                     if (hash != _lastMarkerExtensionHash)
                     {
                         _lastMarkerExtensionHash = hash;
@@ -231,9 +227,7 @@ namespace BlazorClippyWatson.Analzyer
             var combos = new List<List<string>>();
 
             Console.WriteLine("\tCreating individual combinations...");
-            var bag = new ConcurrentBag<List<string>>();
             foreach(var dataitem in DataItemsOrderedByName)
-            //Parallel.ForEach(DataItemsOrderedByName, dataitem =>
             {
                 var res = dataitem.Value.GetAllDetailedMarksCombination();
 
@@ -242,13 +236,10 @@ namespace BlazorClippyWatson.Analzyer
                     if (r.Contains(dataitem.Value.NameWithoutUnsuportedChars))
                         combos.Add(new List<string>() { r, null });
                 }
-            }//);
-
-            //combos = bag.ToList();
-            //bag = null;
+            }
 
             Console.WriteLine("\tCalculation all possible combos...");
-            var output = ComboHelpers.GetAllPossibleCombosOptimizedInStringLists(combos);
+            var output = ComboHelpers.GetAllPossibleCombosOptimizedNotGeneric(combos);
             //var output = ComboHelpers.GetAllPossibleCombosOptimized<string>(combos);
 
             Console.WriteLine("\tCreating MarkersExtensions...");
@@ -274,11 +265,11 @@ namespace BlazorClippyWatson.Analzyer
             var fbag = new ConcurrentQueue<KeyValuePair<string, string>>();
             Parallel.ForEach(cmbs, item =>
             {
-                var crypt = new MD5();
+                var ch = new CryptographyHelpers();
+                var hash = ch.GetHash(item);
 
-                crypt.Value = item;
-                var hash = crypt.FingerPrint;
                 fbag.Enqueue(new KeyValuePair<string, string>(hash, item));
+
             });
 
             cmbs.Clear();

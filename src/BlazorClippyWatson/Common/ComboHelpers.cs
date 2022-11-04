@@ -70,7 +70,7 @@ namespace BlazorClippyWatson.Common
             return result;
         }
 
-        public static List<List<string>> GetAllPossibleCombosOptimizedInStringLists(List<List<string>> objects)
+        public static List<List<string>> GetAllPossibleCombosOptimizedNotGeneric(List<List<string>> objects)
         {
             IEnumerable<List<string>> combos = new List<List<string>>() { new List<string>() };
 

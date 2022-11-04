@@ -12,11 +12,8 @@ namespace BlazorClippyWatson.Analzyer
 {
     public class AnalyzedObjectDataItem
     {
-        public AnalyzedObjectDataItem() 
-        {
-            cryptHandler = new MD5();
-        }
-        private MD5? cryptHandler;
+        private CryptographyHelpers cryptHelper = new CryptographyHelpers();
+
         private readonly object _lock = new object();
 
         public string Name { get; set; } = string.Empty;
@@ -45,8 +42,7 @@ namespace BlazorClippyWatson.Analzyer
             {
                 lock (_lock)
                 {
-                    cryptHandler.Value = CapturedMarker;
-                    var hash = cryptHandler.FingerPrint;
+                    var hash = cryptHelper.GetHash(CapturedMarker);
                     return hash;
                 }
             }
@@ -91,8 +87,7 @@ namespace BlazorClippyWatson.Analzyer
             {
                 lock (_lock)
                 {
-                    cryptHandler.Value = CapturedMarkerDetailed;
-                    var hash = cryptHandler.FingerPrint;
+                    var hash = cryptHelper.GetHash(CapturedMarkerDetailed);
                     return hash;
                 }
             }
