@@ -2,6 +2,7 @@
 using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -125,6 +126,19 @@ namespace BlazorClippyWatson.Analzyer
                     var index = di.Entities.IndexOf(dentity);
                     di.Entities.RemoveAt(index);
                 }
+            }
+        }
+
+        public void ClearAllFoundInAllDataItems()
+        {
+            foreach (var dataitem in DataItemsOrderedByName)
+                ClearAllFound(dataitem.Key);
+        }
+        public void ClearAllFound(string dataItemMarker)
+        {
+            if (DataItems.TryGetValue(dataItemMarker, out var di))
+            {
+                di.ClearAllFound();
             }
         }
 
@@ -261,6 +275,9 @@ namespace BlazorClippyWatson.Analzyer
                 }
             });
 
+            output.Clear();
+            output = null;
+
             Console.WriteLine("\tCalculating hashes...");
             var fbag = new ConcurrentQueue<KeyValuePair<string, string>>();
             Parallel.ForEach(cmbs, item =>
@@ -274,7 +291,7 @@ namespace BlazorClippyWatson.Analzyer
 
             cmbs.Clear();
             cmbs = null;
-
+            
             Console.WriteLine("\tCopying final items to result dictionary...");
 
             while (fbag.TryDequeue(out var item))

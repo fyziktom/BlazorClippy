@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace BlazorClippyWatson.AI
 {
@@ -13,6 +14,38 @@ namespace BlazorClippyWatson.AI
     {
         public ConcurrentDictionary<string, WatsonMessageRequestRecord> MessageRecords { get; set; } = new ConcurrentDictionary<string, WatsonMessageRequestRecord>();
 
+        public WatsonMessageRequestRecord GetEmptyMessageDto(string sessionId, string message = "", List<string>? intents = null, Dictionary<string,string>? entities = null)
+        {
+            var msg = new WatsonMessageRequestRecord(sessionId, message);
+            msg.Response = new IBM.Cloud.SDK.Core.Http.DetailedResponse<MessageResponse>();
+            msg.Response.Result = new MessageResponse();
+            msg.Response.Result.Output = new MessageOutput();
+            msg.Response.Result.Output.Generic = new List<RuntimeResponseGeneric>();
+            var g = new RuntimeResponseGenericRuntimeResponseTypeText();
+            g.Text = message;
+            g.ResponseType = "text";
+            msg.Response.Result.Output.Generic.Add((RuntimeResponseGeneric)g);
+            
+            msg.Response.Result.Output.Intents = new List<RuntimeIntent>();
+            msg.Response.Result.Output.Entities = new List<RuntimeEntity>();
+
+            if (intents != null)
+                foreach (var i in intents)
+                    msg.Response.Result.Output.Intents.Add(new RuntimeIntent()
+                    {
+                        Intent = i
+                    });
+            
+            if (entities != null)
+                foreach (var e in entities)
+                    msg.Response.Result.Output.Entities.Add(new RuntimeEntity()
+                    {
+                        Entity = e.Key,
+                        Value = e.Value
+                    });
+
+            return msg;
+        }
         public string AddRecord(string sessionId, string question)
         {
             var wrr = new WatsonMessageRequestRecord(sessionId, question);

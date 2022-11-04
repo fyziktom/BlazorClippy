@@ -104,6 +104,12 @@ namespace BlazorClippyWatson.Analzyer
         public bool IsWhenAllOnly { get; set; } = false;
         public Dictionary<string, object> DataItems { get; set; } = new Dictionary<string, object>();
 
+        public void ClearAllFound()
+        {
+            FoundIntents.Clear();
+            FoundEntities.Clear();
+        }
+
         public (List<RuntimeIntent>, List<RuntimeEntity>) IsMessageInterestMatch(WatsonMessageRequestRecord message)
         {
             var ints = new List<RuntimeIntent>();
