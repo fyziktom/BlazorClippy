@@ -65,20 +65,18 @@ namespace BlazorClippyWatson.Analzyer
                 }
             }
         }
-        public Dictionary<string, string> DataItemsCombinations { get; set; } = new Dictionary<string, string>();
+        public ConcurrentDictionary<string, string> DataItemsCombinations { get; set; } = new ConcurrentDictionary<string, string>();
         public void AddDataItem(AnalyzedObjectDataItem dataItem)
         {
             if (!DataItems.ContainsKey(dataItem.CapturedMarker))
             {
                 DataItems.TryAdd(dataItem.CapturedMarker, dataItem);
-                RefreshCombinations();
             }            
         }
         public void RemoveDataItem(string dataItemMarker)
         {
             if (DataItems.TryRemove(dataItemMarker, out var di))
             {
-                RefreshCombinations();
                 return;
             }
         }
@@ -99,7 +97,6 @@ namespace BlazorClippyWatson.Analzyer
             if (DataItems.TryGetValue(dataItemMarker, out var di))
             {
                 di.Intents.Add(intent);
-                RefreshCombinations();
             }
         }
         public void RemoveDataItemIntent(string dataItemMarker, string intent)
@@ -111,7 +108,6 @@ namespace BlazorClippyWatson.Analzyer
                 {
                     var index = di.Intents.IndexOf(dintent);
                     di.Intents.RemoveAt(index);
-                    RefreshCombinations();
                 }
             }
         }
@@ -120,7 +116,6 @@ namespace BlazorClippyWatson.Analzyer
             if (DataItems.TryGetValue(dataItemMarker, out var di))
             {
                 di.Entities.Add(entity);
-                RefreshCombinations();
             }
         }
 
@@ -133,7 +128,6 @@ namespace BlazorClippyWatson.Analzyer
                 {
                     var index = di.Entities.IndexOf(dentity);
                     di.Entities.RemoveAt(index);
-                    RefreshCombinations();
                 }
             }
         }
@@ -230,20 +224,16 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
-        public void RefreshCombinations()
-        {
-            var res = GetHashesOfAllCombinations();
-            if (res != null)
-                DataItemsCombinations = new Dictionary<string, string>(res);
-        }
+
         public Dictionary<string, string> GetHashesOfAllCombinations()
         {
-            var cryptHandler = new MD5();
-
             var result = new Dictionary<string, string>();
             var combos = new List<List<string>>();
 
-            foreach (var dataitem in DataItemsOrderedByName)
+            Console.WriteLine("\tCreating individual combinations...");
+            var bag = new ConcurrentBag<List<string>>();
+            foreach(var dataitem in DataItemsOrderedByName)
+            //Parallel.ForEach(DataItemsOrderedByName, dataitem =>
             {
                 var res = dataitem.Value.GetAllDetailedMarksCombination();
 
@@ -252,28 +242,56 @@ namespace BlazorClippyWatson.Analzyer
                     if (r.Contains(dataitem.Value.NameWithoutUnsuportedChars))
                         combos.Add(new List<string>() { r, null });
                 }
-            }
-            var output = ComboHelpers.GetAllPossibleCombos<string>(combos);
+            }//);
 
-            foreach (var item in output)
+            //combos = bag.ToList();
+            //bag = null;
+
+            Console.WriteLine("\tCalculation all possible combos...");
+            var output = ComboHelpers.GetAllPossibleCombosOptimizedInStringLists(combos);
+            //var output = ComboHelpers.GetAllPossibleCombosOptimized<string>(combos);
+
+            Console.WriteLine("\tCreating MarkersExtensions...");
+            var cmbs = new ConcurrentBag<string>();
+            Parallel.ForEach(output, item =>
             {
-                var combo = WatsonAssistantAnalyzer.MarkerExtensionStartDefault;
+                var sb = new StringBuilder(MarkerExtensionStartDefault);
+                
                 var counter = 0;
                 foreach (var i in item)
                 {
-                    combo += $"{i}";
+                    sb.Append($"{i}");
+                    
                     if (counter >= 0 && counter < item.Count - 1)
-                        combo += $" ";
-                    lock (_lock)
-                    {
-                        cryptHandler.Value = combo;
-                        var hash = cryptHandler.FingerPrint;
-                        if (!result.ContainsKey(hash))
-                            result.Add(hash, combo);
-                    }
+                        sb.Append($" ");
+
+                    cmbs.Add(sb.ToString());
                     counter++;
                 }
+            });
+
+            Console.WriteLine("\tCalculating hashes...");
+            var fbag = new ConcurrentQueue<KeyValuePair<string, string>>();
+            Parallel.ForEach(cmbs, item =>
+            {
+                var crypt = new MD5();
+
+                crypt.Value = item;
+                var hash = crypt.FingerPrint;
+                fbag.Enqueue(new KeyValuePair<string, string>(hash, item));
+            });
+
+            cmbs.Clear();
+            cmbs = null;
+
+            Console.WriteLine("\tCopying final items to result dictionary...");
+
+            while (fbag.TryDequeue(out var item))
+            {
+                result.TryAdd(item.Key, item.Value);
             }
+
+            DataItemsCombinations = new ConcurrentDictionary<string, string>(result);
 
             return result;
         }

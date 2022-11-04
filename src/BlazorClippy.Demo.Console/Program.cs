@@ -134,7 +134,7 @@ spw.Start();
 var combinations = analyzer.GetHashesOfAllCombinations();
 spw.Stop();
 Console.WriteLine($"Elapsed: {spw.ElapsedMilliseconds/1000} seconds to get all combos.");
-Console.WriteLine($"Total found: {combinations.Count} combos for {analyzer.DataItems.Count} DataItems");
+Console.WriteLine($"Total found: {analyzer.DataItemsCombinations.Count} combos for {analyzer.DataItems.Count} DataItems");
 /*
 foreach(var combo in combinations)
 {
@@ -206,6 +206,7 @@ foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assista
     }
 }
 
+/*
 var lines = new List<string>();
 
 lines.Add($"Hash\tCombo");
@@ -228,7 +229,7 @@ if (File.Exists(difilename))
     File.Delete(difilename);
 }
 File.AppendAllLines(difilename, dilines);
-
+*/
 
 Console.WriteLine("-----------------------------------");
 Console.WriteLine("History of dialogue:");
