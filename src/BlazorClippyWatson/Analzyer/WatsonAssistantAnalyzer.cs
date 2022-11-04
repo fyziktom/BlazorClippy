@@ -3,6 +3,7 @@ using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,12 +39,14 @@ namespace BlazorClippyWatson.Analzyer
                 if (LastMatchedDataItemsState.Count > 0)
                 {
                     foreach (var d in LastMatchedDataItemsState)
-                        questionextension += $"{d}  ";
+                        questionextension += $"{d} ";
                 }
                 return questionextension ;
             } 
         }
-        
+
+        public Dictionary<string,DateTime> MarkerExtensionHashHistory { get; set; } = new Dictionary<string, DateTime>();
+        private string _lastMarkerExtensionHash = string.Empty;
         public string MarkerExtensionHash
         {
             get
@@ -52,6 +55,12 @@ namespace BlazorClippyWatson.Analzyer
                 {
                     cryptHandler.Value = MarkerExtension;
                     var hash = cryptHandler.FingerPrint;
+                    if (hash != _lastMarkerExtensionHash)
+                    {
+                        _lastMarkerExtensionHash = hash;
+                        if (!MarkerExtensionHashHistory.ContainsKey(hash))
+                            MarkerExtensionHashHistory.TryAdd(hash, DateTime.UtcNow);
+                    }
                     return hash;
                 }
             }
@@ -209,6 +218,18 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
+        public IEnumerable<KeyValuePair<DateTime, (string, string)>> GetHistoryOfDialogue()
+        {
+            var result = new Dictionary<DateTime, (string, string)>();
+            foreach (var history in MarkerExtensionHashHistory.OrderBy(h => h.Value))
+            {
+                if (DataItemsCombinations.TryGetValue(history.Key, out var combo))
+                {
+                    yield return new KeyValuePair<DateTime, (string, string)>(history.Value, (history.Key, combo));
+                }
+            }
+        }
+
         public void RefreshCombinations()
         {
             var res = GetHashesOfAllCombinations();
@@ -225,53 +246,32 @@ namespace BlazorClippyWatson.Analzyer
             foreach (var dataitem in DataItemsOrderedByName)
             {
                 var res = dataitem.Value.GetAllDetailedMarksCombination();
-                combos.Add(res);
-            }
 
-            for (var i = 0; i < combos.Count; i++)
-            {
-                var icombo = combos[i];
-                for (var k = 0; k < combos.Count; k++)
+                foreach (var r in res)
                 {
-                    if (i != k)
+                    if (r.Contains(dataitem.Value.NameWithoutUnsuportedChars))
+                        combos.Add(new List<string>() { r, null });
+                }
+            }
+            var output = ComboHelpers.GetAllPossibleCombos<string>(combos);
+
+            foreach (var item in output)
+            {
+                var combo = WatsonAssistantAnalyzer.MarkerExtensionStartDefault;
+                var counter = 0;
+                foreach (var i in item)
+                {
+                    combo += $"{i}";
+                    if (counter >= 0 && counter < item.Count - 1)
+                        combo += $" ";
+                    lock (_lock)
                     {
-                        var kcombo = combos[k];
-
-                        var ikcombo = new List<string>();
-                        foreach (var icomb in icombo)
-                        {
-                            foreach (var kcomb in kcombo)
-                            {
-                                if (icomb != kcomb && !kcomb.Contains(icomb) && !icomb.Contains(kcomb))
-                                {
-                                    var ikc = icomb + " " + kcomb;
-                                    if (!ikcombo.Contains(ikc))
-                                        ikcombo.Add(ikc);
-                                }
-                                
-                            }
-                        }
-                        foreach (var kcomb in kcombo)
-                        {
-                            foreach (var icomb in icombo)
-                            {
-                                if (kcomb != icomb && !kcomb.Contains(icomb) && !icomb.Contains(kcomb))
-                                {
-                                    var kic = kcomb + " " + icomb;
-                                    if (!ikcombo.Contains(kic))
-                                        ikcombo.Add(kic);
-                                }
-                            }
-                        }
-
-                        foreach(var ikc in ikcombo)
-                        {
-                            cryptHandler.Value = ikc;
-                            var hash = cryptHandler.FingerPrint;
-                            if (!result.ContainsKey(hash))
-                                result.Add(hash, ikc);
-                        }
+                        cryptHandler.Value = combo;
+                        var hash = cryptHandler.FingerPrint;
+                        if (!result.ContainsKey(hash))
+                            result.Add(hash, combo);
                     }
+                    counter++;
                 }
             }
 

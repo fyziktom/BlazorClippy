@@ -3,6 +3,8 @@ using BlazorClippyWatson.Analzyer;
 using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Reflection;
 
 Console.WriteLine("Hello, World! I am Watson Replay Console demo");
 
@@ -126,20 +128,26 @@ foreach (var di in dataitems)
 #endregion
 ////////////////////////////
 
-
+Console.WriteLine("Calculating all combinations of parameters. This can take a while...");
+var spw = new Stopwatch();
+spw.Start();
 var combinations = analyzer.GetHashesOfAllCombinations();
-
+spw.Stop();
+Console.WriteLine($"Elapsed: {spw.ElapsedMilliseconds/1000} seconds to get all combos.");
+Console.WriteLine($"Total found: {combinations.Count} combos for {analyzer.DataItems.Count} DataItems");
+/*
 foreach(var combo in combinations)
 {
     Console.WriteLine($"Hash: {combo.Key}, Combo: {combo.Value}");
-}
+}*/
+
 
 /*
 Console.WriteLine("Press enter to exit...");
 Console.ReadLine();
 return;
 */
-var cryptHandler = new MD5();
+var hashHistory = new Dictionary<string, string>();
 
 foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assistant.SessionId))
 {
@@ -148,15 +156,16 @@ foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assista
 
     // add markers to question before "send" to Watson to do not repeat answer for already mentioned/captured dataitem
     var questionextension = analyzer.MarkerExtension;
+    // request for MarkExtensionHash will refresh value and save to history.
+    var actualMarkerExtensionHash = analyzer.MarkerExtensionHash;
 
-    cryptHandler.Value = questionextension;
-    var hash = cryptHandler.FingerPrint;
+    hashHistory.TryAdd(actualMarkerExtensionHash, questionextension);
     // when there is some dataitems already matched we should send info to Watson by sending changed question (with added markers).
     if (analyzer.IsSomeMatch)
     {
         Console.WriteLine($"Question Extension: {questionextension}");
-        Console.WriteLine($"Question Extension Hash: {hash}");
-        Console.WriteLine($"Question: {message.Question} {hash}");       
+        Console.WriteLine($"Question Extension Hash: {actualMarkerExtensionHash}");
+        Console.WriteLine($"Question: {message.Question} {actualMarkerExtensionHash}");       
     }
     else
         Console.WriteLine($"Question: {message.Question}");
@@ -171,9 +180,9 @@ foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assista
     // get new list of identified items
     var dis = analyzer.GetIdentifiedDataItemsDetailedMarkers();
 
-    if (analyzer.DataItemsCombinations.ContainsKey(hash))
+    if (analyzer.DataItemsCombinations.ContainsKey(actualMarkerExtensionHash))
     {
-        Console.WriteLine($"Identified Sequence of parameters: {hash}!\n");
+        Console.WriteLine($"Identified Sequence of parameters: {actualMarkerExtensionHash}!\n");
     }
 
     // just output of what is already captured
@@ -197,6 +206,44 @@ foreach (var message in assistant.MessageRecordHandler.GetMessageHistory(assista
     }
 }
 
+var lines = new List<string>();
+
+lines.Add($"Hash\tCombo");
+foreach (var hashh in hashHistory)
+    lines.Add($"{hashh.Key}\t{hashh.Value}");
+var filename = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "history.txt");
+if (File.Exists(filename))
+{
+    File.Delete(filename);
+}
+File.AppendAllLines(filename, lines);
+
+var dilines = new List<string>();
+dilines.Add($"Hash\tCombo");
+foreach (var hashh in analyzer.DataItemsCombinations)
+    dilines.Add($"{hashh.Key}\t{hashh.Value}");
+var difilename = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "combos.txt");
+if (File.Exists(difilename))
+{
+    File.Delete(difilename);
+}
+File.AppendAllLines(difilename, dilines);
+
+
+Console.WriteLine("-----------------------------------");
+Console.WriteLine("History of dialogue:");
+Console.WriteLine("-----------------------------------");
+foreach(var history in analyzer.GetHistoryOfDialogue())
+{
+    Console.WriteLine("....................");
+    Console.WriteLine($"DateTime: {history.Key.ToString("MM.dd.yyyy hh:mm:ss")}, Hash: {history.Value.Item1}, Marker: {history.Value.Item2}");
+    Console.WriteLine($"Marker: {history.Value.Item2}");
+}
+
+
+Console.WriteLine("-----------------------------------");
+Console.WriteLine("----------------END----------------");
+Console.WriteLine("-----------------------------------");
 Console.WriteLine("Press enter to exit...");
 Console.ReadLine();
 

@@ -164,23 +164,36 @@ namespace BlazorClippyWatson.Analzyer
             var entitiesCombinations = new List<string>();
 
             var lastCombo = string.Empty;
-            foreach(var intent in Intents)
+            foreach (var intent in Intents)
             {
-                var combo = lastCombo + $"#{intent.Intent};" + "+";
-                if (!string.IsNullOrEmpty(combo))
-                    combo = combo.Remove(combo.Length - 1, 1);
+                var tmp = lastCombo + $"#{intent.Intent};" + "+";
+                if (!string.IsNullOrEmpty(tmp))
+                    tmp = tmp.Remove(tmp.Length - 1, 1);
+
+                var combo = $"{tmp}";
                 lastCombo = combo;
                 intentsCombinations.Add(lastCombo);
+                if (!tmp.Contains($"marker_{NameWithoutUnsuportedChars}&&)"))
+                {
+                    var comboextra = $"marker_{NameWithoutUnsuportedChars}&&{tmp}&&";
+                    intentsCombinations.Add(comboextra);
+                }
             }
 
             lastCombo = string.Empty;
             foreach (var entity in Entities)
             {
-                var combo = lastCombo + $"@{entity.Entity}:{entity.Value};" + "+";
-                if (!string.IsNullOrEmpty(combo))
-                    combo = combo.Remove(combo.Length - 1, 1);
+                var tmp = lastCombo + $"@{entity.Entity}:{entity.Value};" + "+";
+                if (!string.IsNullOrEmpty(tmp))
+                    tmp = tmp.Remove(tmp.Length - 1, 1);
+                var combo = $"{tmp}";
                 lastCombo = combo;
                 entitiesCombinations.Add(lastCombo);
+                if (!tmp.Contains($"marker_{NameWithoutUnsuportedChars}&&)"))
+                { 
+                    var comboextra = $"marker_{NameWithoutUnsuportedChars}&&&&{tmp}";
+                    entitiesCombinations.Add(comboextra);
+                }
             }
 
             var final = new List<string>();
@@ -197,13 +210,16 @@ namespace BlazorClippyWatson.Analzyer
                         if (!final.Contains(ecombo))
                             final.Add(ecombo);
 
-                        combo = icombo + " " + ecombo;
-                        if (!final.Contains(combo))
-                            final.Add(combo);
+                        if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                        {
+                            combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                            if (!final.Contains(combo))
+                                final.Add(combo);
+                        }
                     }
                 }
             }
-            /*
+            
             foreach (var ecombo in entitiesCombinations)
             {
                 if (!final.Contains(ecombo))
@@ -217,13 +233,17 @@ namespace BlazorClippyWatson.Analzyer
                         if (!final.Contains(icombo))
                             final.Add(icombo);
 
-                        combo = ecombo + " " + icombo;
-                        if (!final.Contains(combo))
-                            final.Add(combo);
+                        if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                        {
+                            //combo = ecombo + " " + icombo;
+                            combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                            if (!final.Contains(combo))
+                                final.Add(combo);
+                        }
                     }
                 }
             }
-            */
+            
             return final;
         }
     }
