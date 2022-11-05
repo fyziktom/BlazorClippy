@@ -1,4 +1,4 @@
-﻿using BlazorClippyWatson.AI;
+using BlazorClippyWatson.AI;
 using BlazorClippyWatson.Analzyer;
 using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
@@ -188,6 +188,23 @@ if (calcCombos)
 Console.WriteLine("-------------------------------------------------------");
 Console.WriteLine("Simulation of message to get hash of stage of dialogue:");
 Console.WriteLine("-------------------------------------------------------");
+
+// load message from Marker
+var marker = "&Markers: marker_dokumentace3dModel&&#my_máme;#kontrola_pájení;&&@podklady:3d model; marker_kategorieelektroniky&&&&@elektronika:;@podklady:3d model; marker_pajeni&&#kontrola_pájení;&& ";
+var msgFromMarker = AnalyzerHelpers.GetMessageFromMarker(marker, assistant.SessionId);
+var printMsgsFromMarker = true;
+
+if (printMsgsFromMarker)
+{ 
+    foreach (var message in AnalyzerHelpers.GetMessagesStepsFromMarker(marker, assistant.SessionId))
+    {
+        Console.WriteLine("Message: ");
+        foreach (var intent in message.Response.Result.Output.Intents)
+            Console.WriteLine($"\tMessage intent: #{intent.Intent}");
+        foreach (var entity in message.Response.Result.Output.Entities)
+            Console.WriteLine($"\tMessage entity: @{entity.Entity}{entity.Value}");
+    }
+}
 
 // load data from mermaid
 var inputDialogueMermaid = "sequenceDiagram\r\n" +

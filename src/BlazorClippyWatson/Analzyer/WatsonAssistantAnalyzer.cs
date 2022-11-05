@@ -430,7 +430,6 @@ namespace BlazorClippyWatson.Analzyer
                     yield return new KeyValuePair<string, List<string>>(actualHash, sdis);
                 }
             }
-        }
-
+        }        
     }
 }
