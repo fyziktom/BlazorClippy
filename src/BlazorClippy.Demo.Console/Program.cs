@@ -193,15 +193,22 @@ Console.WriteLine("-------------------------------------------------------");
 var inputDialogueMermaid = "sequenceDiagram\r\n" +
                            "Client->>Analyzer: i.my_máme, e.podklady:3d model,\r\n" +
                            "Client->>Analyzer: i.my_máme, e.podklady:výkres,";
+var inputDialogueMermaid1 = "sequenceDiagram\r\n" + "" +
+                            "\tClient->>Assistant: i.my_máme, e.podklady:3d model, \r\n" +
+                            "Client->>Assistant: i.produkt, e.materiál:,\r\n" +
+                            "Client->>Assistant: i.komponenta, e.materiál:,  \r\n" +
+                            "\tClient->>Assistant: i.my_máme, e.podklady:výkres, ";
 
-var dialogue = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid, assistant.SessionId);
+var dialogue = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid, assistant.SessionId); 
+var dialogue1 = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid1, assistant.SessionId);
+
 // example export of Mermaid from dialogue
 var mermaidOutput = AnalyzerHelpers.GetMermaidFromDialogue(dialogue);
 Console.WriteLine("Dialogue from mermaid loaded.");
 
 // play dialogue
-foreach (var step in analyzer.PlayDialogue(dialogue, true))
-    Console.WriteLine($"Actual hash after receive 3d model info is: {step.Key}.");
+foreach (var step in analyzer.PlayDialogue(dialogue1, true))
+    Console.WriteLine($"Actual hash: {step.Key}.");
 
 //analyzer.ClearAllFoundInAllDataItems();
 Console.WriteLine("----------------------------------------------------------");
