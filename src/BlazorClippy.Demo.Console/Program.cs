@@ -45,7 +45,38 @@ if (playDialogueFromFile)
 
 /////////////////////////////////
 // define data items which should be explored
+/////////////////////////////////
 #region dataitemsdefinition
+
+var dataitemsMermaid = "classDiagram\r\n" +
+                       "class dokumentace3dmodel{\r\n" +
+                       "      +Intent my_máme\r\n" +
+                       "      +Entity podklady:3d model\r\n" +
+                       "      +IsWhenOnly true\r\n" +
+                       "    }\r\n    " +
+                       "class dokumentacevykres{\r\n" +
+                       "      +Intent my_máme\r\n" +
+                       "      +Entity podklady:3d výkres\r\n" +
+                       "      +IsWhenOnly true\r\n" +
+                       "    }";
+
+var printDataItems = true;
+if (printDataItems)
+{
+    foreach (var dataitem in AnalyzerHelpers.GetAnalyzedDataItemFromMermaid(dataitemsMermaid))
+    {
+        Console.WriteLine("DataItem: ");
+        foreach (var intent in dataitem.Intents)
+            Console.WriteLine($"DataItem intent: #{intent.Intent}");
+        foreach (var entity in dataitem.Entities)
+            Console.WriteLine($"DataItem entity: @{entity.Entity}{entity.Value}");
+
+        var dimermaid = AnalyzerHelpers.GetMermaidFromDataItem(dataitem);
+        Console.WriteLine("DataItem reconstructed mermaid: ");
+        Console.WriteLine(dimermaid);
+    }
+}
+
 // create data items which should be captured
 var dataitems = new List<AnalyzedObjectDataItem>();
 dataitems.Add(new AnalyzedObjectDataItem()
@@ -226,8 +257,8 @@ var inputDialogueMermaid = "sequenceDiagram\r\n" +
                            "Client->>Analyzer: i.my_máme, e.podklady:výkres,";
 var inputDialogueMermaid1 = "sequenceDiagram\r\n" + "" +
                             "\tClient->>Assistant: i.my_máme, e.podklady:3d model, \r\n" +
-                            "Client->>Assistant: e.materiál:, e.produkt:produkt,\r\n" +
-                            "Client->>Assistant: e.materiál:, e.komponenta:komponenta,  \r\n" +
+                            "\tClient->>Assistant: e.materiál:, e.produkt:produkt,\r\n" +
+                            "\tClient->>Assistant: e.materiál:, e.komponenta:komponenta,  \r\n" +
                             "\tClient->>Assistant: i.my_máme, e.podklady:výkres, ";
 
 var dialogue = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid, assistant.SessionId); 
@@ -235,7 +266,10 @@ var dialogue1 = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid1, as
 
 // example export of Mermaid from dialogue
 var mermaidOutput = AnalyzerHelpers.GetMermaidFromDialogue(dialogue1);
-Console.WriteLine("Dialogue from mermaid loaded.");
+Console.WriteLine("Dialogue from mermaid loaded:");
+Console.WriteLine("");
+Console.WriteLine(inputDialogueMermaid1);
+Console.WriteLine("");
 
 // play dialogue
 foreach (var step in analyzer.PlayDialogue(dialogue1, false))

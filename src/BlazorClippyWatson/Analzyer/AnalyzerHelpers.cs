@@ -13,7 +13,11 @@ namespace BlazorClippyWatson.Analzyer
         /// <summary>
         /// type of mermaid diagram. it uses sequenceDiagram for now
         /// </summary>
-        public static readonly string mermaidDiagramType = "sequenceDiagram";
+        public static readonly string mermaidDialogueDiagramType = "sequenceDiagram";
+        /// <summary>
+        /// type of mermaid diagram for creating DataItems
+        /// </summary>
+        public static readonly string mermaidDataItemDiagramType = "classDiagram";
         /// <summary>
         /// Default name of Client
         /// </summary>
@@ -73,7 +77,7 @@ namespace BlazorClippyWatson.Analzyer
                 {
                     for (string line = reader.ReadLine(); line != null; line = reader.ReadLine())
                     {
-                        if (!string.IsNullOrEmpty(line) && !line.Contains(mermaidDiagramType) && line.Contains(MermaidParticipantsRelationMark))
+                        if (!string.IsNullOrEmpty(line) && !line.Contains(mermaidDialogueDiagramType) && line.Contains(MermaidParticipantsRelationMark))
                         {
                             var split = line.Split(":");
                             if (split != null && split.Length > 1)
@@ -132,7 +136,7 @@ namespace BlazorClippyWatson.Analzyer
         /// <returns></returns>
         public static string GetMermaidFromDialogue(Dialogue dialogue)
         {
-            var result = mermaidDiagramType + LineEnd;
+            var result = mermaidDialogueDiagramType + LineEnd;
             var client = defaultClientName;
             var assistant = defaultAssistantName;
 
@@ -365,6 +369,111 @@ namespace BlazorClippyWatson.Analzyer
                     return new KeyValuePair<string, string>(tmp, tmp1);
             }
             return new KeyValuePair<string, string>(string.Empty, string.Empty);
+        }
+
+        public static IEnumerable<AnalyzedObjectDataItem> GetAnalyzedDataItemFromMermaid(string mermaid)
+        {
+            var result = new AnalyzedObjectDataItem();
+
+            using (var reader = new StringReader(mermaid))
+            {
+                for (string line = reader.ReadLine(); line != null; line = reader.ReadLine())
+                {
+                    if (!string.IsNullOrEmpty(line) && !line.Contains(mermaidDataItemDiagramType))
+                    {
+                        if (line.Contains("}"))
+                        {
+                            yield return result;
+                        }
+                        else
+                        {
+                            if (line.Contains("class"))
+                            {
+                                result = new AnalyzedObjectDataItem();
+
+                                var split = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                                if (split != null && split.Length > 1)
+                                {
+                                    result.Name = split[1].Replace(" {", string.Empty).Replace("{", string.Empty);
+                                }
+                            }
+                            else if (line.Contains("+"))
+                            {
+                                var split = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                                if (split != null && split.Length > 1)
+                                {
+                                    if (split[0].ToLower().Contains("intent"))
+                                    {
+                                        if (split[1] != null)
+                                        {
+                                            result.Intents.Add(new RuntimeIntent()
+                                            {
+                                                Intent = split[1],
+                                            });
+                                        }
+                                    }
+                                    else if (split[0].ToLower().Contains("entity"))
+                                    {
+                                        var spp = string.Empty;
+                                        for (var i = 1; i < split.Length; i++)
+                                            spp += split[i] + " ";
+                                        spp = spp.Remove(spp.Length - 1, 1);
+
+                                        var sp = spp.Split(":", StringSplitOptions.RemoveEmptyEntries);
+                                        if (sp != null && sp.Length > 0)
+                                        {
+                                            if (sp.Length == 1)
+                                                result.Entities.Add(new RuntimeEntity()
+                                                {
+                                                    Entity = sp[0],
+                                                    Value = string.Empty
+                                                });
+                                            else
+                                                result.Entities.Add(new RuntimeEntity()
+                                                {
+                                                    Entity = sp[0],
+                                                    Value = sp[1]
+                                                });
+                                        }
+                                    }
+                                    else if (split[0].ToLower().Contains("iswhenonly"))
+                                    {
+                                        if (split[1].ToLower().Contains("true"))
+                                            result.IsWhenAllOnly = true;
+                                        else
+                                            result.IsWhenAllOnly = false;
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public static string GetMermaidFromDataItem(AnalyzedObjectDataItem dataitem)
+        {
+            var result = string.Empty;
+            foreach (var line in GetMermaidFromDataItemLines(dataitem))
+                result += line;
+            return result;
+        }
+        public static IEnumerable<string> GetMermaidFromDataItemLines(AnalyzedObjectDataItem dataitem)
+        {
+            yield return $"\t class {dataitem.Name + "{"}\r\n";
+
+            foreach (var intent in dataitem.Intents)
+                yield return $"\t\t+Intent{intent.Intent}\r\n";
+
+            foreach (var entity in dataitem.Entities)
+            {
+                if (string.IsNullOrEmpty(entity.Value))
+                    yield return $"\t\t+Intent{entity.Entity}\r\n";
+                else
+                    yield return $"\t\t+Intent{entity.Entity}:{entity.Value}\r\n";
+            }
         }
     }
 }
