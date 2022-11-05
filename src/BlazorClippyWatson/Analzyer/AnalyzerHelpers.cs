@@ -161,6 +161,19 @@ namespace BlazorClippyWatson.Analzyer
             return result;
         }
 
+        public static string RemoveLastMarksFromMarker(string lastMarker, string actualMarker)
+        {
+            var split = lastMarker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+            var mk = actualMarker;
+
+            if (split != null && split.Length > 1)
+                for (var i = 1; i < split.Length; i++)
+                    if (!string.IsNullOrEmpty(split[i]) && !string.IsNullOrWhiteSpace(split[i]))
+                        mk = mk.Replace(split[i] + "; ", string.Empty);
+
+            return mk;
+        }
+
         /// <summary>
         /// Parse Detailed Marker and convert it to one message which includes all intents and entities
         /// </summary>
@@ -189,19 +202,58 @@ namespace BlazorClippyWatson.Analzyer
 
                             foreach (var item in displit.Where(d => !string.IsNullOrEmpty(d)))
                             {
-                                if (item.Contains(AnalyzerHelpers.MarkerIntentMark))
+                                if (item.Contains(AnalyzerHelpers.MarkerParamsSplitter))
                                 {
-                                    var tmp = item.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(',');
-                                    if (!intents.Contains(tmp))
-                                        intents.Add(tmp);
+                                    var itemsplit = item.Split(AnalyzerHelpers.MarkerParamsSplitter);
+                                    if (itemsplit != null && itemsplit.Length > 0)
+                                    {
+                                        foreach (var its in itemsplit)
+                                        {
+                                            if (its.Contains(AnalyzerHelpers.MarkerIntentMark))
+                                            {
+                                                var tmp = its.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                                if (!intents.Contains(tmp))
+                                                    intents.Add(tmp);
+                                            }
+                                            else if (its.Contains(AnalyzerHelpers.MarkerEntityMark))
+                                            {
+                                                var ps = its.Split(":");
+                                                if (ps != null && ps.Length > 0)
+                                                {
+                                                    var tmp = ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                                    var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
+
+                                                    if (ps != null && ps.Length == 1 && !entities.Contains(new KeyValuePair<string, string>(tmp, string.Empty)))
+                                                        entities.Add(new KeyValuePair<string, string>(tmp, string.Empty));
+                                                    else if (ps != null && ps.Length == 2 && !entities.Contains(new KeyValuePair<string, string>(tmp, tmp1)))
+                                                        entities.Add(new KeyValuePair<string, string>(tmp, tmp1));
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                                else if (item.Contains(AnalyzerHelpers.MarkerEntityMark))
+                                else
                                 {
-                                    var ps = item.Split(":");
-                                    if (ps != null && ps.Length == 1)
-                                        entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty));
-                                    else if (ps != null && ps.Length == 2)
-                                        entities.Add(new KeyValuePair<string,string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(',')));
+                                    if (item.Contains(AnalyzerHelpers.MarkerIntentMark))
+                                    {
+                                        var tmp = item.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                        if (!intents.Contains(tmp))
+                                            intents.Add(tmp);
+                                    }
+                                    else if (item.Contains(AnalyzerHelpers.MarkerEntityMark))
+                                    {
+                                        var ps = item.Split(":");
+                                        if (ps != null && ps.Length > 0)
+                                        {
+                                            var tmp = ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                            var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
+
+                                            if (ps != null && ps.Length == 1 && !entities.Contains(new KeyValuePair<string, string>(tmp, string.Empty)))
+                                                entities.Add(new KeyValuePair<string, string>(tmp, string.Empty));
+                                            else if (ps != null && ps.Length == 2 && !entities.Contains(new KeyValuePair<string, string>(tmp, tmp1)))
+                                                entities.Add(new KeyValuePair<string, string>(tmp, tmp1));
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -209,8 +261,8 @@ namespace BlazorClippyWatson.Analzyer
 
                     var msg = assistant.MessageRecordHandler.GetEmptyMessageDto(sessionId,
                                                                                 "",
-                                                                                intents,
-                                                                                entities);
+                                                                                intents.OrderBy(i => i).ToList(),
+                                                                                entities.OrderBy(e => e.Key + e.Value).ToList());
                     return msg;
                 }
             }
@@ -264,10 +316,15 @@ namespace BlazorClippyWatson.Analzyer
                                             else if (its.Contains(AnalyzerHelpers.MarkerEntityMark))
                                             {
                                                 var ps = its.Split(":");
-                                                if (ps != null && ps.Length == 1)
-                                                    entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty));
-                                                else if (ps != null && ps.Length == 2)
-                                                    entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(',')));
+                                                if (ps != null && ps.Length > 0)
+                                                {
+                                                    var tmp = ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                                    var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
+                                                    if (ps != null && ps.Length == 1 && !entities.Contains(new KeyValuePair<string, string>(tmp, string.Empty)))
+                                                        entities.Add(new KeyValuePair<string, string>(tmp, string.Empty));
+                                                    else if (ps != null && ps.Length == 2 && !entities.Contains(new KeyValuePair<string, string>(tmp, tmp1)))
+                                                        entities.Add(new KeyValuePair<string, string>(tmp, tmp1));
+                                                }
                                             }
                                         }
                                     }
@@ -283,10 +340,16 @@ namespace BlazorClippyWatson.Analzyer
                                     else if (item.Contains(AnalyzerHelpers.MarkerEntityMark))
                                     {
                                         var ps = item.Split(":");
-                                        if (ps != null && ps.Length == 1)
-                                            entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty));
-                                        else if (ps != null && ps.Length == 2)
-                                            entities.Add(new KeyValuePair<string, string>(ps[0].Replace( AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(',')));
+                                        if (ps != null && ps.Length > 0)
+                                        {
+                                            var tmp = ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                            var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
+
+                                            if (ps != null && ps.Length == 1 && !entities.Contains(new KeyValuePair<string, string>(tmp, string.Empty)))
+                                                entities.Add(new KeyValuePair<string, string>(tmp, string.Empty));
+                                            else if (ps != null && ps.Length == 2 && !entities.Contains(new KeyValuePair<string, string>(tmp, tmp1)))
+                                                entities.Add(new KeyValuePair<string, string>(tmp, tmp1));
+                                        }
                                     }
                                 }
                             }
@@ -294,8 +357,8 @@ namespace BlazorClippyWatson.Analzyer
 
                         var msg = assistant.MessageRecordHandler.GetEmptyMessageDto(sessionId,
                                                                                     "",
-                                                                                    intents,
-                                                                                    entities);
+                                                                                    intents.OrderBy(i => i).ToList(),
+                                                                                    entities.OrderBy(e => e.Key + e.Value).ToList());
                         yield return msg;
                     }
                 }

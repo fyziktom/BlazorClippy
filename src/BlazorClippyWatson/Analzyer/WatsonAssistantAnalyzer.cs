@@ -427,6 +427,8 @@ namespace BlazorClippyWatson.Analzyer
                     var res = MatchDataItems(msg);
                     var sdis = GetIdentifiedDataItemsDetailedMarkers();
                     var actualHash = MarkerExtensionHash;
+                    var marker = MarkerExtension;
+                    MarkerExtensionHashHistory.TryAdd(actualHash, DateTime.UtcNow);
                     yield return new KeyValuePair<string, List<string>>(actualHash, sdis);
                 }
             }

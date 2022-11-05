@@ -83,7 +83,7 @@ namespace BlazorClippyWatson.Common
                     {
                         n.Add(x);
                     }
-                    return n;
+                    return n.OrderBy(o => o).ToList();
                 }).ToList());
             }
 
@@ -99,7 +99,7 @@ namespace BlazorClippyWatson.Common
             while (list.TryDequeue(out var item))
                 result.Add(item);
 
-            return result;
+            return result.ToList();
         }
 
         public static T DeepClone<T>(this T source)

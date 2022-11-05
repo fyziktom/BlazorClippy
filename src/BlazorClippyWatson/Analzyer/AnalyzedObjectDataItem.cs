@@ -74,10 +74,8 @@ namespace BlazorClippyWatson.Analzyer
                 var res = "";
                 foreach(var i in FoundIntents.OrderBy(e => e.Value.Intent))
                 {
-                    res += $"#{i.Value.Intent};" + "+";
+                    res += $"#{i.Value.Intent};";
                 }
-                if (!string.IsNullOrEmpty(res))
-                    res = res.Remove(res.Length - 1, 1);
                 return res;
             }
         }
@@ -92,10 +90,8 @@ namespace BlazorClippyWatson.Analzyer
                 var res = "";
                 foreach (var e in FoundEntities.OrderBy(e => e.Value.Entity + e.Value.Value))
                 {
-                    res += $"@{e.Key};" + "+";
+                    res += $"@{e.Key};";
                 }
-                if (!string.IsNullOrEmpty(res))
-                    res = res.Remove(res.Length - 1, 1);
                 return res;
             }
         }
@@ -224,12 +220,9 @@ namespace BlazorClippyWatson.Analzyer
             var entitiesCombinations = new List<string>();
 
             var lastCombo = string.Empty;
-            foreach (var intent in Intents)
+            foreach (var intent in Intents.OrderBy(i => i.Intent))
             {
-                var tmp = lastCombo + $"#{intent.Intent};" + "+";
-                if (!string.IsNullOrEmpty(tmp))
-                    tmp = tmp.Remove(tmp.Length - 1, 1);
-
+                var tmp = lastCombo + $"#{intent.Intent};";
                 var combo = $"{tmp}";
                 lastCombo = combo;
                 intentsCombinations.Add(lastCombo);
@@ -241,11 +234,9 @@ namespace BlazorClippyWatson.Analzyer
             }
 
             lastCombo = string.Empty;
-            foreach (var entity in Entities)
+            foreach (var entity in Entities.OrderBy(e => e.Entity + e.Value))
             {
-                var tmp = lastCombo + $"@{entity.Entity}:{entity.Value};" + "+";
-                if (!string.IsNullOrEmpty(tmp))
-                    tmp = tmp.Remove(tmp.Length - 1, 1);
+                var tmp = lastCombo + $"@{entity.Entity}:{entity.Value};";
                 var combo = $"{tmp}";
                 lastCombo = combo;
                 entitiesCombinations.Add(lastCombo);
@@ -257,13 +248,13 @@ namespace BlazorClippyWatson.Analzyer
             }
 
             var final = new List<string>();
-            foreach(var icombo in intentsCombinations)
+            foreach(var icombo in intentsCombinations.OrderBy(i => i))
             {
                 if (!final.Contains(icombo))
                     final.Add(icombo);
 
                 var combo = icombo;
-                foreach (var ecombo in entitiesCombinations)
+                foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
                 {
                     if (icombo != ecombo)
                     {
@@ -280,13 +271,13 @@ namespace BlazorClippyWatson.Analzyer
                 }
             }
             
-            foreach (var ecombo in entitiesCombinations)
+            foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
             {
                 if (!final.Contains(ecombo))
                     final.Add(ecombo);
 
                 var combo = ecombo;
-                foreach (var icombo in intentsCombinations)
+                foreach (var icombo in intentsCombinations.OrderBy(i => i))
                 {
                     if (icombo != ecombo)
                     {

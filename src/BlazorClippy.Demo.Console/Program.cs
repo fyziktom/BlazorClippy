@@ -17,9 +17,9 @@ var analyzer = new WatsonAssistantAnalyzer();
 var hashHistory = new Dictionary<string, string>();
 var combinations = new Dictionary<string, string>();
 var calcCombos = false;
-var loadCombosFromFile = true;
+var loadCombosFromFile = !calcCombos;
 var combosFileName = "combos.txt";
-var saveCombos = false;
+var saveCombos = calcCombos;
 var saveHistory = false;
 var printCombos = false;
 var playDialogueFromFile = false;
@@ -226,19 +226,19 @@ var inputDialogueMermaid = "sequenceDiagram\r\n" +
                            "Client->>Analyzer: i.my_máme, e.podklady:výkres,";
 var inputDialogueMermaid1 = "sequenceDiagram\r\n" + "" +
                             "\tClient->>Assistant: i.my_máme, e.podklady:3d model, \r\n" +
-                            "Client->>Assistant: i.produkt, e.materiál:,\r\n" +
-                            "Client->>Assistant: i.komponenta, e.materiál:,  \r\n" +
+                            "Client->>Assistant: e.materiál:, e.produkt:produkt,\r\n" +
+                            "Client->>Assistant: e.materiál:, e.komponenta:komponenta,  \r\n" +
                             "\tClient->>Assistant: i.my_máme, e.podklady:výkres, ";
 
 var dialogue = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid, assistant.SessionId); 
 var dialogue1 = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid1, assistant.SessionId);
 
 // example export of Mermaid from dialogue
-var mermaidOutput = AnalyzerHelpers.GetMermaidFromDialogue(dialogue);
+var mermaidOutput = AnalyzerHelpers.GetMermaidFromDialogue(dialogue1);
 Console.WriteLine("Dialogue from mermaid loaded.");
 
 // play dialogue
-foreach (var step in analyzer.PlayDialogue(dialogue1, true))
+foreach (var step in analyzer.PlayDialogue(dialogue1, false))
     Console.WriteLine($"Actual hash: {step.Key}.");
 
 //analyzer.ClearAllFoundInAllDataItems();
@@ -352,7 +352,8 @@ foreach(var history in analyzer.GetHistoryOfDialogue())
     Console.WriteLine($"DateTime: {history.Key.ToString("MM.dd.yyyy hh:mm:ss")}");
     Console.WriteLine($"Hash: {history.Value.Item1}");
     Console.WriteLine($"Marker: {history.Value.Item2}");
-    var mk = history.Value.Item2.Replace(lastMarkerDetailed, WatsonAssistantAnalyzer.MarkerExtensionStartDefault);
+    var mk = AnalyzerHelpers.RemoveLastMarksFromMarker(lastMarkerDetailed, history.Value.Item2);
+
     lastMarkerDetailed = history.Value.Item2;
 
     var msgReconstructedFromHistoryMarker = AnalyzerHelpers.GetMessageFromMarker(mk, assistant.SessionId);
@@ -360,7 +361,7 @@ foreach(var history in analyzer.GetHistoryOfDialogue())
     foreach (var intent in msgReconstructedFromHistoryMarker.Response.Result.Output.Intents)
         Console.WriteLine($"\t\tMessage intent: #{intent.Intent}");
     foreach (var entity in msgReconstructedFromHistoryMarker.Response.Result.Output.Entities)
-        Console.WriteLine($"\t\tMessage entity: @{entity.Entity}{entity.Value}");
+        Console.WriteLine($"\t\tMessage entity: @{entity.Entity}:{entity.Value}");
 }
 
 Console.WriteLine("-----------------------------------");
