@@ -404,5 +404,33 @@ namespace BlazorClippyWatson.Analzyer
 
             return result;
         }
+
+        /// <summary>
+        /// Play dialogue
+        /// </summary>
+        /// <param name="dialogue"></param>
+        /// <param name="clearBeforePlay">clear all history and found items in analyzer before play</param>
+        /// <returns></returns>
+        public IEnumerable<KeyValuePair<string, List<string>>> PlayDialogue(Dialogue dialogue, bool clearBeforePlay)
+        {
+            if (dialogue != null)
+            {
+                if (clearBeforePlay)
+                {
+                    ClearAllFoundInAllDataItems();
+                    LastMatchedDataItemsState = new List<string>();
+                    MarkerExtensionHashHistory = new Dictionary<string, DateTime>();
+                }
+
+                foreach (var msg in dialogue.Messages)
+                {
+                    var res = MatchDataItems(msg);
+                    var sdis = GetIdentifiedDataItemsDetailedMarkers();
+                    var actualHash = MarkerExtensionHash;
+                    yield return new KeyValuePair<string, List<string>>(actualHash, sdis);
+                }
+            }
+        }
+
     }
 }

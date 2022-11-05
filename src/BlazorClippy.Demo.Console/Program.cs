@@ -144,6 +144,7 @@ foreach (var di in dataitems)
 #endregion
 ////////////////////////////
 
+
 ////////////////////////
 // calculation of combos
 ////////////////////////
@@ -188,33 +189,19 @@ Console.WriteLine("-------------------------------------------------------");
 Console.WriteLine("Simulation of message to get hash of stage of dialogue:");
 Console.WriteLine("-------------------------------------------------------");
 
-var msg = assistant.MessageRecordHandler.GetEmptyMessageDto
-    (
-        assistant.SessionId, "", 
-        new List<string>() { "my_máme" }, 
-        new Dictionary<string, string>() 
-        { 
-            { "podklady", "3d model" } 
-        }
-    );
+// load data from mermaid
+var inputDialogueMermaid = "sequenceDiagram\r\n" +
+                           "Client->>Analyzer: i.my_máme, e.podklady:3d model,\r\n" +
+                           "Client->>Analyzer: i.my_máme, e.podklady:výkres,";
 
-var res = analyzer.MatchDataItems(msg);
-var sdis = analyzer.GetIdentifiedDataItemsDetailedMarkers();
-var actualHash = analyzer.MarkerExtensionHash;
-Console.WriteLine($"Actual hash after receive 3d model info is: {actualHash}.");
-msg = assistant.MessageRecordHandler.GetEmptyMessageDto
-    (
-        assistant.SessionId, "",
-        new List<string>() { "my_máme" },
-        new Dictionary<string, string>()
-        {
-            { "podklady", "výkres" }
-        }
-    );
-res = analyzer.MatchDataItems(msg);
-sdis = analyzer.GetIdentifiedDataItemsDetailedMarkers();
-actualHash = analyzer.MarkerExtensionHash;
-Console.WriteLine($"Actual hash after receive 3d model and vykres info is: {actualHash}.");
+var dialogue = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid, assistant.SessionId);
+// example export of Mermaid from dialogue
+var mermaidOutput = AnalyzerHelpers.GetMermaidFromDialogue(dialogue);
+Console.WriteLine("Dialogue from mermaid loaded.");
+
+// play dialogue
+foreach (var step in analyzer.PlayDialogue(dialogue, true))
+    Console.WriteLine($"Actual hash after receive 3d model info is: {step.Key}.");
 
 //analyzer.ClearAllFoundInAllDataItems();
 Console.WriteLine("----------------------------------------------------------");
@@ -323,7 +310,8 @@ Console.WriteLine("-----------------------------------");
 foreach(var history in analyzer.GetHistoryOfDialogue())
 {
     Console.WriteLine("....................");
-    Console.WriteLine($"DateTime: {history.Key.ToString("MM.dd.yyyy hh:mm:ss")}, Hash: {history.Value.Item1}, Marker: {history.Value.Item2}");
+    Console.WriteLine($"DateTime: {history.Key.ToString("MM.dd.yyyy hh:mm:ss")}");
+    Console.WriteLine($"Hash: {history.Value.Item1}");
     Console.WriteLine($"Marker: {history.Value.Item2}");
 }
 
