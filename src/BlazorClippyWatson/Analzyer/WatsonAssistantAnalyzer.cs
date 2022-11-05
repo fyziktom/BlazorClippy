@@ -430,6 +430,33 @@ namespace BlazorClippyWatson.Analzyer
                     yield return new KeyValuePair<string, List<string>>(actualHash, sdis);
                 }
             }
-        }        
+        }
+        
+        /// <summary>
+        /// Import DataItems combinations Detailed Markers and hashes
+        /// Structure of data must be: hash\tmarker
+        /// </summary>
+        /// <param name="fileContent">you can fill content readed from file. each line is one item</param>
+        /// <param name="fileName">fill filename if it should be loaded from file</param>
+        public bool ImportDataItemCombinations(string fileContent = "", string fileName = "")
+        {
+            if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
+                fileContent = File.ReadAllText(fileName);
+
+            if (!string.IsNullOrEmpty(fileContent))
+            {
+                using (var reader = new StringReader(fileContent))
+                {
+                    for (string line = reader.ReadLine(); line != null; line = reader.ReadLine())
+                    {
+                        var split = line.Split("\t");
+                        if (split != null && split.Length == 2)
+                            DataItemsCombinations.TryAdd(split[0], split[1]);
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
     }
 }

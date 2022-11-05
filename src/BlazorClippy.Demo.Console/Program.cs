@@ -1,4 +1,4 @@
-using BlazorClippyWatson.AI;
+﻿using BlazorClippyWatson.AI;
 using BlazorClippyWatson.Analzyer;
 using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
@@ -16,7 +16,9 @@ var analyzer = new WatsonAssistantAnalyzer();
 
 var hashHistory = new Dictionary<string, string>();
 var combinations = new Dictionary<string, string>();
-var calcCombos = true;
+var calcCombos = false;
+var loadCombosFromFile = true;
+var combosFileName = "combos.txt";
 var saveCombos = false;
 var saveHistory = false;
 var printCombos = false;
@@ -144,6 +146,18 @@ foreach (var di in dataitems)
 #endregion
 ////////////////////////////
 
+//////////////////////////////
+// load markers combinations from file, faster than calc them all the time
+/////////////////////////////
+if (loadCombosFromFile)
+{
+    if (!analyzer.ImportDataItemCombinations("", combosFileName))
+    {
+        calcCombos = true;
+        saveCombos = true;
+    }
+}
+/////////////////////////////
 
 ////////////////////////
 // calculation of combos
@@ -170,7 +184,7 @@ if (calcCombos)
         dilines.Add($"Hash\tCombo");
         foreach (var hashh in analyzer.DataItemsCombinations)
             dilines.Add($"{hashh.Key}\t{hashh.Value}");
-        var difilename = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "combos.txt");
+        var difilename = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), combosFileName);
         if (File.Exists(difilename))
         {
             File.Delete(difilename);
@@ -192,7 +206,7 @@ Console.WriteLine("-------------------------------------------------------");
 // load message from Marker
 var marker = "&Markers: marker_dokumentace3dModel&&#my_máme;#kontrola_pájení;&&@podklady:3d model; marker_kategorieelektroniky&&&&@elektronika:;@podklady:3d model; marker_pajeni&&#kontrola_pájení;&& ";
 var msgFromMarker = AnalyzerHelpers.GetMessageFromMarker(marker, assistant.SessionId);
-var printMsgsFromMarker = true;
+var printMsgsFromMarker = false;
 
 if (printMsgsFromMarker)
 { 
@@ -331,14 +345,23 @@ if (saveHistory)
 Console.WriteLine("-----------------------------------");
 Console.WriteLine("History of dialogue:");
 Console.WriteLine("-----------------------------------");
+var lastMarkerDetailed = WatsonAssistantAnalyzer.MarkerExtensionStartDefault;
 foreach(var history in analyzer.GetHistoryOfDialogue())
 {
     Console.WriteLine("....................");
     Console.WriteLine($"DateTime: {history.Key.ToString("MM.dd.yyyy hh:mm:ss")}");
     Console.WriteLine($"Hash: {history.Value.Item1}");
     Console.WriteLine($"Marker: {history.Value.Item2}");
-}
+    var mk = history.Value.Item2.Replace(lastMarkerDetailed, WatsonAssistantAnalyzer.MarkerExtensionStartDefault);
+    lastMarkerDetailed = history.Value.Item2;
 
+    var msgReconstructedFromHistoryMarker = AnalyzerHelpers.GetMessageFromMarker(mk, assistant.SessionId);
+    Console.WriteLine("\tMessage Details: ");
+    foreach (var intent in msgReconstructedFromHistoryMarker.Response.Result.Output.Intents)
+        Console.WriteLine($"\t\tMessage intent: #{intent.Intent}");
+    foreach (var entity in msgReconstructedFromHistoryMarker.Response.Result.Output.Entities)
+        Console.WriteLine($"\t\tMessage entity: @{entity.Entity}{entity.Value}");
+}
 
 Console.WriteLine("-----------------------------------");
 Console.WriteLine("----------------END----------------");

@@ -15,6 +15,6 @@ namespace BlazorClippyWatson.Analzyer
         /// <summary>
         /// Dictionary of entities for specific dialogue step
         /// </summary>
-        public Dictionary<string,string> Entities { get; set; } = new Dictionary<string,string>();
+        public List<KeyValuePair<string, string>> Entities { get; set; } = new List<KeyValuePair<string, string>>();
     }
 }

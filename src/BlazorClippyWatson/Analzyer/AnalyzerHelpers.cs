@@ -94,9 +94,9 @@ namespace BlazorClippyWatson.Analzyer
                                         {
                                             var ps = p.Split(":");
                                             if (ps != null && ps.Length == 1)
-                                                step.Entities.Add(ps[0].Replace(MermaidEntityMark, string.Empty).Trim(' '), string.Empty);
+                                                step.Entities.Add(new KeyValuePair<string, string>(ps[0].Replace(MermaidEntityMark, string.Empty).Trim(' '), string.Empty));
                                             else if (ps != null && ps.Length == 2)
-                                                step.Entities.Add(ps[0].Replace(MermaidEntityMark, string.Empty).Trim(' '), ps[1].Trim(' '));
+                                                step.Entities.Add(new KeyValuePair<string, string>(ps[0].Replace(MermaidEntityMark, string.Empty).Trim(' '), ps[1].Trim(' ')));
                                         }
                                     }
 
@@ -174,7 +174,7 @@ namespace BlazorClippyWatson.Analzyer
                 if (marker.Contains(WatsonAssistantAnalyzer.MarkerExtensionStartDefault))
                 {
                     var intents = new List<string>();
-                    var entities = new Dictionary<string, string>();
+                    var entities = new List<KeyValuePair<string, string>>();
 
                     var m = marker.Replace(WatsonAssistantAnalyzer.MarkerExtensionStartDefault, string.Empty);
                     var split = m.Split("; ");
@@ -191,15 +191,17 @@ namespace BlazorClippyWatson.Analzyer
                             {
                                 if (item.Contains(AnalyzerHelpers.MarkerIntentMark))
                                 {
-                                    intents.Add(item.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(','));
+                                    var tmp = item.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                    if (!intents.Contains(tmp))
+                                        intents.Add(tmp);
                                 }
                                 else if (item.Contains(AnalyzerHelpers.MarkerEntityMark))
                                 {
                                     var ps = item.Split(":");
                                     if (ps != null && ps.Length == 1)
-                                        entities.Add(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty);
+                                        entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty));
                                     else if (ps != null && ps.Length == 2)
-                                        entities.Add(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(','));
+                                        entities.Add(new KeyValuePair<string,string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(',')));
                                 }
                             }
                         }
@@ -228,7 +230,7 @@ namespace BlazorClippyWatson.Analzyer
                 if (marker.Contains(WatsonAssistantAnalyzer.MarkerExtensionStartDefault))
                 {
                     var intents = new List<string>();
-                    var entities = new Dictionary<string, string>();
+                    var entities = new List<KeyValuePair<string,string>>();
 
                     var m = marker.Replace(WatsonAssistantAnalyzer.MarkerExtensionStartDefault, string.Empty);
                     var split = m.Split("; ");
@@ -255,15 +257,17 @@ namespace BlazorClippyWatson.Analzyer
                                         {
                                             if (its.Contains(AnalyzerHelpers.MarkerIntentMark))
                                             {
-                                                intents.Add(its.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(','));
+                                                var tmp = its.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                                if (!intents.Contains(tmp))
+                                                    intents.Add(tmp);
                                             }
                                             else if (its.Contains(AnalyzerHelpers.MarkerEntityMark))
                                             {
                                                 var ps = its.Split(":");
                                                 if (ps != null && ps.Length == 1)
-                                                    entities.Add(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty);
+                                                    entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty));
                                                 else if (ps != null && ps.Length == 2)
-                                                    entities.Add(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(','));
+                                                    entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(',')));
                                             }
                                         }
                                     }
@@ -272,15 +276,17 @@ namespace BlazorClippyWatson.Analzyer
                                 {
                                     if (item.Contains(AnalyzerHelpers.MarkerIntentMark))
                                     {
-                                        intents.Add(item.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(','));
+                                        var tmp = item.Replace(AnalyzerHelpers.MarkerIntentMark, string.Empty).Trim(' ').Trim(';').Trim(',');
+                                        if (!intents.Contains(tmp))
+                                            intents.Add(tmp);
                                     }
                                     else if (item.Contains(AnalyzerHelpers.MarkerEntityMark))
                                     {
                                         var ps = item.Split(":");
                                         if (ps != null && ps.Length == 1)
-                                            entities.Add(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty);
+                                            entities.Add(new KeyValuePair<string, string>(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), string.Empty));
                                         else if (ps != null && ps.Length == 2)
-                                            entities.Add(ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(','));
+                                            entities.Add(new KeyValuePair<string, string>(ps[0].Replace( AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(','), ps[1].Trim(' ').Trim(';').Trim(',')));
                                     }
                                 }
                             }

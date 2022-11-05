@@ -25,7 +25,7 @@ namespace BlazorClippyWatson.AI
         /// <param name="intents">You can provide list of intents which will be added to message Watson object lists</param>
         /// <param name="entities">You can provide dictionary of entities:values which will be added to message Watson object lists</param>
         /// <returns></returns>
-        public WatsonMessageRequestRecord GetEmptyMessageDto(string sessionId, string message = "", List<string>? intents = null, Dictionary<string,string>? entities = null)
+        public WatsonMessageRequestRecord GetEmptyMessageDto(string sessionId, string message = "", List<string>? intents = null, List<KeyValuePair<string, string>>? entities = null)
         {
             var msg = new WatsonMessageRequestRecord(sessionId, message);
             msg.Response = new IBM.Cloud.SDK.Core.Http.DetailedResponse<MessageResponse>();
