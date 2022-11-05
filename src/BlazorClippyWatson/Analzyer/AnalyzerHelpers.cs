@@ -462,18 +462,19 @@ namespace BlazorClippyWatson.Analzyer
         }
         public static IEnumerable<string> GetMermaidFromDataItemLines(AnalyzedObjectDataItem dataitem)
         {
-            yield return $"\t class {dataitem.Name + "{"}\r\n";
+            yield return $"\tclass {dataitem.Name + "{"}\r\n";
 
             foreach (var intent in dataitem.Intents)
-                yield return $"\t\t+Intent{intent.Intent}\r\n";
+                yield return $"\t\t+Intent {intent.Intent}\r\n";
 
             foreach (var entity in dataitem.Entities)
             {
                 if (string.IsNullOrEmpty(entity.Value))
-                    yield return $"\t\t+Intent{entity.Entity}\r\n";
+                    yield return $"\t\t+Entity {entity.Entity}\r\n";
                 else
-                    yield return $"\t\t+Intent{entity.Entity}:{entity.Value}\r\n";
+                    yield return $"\t\t+Entity {entity.Entity}:{entity.Value}\r\n";
             }
+            yield return "}";
         }
     }
 }

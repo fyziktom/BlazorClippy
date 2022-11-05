@@ -14,9 +14,13 @@ var filename = "messageExport.json";
 var assistant = new WatsonAssistant();
 var analyzer = new WatsonAssistantAnalyzer();
 
+var dataitemsFileName = "dataitems.mmd";
+var loadDataItemsFromFile = true;
+var addDataItemsManually = !loadDataItemsFromFile;
+
 var hashHistory = new Dictionary<string, string>();
 var combinations = new Dictionary<string, string>();
-var calcCombos = false;
+var calcCombos = true;
 var loadCombosFromFile = !calcCombos;
 var combosFileName = "combos.txt";
 var saveCombos = calcCombos;
@@ -60,12 +64,25 @@ var dataitemsMermaid = "classDiagram\r\n" +
                        "      +IsWhenOnly true\r\n" +
                        "    }";
 
+if (loadDataItemsFromFile)
+{
+    if (File.Exists(dataitemsFileName))
+    {
+        var filecontent = File.ReadAllText(dataitemsFileName);
+        if (!string.IsNullOrEmpty(filecontent))
+            dataitemsMermaid = filecontent;
+    }
+}
+var dataitems = new List<AnalyzedObjectDataItem>();
+
 var printDataItems = true;
 if (printDataItems)
 {
     foreach (var dataitem in AnalyzerHelpers.GetAnalyzedDataItemFromMermaid(dataitemsMermaid))
     {
-        Console.WriteLine("DataItem: ");
+        dataitems.Add(dataitem);
+
+        Console.WriteLine("DataItem: " + dataitem.NameWithoutUnsuportedChars);
         foreach (var intent in dataitem.Intents)
             Console.WriteLine($"DataItem intent: #{intent.Intent}");
         foreach (var entity in dataitem.Entities)
@@ -77,8 +94,10 @@ if (printDataItems)
     }
 }
 
+#region manualaddofDataItems
 // create data items which should be captured
-var dataitems = new List<AnalyzedObjectDataItem>();
+if (addDataItemsManually)
+{ 
 dataitems.Add(new AnalyzedObjectDataItem()
 {
     Name = "dokumentace3dModel",
@@ -167,7 +186,8 @@ dataitems.Add(new AnalyzedObjectDataItem()
         new RuntimeIntent(){ Intent = "kontrola_pájení" }
     }
 });
-
+}
+# endregion
 
 
 // add dataitems to analyzer
