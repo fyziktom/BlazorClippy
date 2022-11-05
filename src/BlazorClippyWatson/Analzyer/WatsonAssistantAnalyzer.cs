@@ -19,16 +19,31 @@ namespace BlazorClippyWatson.Analzyer
         private CryptographyHelpers cryptHelper = new CryptographyHelpers();
         
         private readonly object _lock = new object();
+        /// <summary>
+        /// List of all last matched DataItems
+        /// </summary>
 
         private List<string> LastMatchedDataItemsState = new List<string>();
+        /// <summary>
+        /// If the list of matched items contais some items this will be set.
+        /// </summary>
         [JsonIgnore]
         public bool IsSomeMatch { get => LastMatchedDataItemsState.Count > 0; }
+        /// <summary>
+        /// Basic start of extensions marks. This string is followed by markers build by DataItems
+        /// </summary>
         public static string MarkerExtensionStartDefault { get => "&Markers: ";}
-        
+        /// <summary>
+        /// Dictionary of all DataItems in this analyzer. These are the objects which sould be captured during dialogue
+        /// </summary>
         public ConcurrentDictionary<string, AnalyzedObjectDataItem> DataItems { get; set; } = new ConcurrentDictionary<string, AnalyzedObjectDataItem>();
-
+        /// <summary>
+        /// Data Items list ordered by Name
+        /// </summary>
         public IOrderedEnumerable<KeyValuePair<string, AnalyzedObjectDataItem>> DataItemsOrderedByName { get => DataItems.OrderBy(e => e.Value.Name); }
-
+        /// <summary>
+        /// Full marker extension of actual conversation
+        /// </summary>
         public string MarkerExtension 
         { 
             get
@@ -43,8 +58,14 @@ namespace BlazorClippyWatson.Analzyer
             } 
         }
 
+        /// <summary>
+        /// Marker extension history. This can show the flow of the dialogue
+        /// </summary>
         public Dictionary<string,DateTime> MarkerExtensionHashHistory { get; set; } = new Dictionary<string, DateTime>();
         private string _lastMarkerExtensionHash = string.Empty;
+        /// <summary>
+        /// Actual marker extension hash
+        /// </summary>
         public string MarkerExtensionHash
         {
             get
@@ -62,7 +83,14 @@ namespace BlazorClippyWatson.Analzyer
                 }
             }
         }
+        /// <summary>
+        /// All data items combinations. This can show all possible ways of dialogue and possible stages of collecting of DataItems
+        /// </summary>
         public ConcurrentDictionary<string, string> DataItemsCombinations { get; set; } = new ConcurrentDictionary<string, string>();
+        /// <summary>
+        /// Add DataItem which should be captured during dialogue
+        /// </summary>
+        /// <param name="dataItem"></param>
         public void AddDataItem(AnalyzedObjectDataItem dataItem)
         {
             if (!DataItems.ContainsKey(dataItem.CapturedMarker))
@@ -70,6 +98,10 @@ namespace BlazorClippyWatson.Analzyer
                 DataItems.TryAdd(dataItem.CapturedMarker, dataItem);
             }            
         }
+        /// <summary>
+        /// Remove data item
+        /// </summary>
+        /// <param name="dataItemMarker"></param>
         public void RemoveDataItem(string dataItemMarker)
         {
             if (DataItems.TryRemove(dataItemMarker, out var di))
@@ -77,6 +109,11 @@ namespace BlazorClippyWatson.Analzyer
                 return;
             }
         }
+        /// <summary>
+        /// Get exact data item based on its Id
+        /// </summary>
+        /// <param name="dataItemMarker"></param>
+        /// <returns></returns>
         public AnalyzedObjectDataItem GetDataItem(string dataItemMarker)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
@@ -84,11 +121,20 @@ namespace BlazorClippyWatson.Analzyer
             else
                 return null;
         }
+        /// <summary>
+        /// Get data item based on detailed marker of the dataitem
+        /// </summary>
+        /// <param name="dataItemMarkerDetailed"></param>
+        /// <returns></returns>
         public AnalyzedObjectDataItem GetDataItemByDetailedMarker(string dataItemMarkerDetailed)
         {
             return DataItems.Values.FirstOrDefault(d => d.CapturedMarkerDetailed == dataItemMarkerDetailed);
         }
-
+        /// <summary>
+        /// Add Intent to the DataItem
+        /// </summary>
+        /// <param name="dataItemMarker"></param>
+        /// <param name="intent"></param>
         public void AddDataItemIntent(string dataItemMarker, RuntimeIntent intent)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
@@ -96,6 +142,11 @@ namespace BlazorClippyWatson.Analzyer
                 di.Intents.Add(intent);
             }
         }
+        /// <summary>
+        /// Remove Intent from the DataItem
+        /// </summary>
+        /// <param name="dataItemMarker"></param>
+        /// <param name="intent"></param>
         public void RemoveDataItemIntent(string dataItemMarker, string intent)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
@@ -108,6 +159,11 @@ namespace BlazorClippyWatson.Analzyer
                 }
             }
         }
+        /// <summary>
+        /// Add Entity to the DataItem
+        /// </summary>
+        /// <param name="dataItemMarker"></param>
+        /// <param name="entity"></param>
         public void AddDataItemEntity(string dataItemMarker, RuntimeEntity entity)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
@@ -115,7 +171,12 @@ namespace BlazorClippyWatson.Analzyer
                 di.Entities.Add(entity);
             }
         }
-
+        /// <summary>
+        /// Remove Entity from the DataItem
+        /// </summary>
+        /// <param name="dataItemMarker"></param>
+        /// <param name="entity"></param>
+        /// <param name="value"></param>
         public void RemoveDataItemEntity(string dataItemMarker, string entity, string value)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
@@ -128,12 +189,18 @@ namespace BlazorClippyWatson.Analzyer
                 }
             }
         }
-
+        /// <summary>
+        /// Clear all found intents and entities in all DataItems
+        /// </summary>
         public void ClearAllFoundInAllDataItems()
         {
             foreach (var dataitem in DataItemsOrderedByName)
                 ClearAllFound(dataitem.Key);
         }
+        /// <summary>
+        /// Clear all found intents and entities in specific DataItem
+        /// </summary>
+        /// <param name="dataItemMarker"></param>
         public void ClearAllFound(string dataItemMarker)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
@@ -142,6 +209,11 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
+        /// <summary>
+        /// Try to match message in all DataItems
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public List<string> MatchDataItems(WatsonMessageRequestRecord message)
         {
             var result = new List<string>();
@@ -155,6 +227,10 @@ namespace BlazorClippyWatson.Analzyer
             return result;
         }
 
+        /// <summary>
+        /// Get already identified DataItems Ids list
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetIdentifiedDataItemsKeys()
         {
             var result = new List<string>();
@@ -167,6 +243,10 @@ namespace BlazorClippyWatson.Analzyer
             return result;
         }
 
+        /// <summary>
+        /// Get already identified DataItems  markers
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetIdentifiedDataItemsMarkers()
         {
             var result = new List<string>();
@@ -178,7 +258,10 @@ namespace BlazorClippyWatson.Analzyer
             }
             return result;
         }
-
+        /// <summary>
+        /// Get list of all already identified DataItems
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<AnalyzedObjectDataItem> GetIdentifiedDataItems()
         {
             var result = new List<string>();
@@ -192,7 +275,10 @@ namespace BlazorClippyWatson.Analzyer
             }
             LastMatchedDataItemsState = result;
         }
-
+        /// <summary>
+        /// Get already identified DataItems detailed markers
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetIdentifiedDataItemsDetailedMarkers()
         {
             var result = new List<string>();
@@ -206,11 +292,19 @@ namespace BlazorClippyWatson.Analzyer
             return result;
         }
 
+        /// <summary>
+        /// Export all DataItems serialized to JSON
+        /// </summary>
+        /// <returns></returns>
         public string ExportDataItems()
         {
             return JsonConvert.SerializeObject(DataItems, Formatting.Indented);
         }
 
+        /// <summary>
+        /// Import DataItems from serialized JSON
+        /// </summary>
+        /// <param name="importData"></param>
         public void ImportDataItems(string importData)
         {
             var import = JsonConvert.DeserializeObject<Dictionary<string, AnalyzedObjectDataItem>>(importData);
@@ -221,7 +315,10 @@ namespace BlazorClippyWatson.Analzyer
                     DataItems.TryAdd(item.Key, item.Value);
             }
         }
-
+        /// <summary>
+        /// Get history of whole dialogue
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<KeyValuePair<DateTime, (string, string)>> GetHistoryOfDialogue()
         {
             var result = new Dictionary<DateTime, (string, string)>();
@@ -234,7 +331,11 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
-
+        /// <summary>
+        /// Get hashes of all combinations of all intents and entities across all DataItems. 
+        /// This will refresh list of all possible combinations of acquisition of parameters during the dialogue.
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<string, string> GetHashesOfAllCombinations()
         {
             var result = new Dictionary<string, string>();

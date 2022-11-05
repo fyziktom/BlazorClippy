@@ -12,8 +12,19 @@ namespace BlazorClippyWatson.AI
 {
     public class WatsonMessageRecordsHandler
     {
+        /// <summary>
+        /// All recorded message dictionary
+        /// </summary>
         public ConcurrentDictionary<string, WatsonMessageRequestRecord> MessageRecords { get; set; } = new ConcurrentDictionary<string, WatsonMessageRequestRecord>();
 
+        /// <summary>
+        /// Create empty message object. The function will init the Watson object with intent/entities lists.
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="message"></param>
+        /// <param name="intents">You can provide list of intents which will be added to message Watson object lists</param>
+        /// <param name="entities">You can provide dictionary of entities:values which will be added to message Watson object lists</param>
+        /// <returns></returns>
         public WatsonMessageRequestRecord GetEmptyMessageDto(string sessionId, string message = "", List<string>? intents = null, Dictionary<string,string>? entities = null)
         {
             var msg = new WatsonMessageRequestRecord(sessionId, message);
@@ -46,6 +57,12 @@ namespace BlazorClippyWatson.AI
 
             return msg;
         }
+        /// <summary>
+        /// Add message record
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="question"></param>
+        /// <returns>record Id</returns>
         public string AddRecord(string sessionId, string question)
         {
             var wrr = new WatsonMessageRequestRecord(sessionId, question);
@@ -56,11 +73,20 @@ namespace BlazorClippyWatson.AI
             }
             return string.Empty;
         }
+        /// <summary>
+        /// Mar record as processing
+        /// </summary>
+        /// <param name="id"></param>
         public void MarkRecordAsProcessing(string id)
         {
             if (MessageRecords.TryGetValue(id, out var wrr))
                 wrr.Processing = true;
         }
+        /// <summary>
+        /// Mark record as finished. You can set the success status here
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="success"></param>
         public void MarkRecordAsFinished(string id, bool success)
         {
             if (MessageRecords.TryGetValue(id, out var wrr))
@@ -70,6 +96,11 @@ namespace BlazorClippyWatson.AI
                 wrr.Success = success;
             }
         }
+        /// <summary>
+        /// Save Watson object response to message to message record
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="response"></param>
         public void SaveResponseToRecord(string id, DetailedResponse<MessageResponse> response)
         {
             if (MessageRecords.TryGetValue(id, out var wrr))
@@ -84,6 +115,11 @@ namespace BlazorClippyWatson.AI
                     wrr.Success = false;
             }
         }
+        /// <summary>
+        /// Save text response to the message record
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="response"></param>
         public void SaveResponseToRecord(string id, string response)
         {
             if (MessageRecords.TryGetValue(id, out var wrr))
@@ -99,6 +135,12 @@ namespace BlazorClippyWatson.AI
             }
         }
 
+        /// <summary>
+        /// Get message history
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="descending"></param>
+        /// <returns></returns>
         public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId, bool descending = false)
         {
             if (descending)
@@ -110,7 +152,11 @@ namespace BlazorClippyWatson.AI
                                 .Select(mr => mr.Value)
                                 .OrderBy(mr => mr.Timestamp);
         }
-
+        /// <summary>
+        /// Find message by Id. It means Id of record which was recevied as result when the record was added.
+        /// </summary>
+        /// <param name="recordId"></param>
+        /// <returns></returns>
         public WatsonMessageRequestRecord GetMessageRecordById(string recordId)
         {
             if (MessageRecords.TryGetValue(recordId, out var wrr))
@@ -118,7 +164,11 @@ namespace BlazorClippyWatson.AI
             else
                 return null;
         }
-
+        /// <summary>
+        /// Get list of lists of intents across all messages
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public IEnumerable<List<RuntimeIntent>> GetMessagesIntents(string sessionId)
         {
             return MessageRecords.Where(mr => mr.Key.Contains(sessionId))
@@ -132,7 +182,12 @@ namespace BlazorClippyWatson.AI
                                  .Select(r => r.Intents)
                                  .AsEnumerable();
         }
-
+        /// <summary>
+        /// Get messages based on input intents
+        /// </summary>
+        /// <param name="intents"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public IEnumerable<WatsonMessageRequestRecord> GetMessagesByIntents(List<RuntimeIntent> intents, string sessionId)
         {
             var msgs = MessageRecords.Where(mr => mr.Key.Contains(sessionId))
@@ -156,7 +211,12 @@ namespace BlazorClippyWatson.AI
                 }
             }
         }
-
+        /// <summary>
+        /// Get Messages based on entities
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public IEnumerable<WatsonMessageRequestRecord> GetMessagesByEntities(List<RuntimeEntity> entities, string sessionId)
         {
             var msgs = MessageRecords.Where(mr => mr.Key.Contains(sessionId))
@@ -181,6 +241,11 @@ namespace BlazorClippyWatson.AI
             }
         }
 
+        /// <summary>
+        /// Get list of lists of all entities across all the messages
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public IEnumerable<List<RuntimeEntity>> GetMessagesEntities(string sessionId)
         {
             return MessageRecords.Where(mr => mr.Key.Contains(sessionId))

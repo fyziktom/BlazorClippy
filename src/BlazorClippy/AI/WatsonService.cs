@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using IBM.Watson.Assistant.v2.Model;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System;
@@ -27,8 +28,19 @@ namespace BlazorClippy.AI
         }
 
         private readonly HttpClient httpClient;
+        /// <summary>
+        /// BlazorClippy.Demo.Server API Url (bridge to Watson Assistant cloud service).
+        /// </summary>
         public string WatsonApiUrl { get; set; } = "https://localhost:7008/api";
+        /// <summary>
+        /// Messages records handler. It keeps history of conversation
+        /// </summary>
         public WatsonMessageRecordsHandler MessageRecordHandler { get; set; } = new WatsonMessageRecordsHandler();
+        /// <summary>
+        /// Load watson instance
+        /// </summary>
+        /// <param name="watsonApiUrl"></param>
+        /// <returns></returns>
         public async Task<(bool,string)> LoadWatson(string watsonApiUrl)
         {
             var res = await httpClient.GetStringAsync(watsonApiUrl + "/LoadWatson");
@@ -38,6 +50,12 @@ namespace BlazorClippy.AI
                 return (false, string.Empty);
         }
 
+        /// <summary>
+        /// Start watson session. The server will start instance of Watson Assistant if it was not loaded yet.
+        /// You do not need to call LoadWatson separatelly.
+        /// </summary>
+        /// <param name="watsonApiUrl"></param>
+        /// <returns></returns>
         public async Task<(bool,string)> StartWatsonSession(string watsonApiUrl)
         {
             var res = await httpClient.GetStringAsync(watsonApiUrl + "/StartWatsonSession");
@@ -46,7 +64,12 @@ namespace BlazorClippy.AI
             else
                 return (false, string.Empty);
         }
-
+        /// <summary>
+        /// Ask watson specific question
+        /// </summary>
+        /// <param name="inputquestion"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public async Task<(bool,QuestionResponseDto?)> AskWatson(string inputquestion, string sessionId)
         {
             var data = new
@@ -84,7 +107,12 @@ namespace BlazorClippy.AI
             }
             return (false, null);
         }
-
+        /// <summary>
+        /// Translate text
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="translateModel"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> Translate(string text, string translateModel = "cs-en")
         {
             var data = new
@@ -120,7 +148,12 @@ namespace BlazorClippy.AI
                 return ms.ToArray();
             }
         }
-
+        /// <summary>
+        /// Synthetize text to voice
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="voice"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> Synthetise(string text, string voice = "en-US_LisaV3Voice")
         {
             var data = new
@@ -159,14 +192,62 @@ namespace BlazorClippy.AI
                 return (false, string.Empty);
             }
         }
-
+        /// <summary>
+        /// Get message history
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
         {
             return MessageRecordHandler.GetMessageHistory(sessionId);
         }
+        /// <summary>
+        /// Get message by ID
+        /// </summary>
+        /// <param name="recordId"></param>
+        /// <returns></returns>
         public WatsonMessageRequestRecord GetMessageById(string recordId)
         {
             return MessageRecordHandler.GetMessageRecordById(recordId);
+        }
+
+        /// <summary>
+        /// Get all messages intents
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<List<RuntimeIntent>> GetMessagesIntents(string sessionId)
+        {
+            return MessageRecordHandler.GetMessagesIntents(sessionId);
+        }
+        /// <summary>
+        /// Get all messages entities:values
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<List<RuntimeEntity>> GetMessagesEntities(string sessionId)
+        {
+            return MessageRecordHandler.GetMessagesEntities(sessionId);
+        }
+        /// <summary>
+        /// Export message history
+        /// </summary>
+        /// <returns></returns>
+        public string ExportMessageHistory()
+        {
+            return JsonConvert.SerializeObject(MessageRecordHandler.MessageRecords, Formatting.Indented);
+        }
+        /// <summary>
+        /// Import message history
+        /// </summary>
+        /// <param name="importData"></param>
+        public void ImportMessageHistory(string importData)
+        {
+            var import = JsonConvert.DeserializeObject<Dictionary<string, WatsonMessageRequestRecord>>(importData);
+            if (import != null)
+            {
+                MessageRecordHandler.MessageRecords.Clear();
+                foreach (var msg in import)
+                    MessageRecordHandler.MessageRecords.TryAdd(msg.Key, msg.Value);
+            }
         }
     }
 }

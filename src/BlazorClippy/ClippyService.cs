@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BlazorClippy.AI;
+using IBM.Watson.Assistant.v2.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
@@ -63,7 +64,13 @@ namespace BlazorClippy
          
         bool loaded = false;
         private WatsonService watsonService;
+        /// <summary>
+        /// Url for Watson service. It is addres of API of BlazorClippy.Demo.Server app
+        /// </summary>
         public string WatsonApiUrl { get; set; } = "https://localhost:7008/api";
+        /// <summary>
+        /// Id of session of actual dialogue with Watson
+        /// </summary>
         public string SessionId { get; set; } = string.Empty;
 
         public ClippyService(IJSRuntime js, IServiceProvider serviceProvider)
@@ -72,6 +79,11 @@ namespace BlazorClippy
             this.httpClient = serviceProvider.GetRequiredService<HttpClient>();
         }
 
+        /// <summary>
+        /// Start watson session. It will initiate WatsonService instance and provide ApiUrl for BlazorClippy.Demo.Server app
+        /// </summary>
+        /// <param name="apiurlbase"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> StartWatsonSession(string apiurlbase)
         {
             watsonService = new WatsonService(httpClient, apiurlbase);
@@ -87,7 +99,14 @@ namespace BlazorClippy
 
             return res;
         }
-
+        /// <summary>
+        /// Send question to Watson and wait for the response
+        /// </summary>
+        /// <param name="question"></param>
+        /// <param name="sessionId"></param>
+        /// <param name="speak"></param>
+        /// <param name="apiurlbase"></param>
+        /// <returns></returns>
         public async Task<(bool,QuestionResponseDto?)> AskWatson(string question, string sessionId = "", bool speak = false, string apiurlbase = "")
         {
 
@@ -118,24 +137,82 @@ namespace BlazorClippy
             return (false, null);
         }
 
+        /// <summary>
+        /// Get history of messages
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
         {
             return watsonService.GetMessageHistory(sessionId);
         }
+        /// <summary>
+        /// Find message by Id
+        /// </summary>
+        /// <param name="recordId"></param>
+        /// <returns></returns>
         public WatsonMessageRequestRecord GetMessageById(string recordId)
         {
             return watsonService.GetMessageById(recordId);
         }
-
+        /// <summary>
+        /// Get all messages intents
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<List<RuntimeIntent>> GetMessagesIntents()
+        {
+            return watsonService.GetMessagesIntents(SessionId);
+        }
+        /// <summary>
+        /// Get all messages entities:values
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<List<RuntimeEntity>> GetMessagesEntities()
+        {
+            return watsonService.GetMessagesEntities(SessionId);
+        }
+        /// <summary>
+        /// Export message history
+        /// </summary>
+        /// <returns></returns>
+        public string ExportMessageHistory()
+        {
+            return watsonService.ExportMessageHistory();
+        }
+        /// <summary>
+        /// Import message history
+        /// </summary>
+        /// <param name="importData"></param>
+        public void ImportMessageHistory(string importData)
+        {
+            watsonService.ImportMessageHistory(importData);
+        }
+        /// <summary>
+        /// Send text to Watson translator
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="translateModel"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> Translate(string text, string translateModel = "cs-en")
         {
             return await watsonService.Translate(text, translateModel);
         }
+        /// <summary>
+        /// Send text to Watson text to speech synthetiser
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="voice"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> Synthetise(string text, string voice = "en-US_LisaV3Voice")
         {
             return await watsonService.Synthetise(text, voice);
         }
-
+        /// <summary>
+        /// Download file with conversation history
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="aslist"></param>
+        /// <returns></returns>
         public async Task BackupConversation(string sessionId, bool aslist = false)
         {
             var filename = $"Backup-SessionId-{sessionId}_Time_" + DateTime.UtcNow.ToString("dd-MM-yyyyThh_mm_ss") + ".txt";
@@ -164,6 +241,10 @@ namespace BlazorClippy
             }
         }
 
+        /// <summary>
+        /// Load Clippy
+        /// </summary>
+        /// <returns></returns>
         public async Task Load()
         {
             if (!loaded)
@@ -171,30 +252,62 @@ namespace BlazorClippy
 
             loaded = true;
         }
+        /// <summary>
+        /// Play random Clippy animation
+        /// </summary>
+        /// <returns></returns>
         public async Task AnimateRandom()
         {
             await js.InvokeVoidAsync("blazorClippy.animateRandom");
         }
+        /// <summary>
+        /// Play specific Clippy animation
+        /// </summary>
+        /// <param name="animation"></param>
+        /// <returns></returns>
         public async Task PlayAnimation(ClippyAnimations animation)
         {
             await js.InvokeVoidAsync("blazorClippy.play", Enum.GetName(typeof(ClippyAnimations), animation));
         }
+        /// <summary>
+        /// Display some text by Clippy
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         public async Task Speak(string text)
         {
             await js.InvokeVoidAsync("blazorClippy.speak", text);
         }
+        /// <summary>
+        /// Clippy will show to some place
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public async Task GestureAt(int x, int y )
         {
             await js.InvokeVoidAsync("blazorClippy.gestureAt", new object[] { x, y });
         }
+        /// <summary>
+        /// Stop current animation
+        /// </summary>
+        /// <returns></returns>
         public async Task StopCurrent()
         {
             await js.InvokeVoidAsync("blazorClippy.stopCurrent");
         }
+        /// <summary>
+        /// Stop doing anything
+        /// </summary>
+        /// <returns></returns>
         public async Task Stop()
         {
             await js.InvokeVoidAsync("blazorClippy.stop");
         }
+        /// <summary>
+        /// Get list of animations
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<string>> GetAnimationsList()
         {
             var list = await js.InvokeAsync<List<string>>("blazorClippy.getAnimationsList");

@@ -15,9 +15,19 @@ namespace BlazorClippyWatson.Analzyer
         private CryptographyHelpers cryptHelper = new CryptographyHelpers();
 
         private readonly object _lock = new object();
-
+        /// <summary>
+        /// Id of analyzed data item
+        /// </summary>
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        /// <summary>
+        /// Name of analyzed data item
+        /// The name is used to create marker start
+        /// </summary>
         public string Name { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Name without special characters
+        /// </summary>
         [JsonIgnore]
         public string NameWithoutUnsuportedChars
         {
@@ -33,8 +43,14 @@ namespace BlazorClippyWatson.Analzyer
                        .Replace("@", string.Empty)
                        .Replace("&", string.Empty);
         }
+        /// <summary>
+        /// Start of name of the marker
+        /// </summary>
         [JsonIgnore]
         public string CapturedMarker { get => $"marker_{NameWithoutUnsuportedChars}"; }
+        /// <summary>
+        /// Hash of start of the marker
+        /// </summary>
         [JsonIgnore]
         public string CapturedMarkerHash
         {
@@ -47,6 +63,9 @@ namespace BlazorClippyWatson.Analzyer
                 }
             }
         }
+        /// <summary>
+        /// String with marks of found intents
+        /// </summary>
         [JsonIgnore]
         public string FoundIntentsTotal 
         { 
@@ -62,7 +81,9 @@ namespace BlazorClippyWatson.Analzyer
                 return res;
             }
         }
-
+        /// <summary>
+        /// String with marks of found entities
+        /// </summary>
         [JsonIgnore]
         public string FoundEntitiesTotal
         {
@@ -78,8 +99,14 @@ namespace BlazorClippyWatson.Analzyer
                 return res;
             }
         }
+        /// <summary>
+        /// Detailed marker which contains all actual found intents and entities marks
+        /// </summary>
         [JsonIgnore]
         public string CapturedMarkerDetailed { get => $"marker_{NameWithoutUnsuportedChars}&&{FoundIntentsTotal}&&{FoundEntitiesTotal}"; }
+        /// <summary>
+        /// Hash of detailed marker
+        /// </summary>
         [JsonIgnore]
         public string CapturedMarkerDetailedHash
         {
@@ -92,24 +119,52 @@ namespace BlazorClippyWatson.Analzyer
                 }
             }
         }
-        
+        /// <summary>
+        /// List of all entities which should be found/collected
+        /// </summary>
         public List<RuntimeEntity> Entities { get; set; } = new List<RuntimeEntity>();
+        /// <summary>
+        /// Dictionary of already found entities
+        /// </summary>
         public Dictionary<string, RuntimeEntity> FoundEntities { get; set; } = new Dictionary<string, RuntimeEntity>();
+        /// <summary>
+        /// List of all intents which should be found/collected
+        /// </summary>
         public List<RuntimeIntent> Intents { get; set; } = new List<RuntimeIntent>();
+        /// <summary>
+        /// Dictionary of already found intents
+        /// </summary>
         public Dictionary<string, RuntimeIntent> FoundIntents { get; set; } = new Dictionary<string,RuntimeIntent>();
-
+        /// <summary>
+        /// If the all entities and intents was found this will be true.
+        /// It is just simple detection by comparing count of lists and dictioanries.
+        /// </summary>
         [JsonIgnore]
         public bool IsIdentified { get => Entities.Count == FoundEntities.Count && Intents.Count == FoundIntents.Count; }
-
+        /// <summary>
+        /// If this is set it will add found items to found dicts just when all intents and entities are together in one message. Otherwise it will be ignored.
+        /// Example when to use it is if you have shared intent between different categories of intents.
+        /// You can imagine it as "AND" operator between all intents and entities in list.
+        /// </summary>
         public bool IsWhenAllOnly { get; set; } = false;
+        /// <summary>
+        /// Dictionary of all "DataItems" related to this analyzed objects. 
+        /// It can be another analyzed item or "DataItem" as it is in VEFramework (some kind of attachement like JSON, txt, image, etc.).
+        /// </summary>
         public Dictionary<string, object> DataItems { get; set; } = new Dictionary<string, object>();
-
+        /// <summary>
+        /// Clear list of all found intents and entities
+        /// </summary>
         public void ClearAllFound()
         {
             FoundIntents.Clear();
             FoundEntities.Clear();
         }
-
+        /// <summary>
+        /// Function will check if the message contains some intents and entities which should be captured. If yes, it will save them.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public (List<RuntimeIntent>, List<RuntimeEntity>) IsMessageInterestMatch(WatsonMessageRequestRecord message)
         {
             var ints = new List<RuntimeIntent>();
@@ -159,6 +214,10 @@ namespace BlazorClippyWatson.Analzyer
             return (ints, ents);
         }
 
+        /// <summary>
+        /// Function will create all possible combinations of intents and entities
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetAllDetailedMarksCombination()
         {
             var intentsCombinations = new List<string>();

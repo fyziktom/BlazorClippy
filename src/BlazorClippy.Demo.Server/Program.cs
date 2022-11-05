@@ -23,9 +23,9 @@ var config = builder.Configuration.GetSection("WatsonConfig").Get<WatsonConfigDt
 if (config != null)
 {
     MainDataContext.WatsonConfig = config;
-    MainDataContext.TextToSpeech = new WatsonTextToSpeech(config.SpeechToTextApiKey, 
-                                                          config.SpeechToTextUrl, 
-                                                          config.SpeechToTextVoice);
+    MainDataContext.TextToSpeech = new WatsonTextToSpeech(config.TextToSpeechApiKey, 
+                                                          config.TextToSpeechUrl, 
+                                                          config.TextToSpeechVoice);
 
     MainDataContext.Translator = new WatsonTranslator(config.TranslatorApiKey,
                                                       config.TranslatorUrl);

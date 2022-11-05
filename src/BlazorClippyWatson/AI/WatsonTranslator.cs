@@ -16,9 +16,20 @@ namespace BlazorClippyWatson.AI
             ApiKey = apikey;
             ServiceUrl = serviceurl;
         }
+        /// <summary>
+        /// API Key to Watson Translator cloud service
+        /// </summary>
         public string ApiKey { get; set; } = string.Empty;
+        /// <summary>
+        /// Service URL to Watson Translator cloud service
+        /// </summary>
         public string ServiceUrl { get; set; } = string.Empty;
-
+        /// <summary>
+        /// Translate text with use of Watson cloud service
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="translateModel"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> Translate(string message, string translateModel)
         {
             if (string.IsNullOrEmpty(ApiKey) || string.IsNullOrEmpty(ServiceUrl) || string.IsNullOrEmpty(translateModel))

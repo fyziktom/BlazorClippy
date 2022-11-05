@@ -15,13 +15,37 @@ namespace BlazorClippyWatson.AI
 {
     public class WatsonAssistant
     {
+        /// <summary>
+        /// Assistant version
+        /// </summary>
         private string assistantVersion { get; set; } = "2021-11-27";
+        /// <summary>
+        /// Watson Assistant service
+        /// </summary>
         public AssistantService? Service { get; set; }
+        /// <summary>
+        /// Actual session Id
+        /// </summary>
         public string SessionId { get; set; } = string.Empty;
+        /// <summary>
+        /// Assistant Id
+        /// </summary>
         public string AssistantId { get; set; } = string.Empty;
+        /// <summary>
+        /// DateTime stamp of last asked question
+        /// </summary>
         public DateTime LastQuestionAsked { get; set; } = DateTime.UtcNow;
+        /// <summary>
+        /// Message records handler with history of conversation
+        /// </summary>
         public WatsonMessageRecordsHandler MessageRecordHandler { get; set; } = new WatsonMessageRecordsHandler();
-
+        /// <summary>
+        /// Send message to Watson Assistant cloud service
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="assistantId"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public async Task<(bool, (string, WatsonMessageRequestRecord?))> SendMessage(string message, string assistantId, string sessionId)
         {
             if (Service == null)
@@ -65,7 +89,11 @@ namespace BlazorClippyWatson.AI
                 return (false, (ex.Message, null));
             }
         }
-
+        /// <summary>
+        /// Create session with Watson Assistant cloud service
+        /// </summary>
+        /// <param name="assistantId"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> CreateSession(string assistantId)
         {
             if (Service == null)
@@ -81,6 +109,13 @@ namespace BlazorClippyWatson.AI
             return (true, sessionId);
         }
 
+        /// <summary>
+        /// Initialize the Watson Assistant cloud service
+        /// </summary>
+        /// <param name="apikey"></param>
+        /// <param name="apiurlbase"></param>
+        /// <param name="instanceId"></param>
+        /// <returns></returns>
         public async Task<(bool, string)> InitAssistantService(string apikey, string apiurlbase, string instanceId)
         {
             try
@@ -100,30 +135,53 @@ namespace BlazorClippyWatson.AI
             }
         }
 
+        /// <summary>
+        /// Get history of conversation
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
         {
             return MessageRecordHandler.GetMessageHistory(sessionId);
         }
-
+        /// <summary>
+        /// Get specific message record by message Id
+        /// </summary>
+        /// <param name="recordId"></param>
+        /// <returns></returns>
         public WatsonMessageRequestRecord GetMessageById(string recordId)
         {
             return MessageRecordHandler.GetMessageRecordById(recordId);
         }
 
+        /// <summary>
+        /// Get all messages intents
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<List<RuntimeIntent>> GetMessagesIntents()
         {
             return MessageRecordHandler.GetMessagesIntents(SessionId);
         }
+        /// <summary>
+        /// Get all messages entities:values
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<List<RuntimeEntity>> GetMessagesEntities()
         {
             return MessageRecordHandler.GetMessagesEntities(SessionId);
         }
-
+        /// <summary>
+        /// Export message history
+        /// </summary>
+        /// <returns></returns>
         public string ExportMessageHistory()
         {
             return JsonConvert.SerializeObject(MessageRecordHandler.MessageRecords, Formatting.Indented);
         }
-
+        /// <summary>
+        /// Import message history
+        /// </summary>
+        /// <param name="importData"></param>
         public void ImportMessageHistory(string importData)
         {
             var import = JsonConvert.DeserializeObject<Dictionary<string, WatsonMessageRequestRecord>>(importData);

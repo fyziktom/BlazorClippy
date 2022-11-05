@@ -16,8 +16,17 @@ namespace BlazorClippyWatson.AI
             ServiceUrl = serviceurl;
             Voice = voice;
         }
+        /// <summary>
+        /// API key for Watson TextToSpeech cloud service
+        /// </summary>
         public string ApiKey { get; set; } = string.Empty;
+        /// <summary>
+        /// API Url for Watson TextToSpeech cloud service
+        /// </summary>
         public string ServiceUrl { get; set; } = string.Empty;
+        /// <summary>
+        /// Watson TextToSpeech cloud service selected voice
+        /// </summary>
         public string Voice { get; set; } = string.Empty;
 
         private byte[] ReadFully(Stream input)
@@ -33,6 +42,13 @@ namespace BlazorClippyWatson.AI
                 return ms.ToArray();
             }
         }
+        /// <summary>
+        /// Synthetize text to voice with use of Watson TextToSpeech cloud service
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="voice"></param>
+        /// <param name="savetofile"></param>
+        /// <returns></returns>
         public async Task<(bool, byte[]?)> Synthesize(string text, string voice = "", string savetofile = "")
         {
             if (string.IsNullOrEmpty(ApiKey) || string.IsNullOrEmpty(ServiceUrl) || (string.IsNullOrEmpty(Voice) && string.IsNullOrEmpty(voice)))

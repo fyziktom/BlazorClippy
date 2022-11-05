@@ -8,6 +8,14 @@ namespace BlazorClippyWatson.Common
 {
     public class CryptographyHelpers
     {
+        /// <summary>
+        /// Wrapper for function to get MD5 hash. 
+        /// It can use System.Security.Cryptography library or own implementation independent on msft library 
+        /// It is because SSC is not supported full in WASM.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="ownMD5"></param>
+        /// <returns></returns>
         public string GetHash(string input, bool ownMD5 = false)
         {
             if (ownMD5)
