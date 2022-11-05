@@ -345,7 +345,7 @@ if (saveHistory)
 Console.WriteLine("-----------------------------------");
 Console.WriteLine("History of dialogue:");
 Console.WriteLine("-----------------------------------");
-var lastMarkerDetailed = WatsonAssistantAnalyzer.MarkerExtensionStartDefault;
+var lastMarkerDetailed = AnalyzerHelpers.MarkerExtensionStartDefault;
 foreach(var history in analyzer.GetHistoryOfDialogue())
 {
     Console.WriteLine("....................");

@@ -30,10 +30,6 @@ namespace BlazorClippyWatson.Analzyer
         [JsonIgnore]
         public bool IsSomeMatch { get => LastMatchedDataItemsState.Count > 0; }
         /// <summary>
-        /// Basic start of extensions marks. This string is followed by markers build by DataItems
-        /// </summary>
-        public static string MarkerExtensionStartDefault { get => "&Markers: ";}
-        /// <summary>
         /// Dictionary of all DataItems in this analyzer. These are the objects which sould be captured during dialogue
         /// </summary>
         public ConcurrentDictionary<string, AnalyzedObjectDataItem> DataItems { get; set; } = new ConcurrentDictionary<string, AnalyzedObjectDataItem>();
@@ -48,7 +44,7 @@ namespace BlazorClippyWatson.Analzyer
         { 
             get
             {
-                var questionextension = MarkerExtensionStartDefault;
+                var questionextension = AnalyzerHelpers.MarkerExtensionStartDefault;
                 if (LastMatchedDataItemsState.Count > 0)
                 {
                     foreach (var d in LastMatchedDataItemsState)
@@ -361,7 +357,7 @@ namespace BlazorClippyWatson.Analzyer
             var cmbs = new ConcurrentBag<string>();
             Parallel.ForEach(output, item =>
             {
-                var sb = new StringBuilder(MarkerExtensionStartDefault);
+                var sb = new StringBuilder(AnalyzerHelpers.MarkerExtensionStartDefault);
                 
                 var counter = 0;
                 foreach (var i in item)
