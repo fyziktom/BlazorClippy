@@ -4,23 +4,19 @@ using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Formats.Asn1;
 using System.Reflection;
 
 Console.WriteLine("Hello, World! I am Watson Replay Console demo");
 
 var sessionId = "cf628279-5bb3-4716-8fe2-71bc5c3fe3f1";
 var filename = "messageExport.json";
-// create assistant
-var assistant = new WatsonAssistant();
-var analyzer = new WatsonAssistantAnalyzer();
 
 var dataitemsFileName = "dataitems.mmd";
 var loadDataItemsFromFile = true;
 var addDataItemsManually = !loadDataItemsFromFile;
 
-var hashHistory = new Dictionary<string, string>();
-var combinations = new Dictionary<string, string>();
-var calcCombos = true;
+var calcCombos = false;
 var loadCombosFromFile = !calcCombos;
 var combosFileName = "combos.txt";
 var saveCombos = calcCombos;
@@ -29,11 +25,37 @@ var printCombos = false;
 var playDialogueFromFile = false;
 var printDialogue = false;
 
+// create assistant
+var assistant = new WatsonAssistant();
+var analyzer = new WatsonAssistantAnalyzer();
+var hashHistory = new Dictionary<string, string>();
+var combinations = new Dictionary<string, string>();
+
 assistant.SessionId = sessionId;
 
+
+
+
+var answer = "Klíčové nyní bude definování ještě několika informací o vašem produktu. "+ 
+    "<< ? =@velikost:mala; \"Protože se jedná oprodukt malý, tak se dají celkem běžně sehnat rentgeny na takovou kontrolu i za dobré peníze.\"" + 
+    " ? =@velikost:velka&?@podklady:3d model; \"Tady bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Máte k dispozizici 3D model?\"" + 
+    " ? =@velikost:velka&?@podklady:3d model; \"Musíme se určitě podívat blížeji na 3D model a díky simulaci pak můžeme říci jak velký rentgen bude potřeba. Hodně totiž zálezí na pozici místa, které je potřaba zaměřit v detailu a jak v tu chvíli bude muset být natočený předmět.\"" + 
+    " ? =@velikost:velka&!@podklady:3d model; \"Pokud nemáte 3d model, tak bude potřeba alespoň nafotit předmět s měřítkem nebo ideálně poslat vzorky k testům.\">>"+ 
+    "<<? ?@svár; \"Tam může být ještě otázka jestli půjde dobře vidět ten svár\">>";
+
+var rules = AnswerRulesHelpers.ParseRules(answer);
+
+foreach (var rule in rules)
+{
+    Console.WriteLine("-------Rule-------");
+    Console.WriteLine($" Rule type: {rule.Value.Type}");
+    Console.WriteLine($" Rule: {rule.Value.ParsedRuleFromAnswer}");   
+}
+
+
 ///////////////////////////////////
-/// import data from file
-///////////////////////////////////
+    /// import data from file
+    ///////////////////////////////////
 if (playDialogueFromFile)
 {
     // load the file with message history export
@@ -189,13 +211,13 @@ dataitems.Add(new AnalyzedObjectDataItem()
 }
 # endregion
 
-
 // add dataitems to analyzer
 foreach (var di in dataitems)
     analyzer.AddDataItem(di);
 
 #endregion
 ////////////////////////////
+
 
 //////////////////////////////
 // load markers combinations from file, faster than calc them all the time

@@ -474,7 +474,7 @@ namespace BlazorClippyWatson.Analzyer
                 else
                     yield return $"\t\t+Entity {entity.Entity}:{entity.Value}\r\n";
             }
-            yield return "}";
+            yield return "\t}";
         }
     }
 }
