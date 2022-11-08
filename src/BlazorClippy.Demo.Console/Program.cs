@@ -36,20 +36,61 @@ assistant.SessionId = sessionId;
 
 
 
+// input answer from watson
 var answer = "Klíčové nyní bude definování ještě několika informací o vašem produktu. "+ 
     "<< ? =@velikost:mala; \"Protože se jedná oprodukt malý, tak se dají celkem běžně sehnat rentgeny na takovou kontrolu i za dobré peníze.\"" + 
     " ? =@velikost:velka&?@podklady:3d model; \"Tady bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Máte k dispozizici 3D model?\"" + 
     " ? =@velikost:velka&?@podklady:3d model; \"Musíme se určitě podívat blížeji na 3D model a díky simulaci pak můžeme říci jak velký rentgen bude potřeba. Hodně totiž zálezí na pozici místa, které je potřaba zaměřit v detailu a jak v tu chvíli bude muset být natočený předmět.\"" + 
-    " ? =@velikost:velka&!@podklady:3d model; \"Pokud nemáte 3d model, tak bude potřeba alespoň nafotit předmět s měřítkem nebo ideálně poslat vzorky k testům.\">>"+ 
-    "<<? ?@svár; \"Tam může být ještě otázka jestli půjde dobře vidět ten svár\">>";
+    " ? =@velikost:velka&!@podklady:3d model; \"Pokud nemáte 3d model, tak bude potřeba alespoň nafotit předmět s měřítkem nebo ideálně poslat vzorky k testům.\">>"+
+    "<< N ?@svár; \"28778eb3b393497e58fab1389e59811a390d10abe61b86ce82f7ddde3f06a844:0\">>";
 
+Console.WriteLine($"Example Answer from Watson with conditions:");
+Console.WriteLine($"{answer}");
+
+Console.WriteLine("Parsing answer...");
 var rules = AnswerRulesHelpers.ParseRules(answer);
-
+Console.WriteLine("Ruels parsed:");
 foreach (var rule in rules)
 {
     Console.WriteLine("-------Rule-------");
     Console.WriteLine($" Rule type: {rule.Value.Type}");
     Console.WriteLine($" Rule: {rule.Value.ParsedRuleFromAnswer}");   
+
+    if (rule.Value.Type == AnswerRuleType.Condition)
+    {
+        foreach(var r in rule.Value.Rules)
+        {
+            Console.WriteLine($"\tCondition SubRule Object Name: {r.Object.Name}");
+            Console.WriteLine($"\tCondition SubRule Object Command: {r.Object.ObjectCommand}");
+            Console.WriteLine($"\tCondition SubRule String: {r.RuleString}");
+            if (r.Object.ChildObject != null)
+            {
+                Console.WriteLine($"\t\tCondition SubRule Object Child Object Name: {r.Object.ChildObject.Name}");
+                Console.WriteLine($"\t\tCondition SubRule Object Child Object Command: {r.Object.ChildObject.ObjectCommand}");
+                Console.WriteLine($"\t\tCondition SubRule Child Object Connector: {r.Object.ChildObject.Connector}");
+            }
+        }
+    }
+    if (rule.Value.Type == AnswerRuleType.NFT)
+    {
+        var r = rule.Value.Rules.FirstOrDefault();
+        if (r != null)
+        {
+            var split = r.RuleString.Split(':');
+            if (split != null && split.Length > 0)
+            {
+                if (Int32.TryParse(split[1], out var index))
+                {
+                    var nft = await VEDriversLite.NFT.NFTFactory.GetNFT("", split[0], index, 0, true);
+                    Console.WriteLine($"\tNFT Name: {nft.Name}");
+                    Console.WriteLine($"\tNFT Type: {nft.TypeText}");
+                    Console.WriteLine($"\tNFT Tags: {nft.Tags}");
+                    Console.WriteLine($"\tNFT Description: {nft.Description}");
+                    Console.WriteLine($"\tNFT Copy share link: https://test.basedataplace.com/gallery?utxo={nft.Utxo}:{nft.UtxoIndex}");
+                }
+            }
+        }
+    }
 }
 
 

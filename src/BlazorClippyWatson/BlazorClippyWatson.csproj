@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="VEFramework.VEDriversLite" Version="0.3.21" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.Assistant.v2\IBM.Watson.Assistant.v2.csproj" />
     <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.LanguageTranslator.v3\IBM.Watson.LanguageTranslator.v3.csproj" />
     <ProjectReference Include="..\..\..\watson\dotnet-standard-sdk\src\IBM.Watson.TextToSpeech.v1\IBM.Watson.TextToSpeech.v1.csproj" />
