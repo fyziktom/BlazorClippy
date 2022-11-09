@@ -19,10 +19,11 @@ namespace BlazorClippyWatson.Analzyer
         public static char ObjectEnd { get; } = ';';
         public static char ObjectConditionAnd { get; } = '&';
         public static char ObjectConditionOr { get; } = '|';
-        public static Dictionary<int, AnswerRule> ParseRules(string answer)
+        public static (string, Dictionary<int, AnswerRule>) ParseRules(string answer)
         {
             var rules = new Dictionary<int, AnswerRule>();
             var substr = string.Empty;
+            var mainstr = string.Empty;
             var answerArray = answer.ToArray();
             var startCapture = 0;
             var startIndex = 0;
@@ -30,6 +31,7 @@ namespace BlazorClippyWatson.Analzyer
             for (int i = 0; i < answerArray.Length; i++)
             {
                 var actualCharacter = answerArray[i];
+
                 if (startCapture == 0 && actualCharacter == '<')
                     startCapture++;
                 else if (startCapture == 1 && actualCharacter == '<')
@@ -50,6 +52,9 @@ namespace BlazorClippyWatson.Analzyer
                     endCapture++;
                 }
 
+                if (startCapture == 0 && endCapture == 0)
+                    mainstr += actualCharacter;
+
                 if (startCapture == 3 && endCapture == 0)
                     substr += answerArray[i];
                 else if (startCapture == 0 && endCapture == 2)
@@ -62,7 +67,7 @@ namespace BlazorClippyWatson.Analzyer
                     startCapture++;
             }
 
-            return rules;
+            return (mainstr, rules);
         }
 
         public static AnswerRuleType ParseRuleType(string parsedRule)

@@ -23,6 +23,7 @@ namespace BlazorClippyWatson.Analzyer
 
     public class RuleObject
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = string.Empty;
         public char Connector { get; set; } = '&';
         public AnswerRuleObjectCommandType ObjectCommand { get; set; } = AnswerRuleObjectCommandType.None;
@@ -32,6 +33,7 @@ namespace BlazorClippyWatson.Analzyer
 
     public class RuleDetails
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string RuleString { get; set; } = string.Empty;
         public RuleObject Object { get; set; } = new RuleObject();
     }
@@ -44,28 +46,56 @@ namespace BlazorClippyWatson.Analzyer
                 ParsedRuleFromAnswer = parsedRuleFromAnswer;
                 Type = AnswerRulesHelpers.ParseRuleType(parsedRuleFromAnswer);
 
-                var split = parsedRuleFromAnswer.Split(AnswerRulesHelpers.CommandCondition, StringSplitOptions.RemoveEmptyEntries);
-                if (split != null && split.Length > 0)
+                if (Type == AnswerRuleType.Condition)
                 {
-                    foreach(var sp in split)
+                    var split = parsedRuleFromAnswer.Split(AnswerRulesHelpers.CommandCondition, StringSplitOptions.RemoveEmptyEntries);
+                    if (split != null && split.Length > 0)
+                    {
+                        foreach (var sp in split)
+                        {
+                            Rules.Add(new RuleDetails()
+                            {
+                                RuleString = AnswerRulesHelpers.ParseRuleString(sp),
+                                Object = AnswerRulesHelpers.ParseObject(sp)
+                            });
+                        }
+                    }
+                    else
                     {
                         Rules.Add(new RuleDetails()
                         {
-                            RuleString = AnswerRulesHelpers.ParseRuleString(sp),
-                            Object = AnswerRulesHelpers.ParseObject(sp)
+                            RuleString = AnswerRulesHelpers.ParseRuleString(ParsedRuleFromAnswer),
+                            Object = AnswerRulesHelpers.ParseObject(ParsedRuleFromAnswer)
                         });
                     }
                 }
-                else
+                else if (Type == AnswerRuleType.NFT)
                 {
-                    Rules.Add(new RuleDetails() {
-                        RuleString = AnswerRulesHelpers.ParseRuleString(ParsedRuleFromAnswer),
-                        Object = AnswerRulesHelpers.ParseObject(ParsedRuleFromAnswer)
-                    });
+                    var split = parsedRuleFromAnswer.Split(AnswerRulesHelpers.CommandNFT, StringSplitOptions.RemoveEmptyEntries);
+                    if (split != null && split.Length > 0)
+                    {
+                        foreach (var sp in split)
+                        {
+                            Rules.Add(new RuleDetails()
+                            {
+                                RuleString = AnswerRulesHelpers.ParseRuleString(sp),
+                                Object = AnswerRulesHelpers.ParseObject(sp)
+                            });
+                        }
+                    }
+                    else
+                    {
+                        Rules.Add(new RuleDetails()
+                        {
+                            RuleString = AnswerRulesHelpers.ParseRuleString(ParsedRuleFromAnswer),
+                            Object = AnswerRulesHelpers.ParseObject(ParsedRuleFromAnswer)
+                        });
+                    }
                 }
             }
         }
 
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public AnswerRuleType Type { get; set; } = AnswerRuleType.None;
         public string ParsedRuleFromAnswer { get; set; } = string.Empty;
 

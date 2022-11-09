@@ -456,5 +456,57 @@ namespace BlazorClippyWatson.Analzyer
             }
             return false;
         }
+
+        public IEnumerable<(string, string)> GetStringFromRule(AnswerRule rule)
+        {
+            var marker = MarkerExtension;
+
+            if (!string.IsNullOrEmpty(marker))
+            {
+                if (rule.Type == AnswerRuleType.Condition)
+                {
+                    foreach (var r in rule.Rules)
+                    {
+                        if (r.Object.ChildObject != null)
+                        {
+                            if (r.Object.ObjectCommand == AnswerRuleObjectCommandType.Known && marker.Contains(r.Object.Name) ||
+                                r.Object.ObjectCommand == AnswerRuleObjectCommandType.Unknown && !marker.Contains(r.Object.Name))
+                            {
+                                if (r.Object.ChildObject.ObjectCommand == AnswerRuleObjectCommandType.Known && marker.Contains(r.Object.ChildObject.Name) ||
+                                r.Object.ChildObject.ObjectCommand == AnswerRuleObjectCommandType.Unknown && !marker.Contains(r.Object.ChildObject.Name))
+                                {
+                                    yield return (r.Object.Id, r.RuleString);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (r.Object.ObjectCommand == AnswerRuleObjectCommandType.Known && marker.Contains(r.Object.Name) ||
+                                r.Object.ObjectCommand == AnswerRuleObjectCommandType.Unknown && !marker.Contains(r.Object.Name))
+                            {
+                                yield return (r.Object.Id, r.RuleString);
+                            }
+                        }
+                    }
+
+                }
+                else if (rule.Type == AnswerRuleType.NFT)
+                {
+                    var r = rule.Rules.FirstOrDefault();
+                    if (r != null)
+                    {
+                        if (r.Object.ObjectCommand == AnswerRuleObjectCommandType.Known && marker.Contains(r.Object.Name) ||
+                                r.Object.ObjectCommand == AnswerRuleObjectCommandType.Unknown && !marker.Contains(r.Object.Name))
+                        {
+                            var split = r.RuleString.Split(':');
+                            if (split != null && split.Length > 0)
+                                if (Int32.TryParse(split[1], out var index))
+                                    yield return (r.Id, r.RuleString);
+                        }
+
+                    }
+                }
+            }
+        }
     }
 }

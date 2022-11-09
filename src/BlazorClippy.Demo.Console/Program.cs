@@ -34,66 +34,6 @@ var combinations = new Dictionary<string, string>();
 assistant.SessionId = sessionId;
 
 
-
-
-// input answer from watson
-var answer = "Klíčové nyní bude definování ještě několika informací o vašem produktu. "+ 
-    "<< ? =@velikost:mala; \"Protože se jedná oprodukt malý, tak se dají celkem běžně sehnat rentgeny na takovou kontrolu i za dobré peníze.\"" + 
-    " ? =@velikost:velka&?@podklady:3d model; \"Tady bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Máte k dispozizici 3D model?\"" + 
-    " ? =@velikost:velka&?@podklady:3d model; \"Musíme se určitě podívat blížeji na 3D model a díky simulaci pak můžeme říci jak velký rentgen bude potřeba. Hodně totiž zálezí na pozici místa, které je potřaba zaměřit v detailu a jak v tu chvíli bude muset být natočený předmět.\"" + 
-    " ? =@velikost:velka&!@podklady:3d model; \"Pokud nemáte 3d model, tak bude potřeba alespoň nafotit předmět s měřítkem nebo ideálně poslat vzorky k testům.\">>"+
-    "<< N ?@svár; \"28778eb3b393497e58fab1389e59811a390d10abe61b86ce82f7ddde3f06a844:0\">>";
-
-Console.WriteLine($"Example Answer from Watson with conditions:");
-Console.WriteLine($"{answer}");
-
-Console.WriteLine("Parsing answer...");
-var rules = AnswerRulesHelpers.ParseRules(answer);
-Console.WriteLine("Ruels parsed:");
-foreach (var rule in rules)
-{
-    Console.WriteLine("-------Rule-------");
-    Console.WriteLine($" Rule type: {rule.Value.Type}");
-    Console.WriteLine($" Rule: {rule.Value.ParsedRuleFromAnswer}");   
-
-    if (rule.Value.Type == AnswerRuleType.Condition)
-    {
-        foreach(var r in rule.Value.Rules)
-        {
-            Console.WriteLine($"\tCondition SubRule Object Name: {r.Object.Name}");
-            Console.WriteLine($"\tCondition SubRule Object Command: {r.Object.ObjectCommand}");
-            Console.WriteLine($"\tCondition SubRule String: {r.RuleString}");
-            if (r.Object.ChildObject != null)
-            {
-                Console.WriteLine($"\t\tCondition SubRule Object Child Object Name: {r.Object.ChildObject.Name}");
-                Console.WriteLine($"\t\tCondition SubRule Object Child Object Command: {r.Object.ChildObject.ObjectCommand}");
-                Console.WriteLine($"\t\tCondition SubRule Child Object Connector: {r.Object.ChildObject.Connector}");
-            }
-        }
-    }
-    if (rule.Value.Type == AnswerRuleType.NFT)
-    {
-        var r = rule.Value.Rules.FirstOrDefault();
-        if (r != null)
-        {
-            var split = r.RuleString.Split(':');
-            if (split != null && split.Length > 0)
-            {
-                if (Int32.TryParse(split[1], out var index))
-                {
-                    var nft = await VEDriversLite.NFT.NFTFactory.GetNFT("", split[0], index, 0, true);
-                    Console.WriteLine($"\tNFT Name: {nft.Name}");
-                    Console.WriteLine($"\tNFT Type: {nft.TypeText}");
-                    Console.WriteLine($"\tNFT Tags: {nft.Tags}");
-                    Console.WriteLine($"\tNFT Description: {nft.Description}");
-                    Console.WriteLine($"\tNFT Copy share link: https://test.basedataplace.com/gallery?utxo={nft.Utxo}:{nft.UtxoIndex}");
-                }
-            }
-        }
-    }
-}
-
-
 ///////////////////////////////////
     /// import data from file
     ///////////////////////////////////
@@ -341,6 +281,8 @@ var inputDialogueMermaid = "sequenceDiagram\r\n" +
 var inputDialogueMermaid1 = "sequenceDiagram\r\n" + "" +
                             "\tClient->>Assistant: i.my_máme, e.podklady:3d model, \r\n" +
                             "\tClient->>Assistant: e.materiál:, e.produkt:produkt,\r\n" +
+                            "\tClient->>Assistant: e.velký_produkt:velký,\r\n" +
+                            "\tClient->>Assistant: e.elektronika:,\r\n" +
                             "\tClient->>Assistant: e.materiál:, e.komponenta:komponenta,  \r\n" +
                             "\tClient->>Assistant: i.my_máme, e.podklady:výkres, ";
 
@@ -481,9 +423,114 @@ foreach(var history in analyzer.GetHistoryOfDialogue())
         Console.WriteLine($"\t\tMessage entity: @{entity.Entity}:{entity.Value}");
 }
 
+
+
+
+/////////////////////////////////////////////////////////////////
+// Load message answer script and parse it based on actual state of dialogue
+#region loadAnswerScript
+
+Console.WriteLine("");
+Console.WriteLine("-------------------------------------------------------");
+Console.WriteLine("-------------Prsing Rules From Answer------------------");
+Console.WriteLine("-------------------------------------------------------");
+Console.WriteLine("");
+// input answer from watson
+var answer = "Klíčové nyní bude definování ještě několika informací o vašem produktu. " +
+    "<< ? =@malý_produkt:malý; \"Protože se jedná oprodukt malý, tak se dají celkem běžně sehnat rentgeny na takovou kontrolu i za dobré peníze.\"" +
+    " ? =@velký_produkt:velký&=@podklady:3d model; \"Protože se jedná o velký produtk, bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Díky tomu, že máte k dispozici 3D model, tak to bude možné.\"" +
+    " ? =@velký_produkt:velký&?@podklady:3d model; \"Protože se jedná o velký produtk,  bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Máte k dispozizici 3D model?\"" +
+    " ? =@velký_produkt:velký&?@podklady:3d model; \"Protože se jedná o velký produtk, tak se musíme určitě podívat blížeji na 3D model a díky simulaci pak můžeme říci jak velký rentgen bude potřeba. Hodně totiž zálezí na pozici místa, které je potřaba zaměřit v detailu a jak v tu chvíli bude muset být natočený předmět.\"" +
+    " ? =@velký_produkt:velký&!@podklady:3d model; \"Pokud nemáte 3d model, tak bude potřeba alespoň nafotit předmět s měřítkem nebo ideálně poslat vzorky k testům. U větších produktů je to velmi důležité.\">>" +
+    "<< N =@elektronika; \"28778eb3b393497e58fab1389e59811a390d10abe61b86ce82f7ddde3f06a844:0\">>";
+
+Console.WriteLine($"Example Answer from Watson with conditions:");
+Console.WriteLine("");
+Console.WriteLine($"{answer}");
+Console.WriteLine("");
+Console.WriteLine("");
+Console.WriteLine("Parsing answer...");
+var rules = AnswerRulesHelpers.ParseRules(answer);
+var mainstring = rules.Item1;
+var printParsedConditionsRules = false;
+Console.WriteLine("Main string parsed:" + mainstring);
+Console.WriteLine("");
+Console.WriteLine("Rules parsed:");
+foreach (var rule in rules.Item2)
+{     
+    Console.WriteLine("-------Rule-------");
+    Console.WriteLine($" Rule type: {rule.Value.Type}");
+    //Console.WriteLine($" Rule: {rule.Value.ParsedRuleFromAnswer}");
+
+    if (printParsedConditionsRules)
+    {
+        if (rule.Value.Type == AnswerRuleType.Condition)
+        {
+            foreach (var r in rule.Value.Rules)
+            {
+                Console.WriteLine($"\tCondition SubRule Object Name: {r.Object.Name}");
+                Console.WriteLine($"\tCondition SubRule Object Command: {r.Object.ObjectCommand}");
+                Console.WriteLine($"\tCondition SubRule String: {r.RuleString}");
+                if (r.Object.ChildObject != null)
+                {
+                    Console.WriteLine($"\t\tCondition SubRule Object Child Object Name: {r.Object.ChildObject.Name}");
+                    Console.WriteLine($"\t\tCondition SubRule Object Child Object Command: {r.Object.ChildObject.ObjectCommand}");
+                    Console.WriteLine($"\t\tCondition SubRule Child Object Connector: {r.Object.ChildObject.Connector}");
+                }
+            }
+        }
+    }
+
+    foreach (var result in analyzer.GetStringFromRule(rule.Value))
+    {
+        Console.WriteLine(result.Item2);
+
+        if (rule.Value.Type == AnswerRuleType.NFT)
+        {
+            var split = result.Item2.Split(':');
+            if (split != null && split.Length > 0)
+            {
+                if (Int32.TryParse(split[1], out var index))
+                {
+                    var nft = await VEDriversLite.NFT.NFTFactory.GetNFT("", split[0], index, 0, true);
+
+                    Console.WriteLine($"\tNFT Name: {nft.Name}");
+                    Console.WriteLine($"\tNFT Type: {nft.TypeText}");
+                    Console.WriteLine($"\tNFT Tags: {nft.Tags}");
+                    Console.WriteLine($"\tNFT Description: {nft.Description}");
+                    Console.WriteLine($"\tNFT Copy share link: https://test.basedataplace.com/gallery?utxo={nft.Utxo}:{nft.UtxoIndex}");
+                }
+            }
+        }
+    }
+}
+#endregion
+//////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Console.WriteLine("-----------------------------------");
 Console.WriteLine("----------------END----------------");
 Console.WriteLine("-----------------------------------");
 Console.WriteLine("Press enter to exit...");
 Console.ReadLine();
+
 
