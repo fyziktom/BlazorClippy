@@ -1,0 +1,43 @@
+classDiagram
+    class dokumentace3dmodel{
+      +Intent my_máme
+      +Entity podklady:3d model
+      +IsWhenOnly true
+    }
+    class dokumentaceVykres{
+      +Intent my_máme
+      +Entity podklady:výkres
+      +IsWhenOnly true
+    }
+    class materialproduktu{
+      +Entity materiál
+      +Entity produkt:produkt
+	  +IsWhenOnly true
+    }
+    class materialkomponenty{
+      +Entity materiál
+      +Entity komponenta:komponenta
+	  +IsWhenOnly true
+    }
+    class majiserver{
+        +Intent my_máme
+        +Entity itinfrastruktura:server
+		+IsWhenOnly true
+    }
+    class Velikostproduktu{
+        +Intent velikost_produktu
+        +Entity produkt:produkt
+		+IsWhenOnly true
+    }
+    class kategorieelektroniy{
+        +Entity elektronika
+    }
+    class pajeni{
+        +Intent kontrola_pájení
+    }
+	class velikost_mala {
+		+Entity malý_produkt:malý
+	}
+	class velikost_velka {
+		+Entity velký_produkt:velký
+	}
