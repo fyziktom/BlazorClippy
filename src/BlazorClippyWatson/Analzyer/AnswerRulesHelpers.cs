@@ -8,11 +8,13 @@ namespace BlazorClippyWatson.Analzyer
 {
     public static class AnswerRulesHelpers
     {
+        public static string RuleStart { get; } = "<<";
+        public static string RuleEnd { get; } = ">>";
         public static string CommandCondition { get; } = " ? ";
         public static string CommandLink { get; } = " H ";
         public static string CommandNFT { get; } = " N ";
-        public static char ObjectStartIntent { get; } = '#';
-        public static char ObjectStartEntity { get; } = '@';
+        public static string ObjectStartIntent { get; } = "i.";
+        public static string ObjectStartEntity { get; } = "e.";
         public static char ObjectKnown { get; } = '=';
         public static char ObjectUnknow { get; } = '?';
         public static char ObjectDontHave { get; } = '!';
@@ -128,7 +130,6 @@ namespace BlazorClippyWatson.Analzyer
             var tmp = (" " + parsedRule).Split(new[] { CommandCondition, CommandLink, CommandNFT }, StringSplitOptions.RemoveEmptyEntries);
             if (tmp != null && tmp.Length > 0)
             {
-
                 var array = tmp[0].ToArray();
                 var startCapture = 0;
                 var startIndex = 0;
@@ -137,7 +138,16 @@ namespace BlazorClippyWatson.Analzyer
                 for (int i = 0; i < array.Length; i++)
                 {
                     var actualCharacter = array[i];
-                    if (startCapture == 0 && actualCharacter == ObjectStartIntent || actualCharacter == ObjectStartEntity)
+
+                    var actualString = string.Empty;
+                    if (i + 1 < array.Length)
+                        actualString = new string(new char[] { array[i], array[i + 1] });
+
+                    var actualStringSecond = string.Empty;
+                    if (i + 3 < array.Length)
+                        actualStringSecond = new string(new char[] { array[i + 2], array[i + 3] });
+
+                    if (startCapture == 0 && actualString == ObjectStartIntent || actualString == ObjectStartEntity)
                     {
                         startCapture++;
                         startIndex = i;
@@ -162,7 +172,7 @@ namespace BlazorClippyWatson.Analzyer
                              endCapture == 0 &&
                              (actualCharacter == ObjectConditionAnd && array.Length > i + 2 &&
                                  (array[i + 1] == ObjectDontHave || array[i + 1] == ObjectKnown || array[i + 1] == ObjectUnknow) &&
-                                 (array[i + 2] == ObjectStartEntity || array[i + 2] == ObjectStartIntent)
+                                 (actualStringSecond == ObjectStartEntity || actualStringSecond == ObjectStartIntent)
                              ))
                     {
                         startCapture = 0;
@@ -216,8 +226,17 @@ namespace BlazorClippyWatson.Analzyer
                             result.ChildObject = obj;
                     }
 
-                    if (startCapture == 1 && endCapture == 0)
+                    if (startCapture == 1 &&
+                        endCapture == 0 &&
+                        array[i] != ObjectKnown &&
+                        array[i] != ObjectUnknow &&
+                        array[i] != ObjectEnd &&
+                        array[i] != ' ' &&
+                        array[i] != AnswerRulesHelpers.ObjectConditionAnd &&
+                        array[i] != AnswerRulesHelpers.ObjectConditionOr)
+                    {
                         result.Name += array[i];
+                    }
                     else if (startCapture == 0 && endCapture == 1)
                     {
                         return result;

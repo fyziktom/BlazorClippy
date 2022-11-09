@@ -437,12 +437,12 @@ Console.WriteLine("-------------------------------------------------------");
 Console.WriteLine("");
 // input answer from watson
 var answer = "Klíčové nyní bude definování ještě několika informací o vašem produktu. " +
-    "<< ? =@malý_produkt:malý; \"Protože se jedná oprodukt malý, tak se dají celkem běžně sehnat rentgeny na takovou kontrolu i za dobré peníze.\"" +
-    " ? =@velký_produkt:velký&=@podklady:3d model; \"Protože se jedná o velký produtk, bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Díky tomu, že máte k dispozici 3D model, tak to bude možné.\"" +
-    " ? =@velký_produkt:velký&?@podklady:3d model; \"Protože se jedná o velký produtk,  bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Máte k dispozizici 3D model?\"" +
-    " ? =@velký_produkt:velký&?@podklady:3d model; \"Protože se jedná o velký produtk, tak se musíme určitě podívat blížeji na 3D model a díky simulaci pak můžeme říci jak velký rentgen bude potřeba. Hodně totiž zálezí na pozici místa, které je potřaba zaměřit v detailu a jak v tu chvíli bude muset být natočený předmět.\"" +
-    " ? =@velký_produkt:velký&!@podklady:3d model; \"Pokud nemáte 3d model, tak bude potřeba alespoň nafotit předmět s měřítkem nebo ideálně poslat vzorky k testům. U větších produktů je to velmi důležité.\">>" +
-    "<< N =@elektronika; \"28778eb3b393497e58fab1389e59811a390d10abe61b86ce82f7ddde3f06a844:0\">>";
+    "<< ? =e.malý_produkt:malý; \"Protože se jedná oprodukt malý, tak se dají celkem běžně sehnat rentgeny na takovou kontrolu i za dobré peníze.\"" +
+    " ? =e.velký_produkt:velký&=e.podklady:3d model; \"Protože se jedná o velký produtk, bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Díky tomu, že máte k dispozici 3D model, tak to bude možné.\"" +
+    " ? =e.velký_produkt:velký&?e.podklady:3d model; \"Protože se jedná o velký produtk,  bude potřeba udělat hlubší analýzu ideálně včetně 3D modelu. Máte k dispozizici 3D model?\"" +
+    " ? =e.velký_produkt:velký&?e.podklady:3d model; \"Protože se jedná o velký produtk, tak se musíme určitě podívat blížeji na 3D model a díky simulaci pak můžeme říci jak velký rentgen bude potřeba. Hodně totiž zálezí na pozici místa, které je potřaba zaměřit v detailu a jak v tu chvíli bude muset být natočený předmět.\"" +
+    " ? =e.velký_produkt:velký&!e.podklady:3d model; \"Pokud nemáte 3d model, tak bude potřeba alespoň nafotit předmět s měřítkem nebo ideálně poslat vzorky k testům. U větších produktů je to velmi důležité.\">>" +
+    "<< N =e.elektronika; \"28778eb3b393497e58fab1389e59811a390d10abe61b86ce82f7ddde3f06a844:0\">>";
 
 Console.WriteLine($"Example Answer from Watson with conditions:");
 Console.WriteLine("");

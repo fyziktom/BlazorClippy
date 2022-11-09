@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BlazorClippy.AI;
+using BlazorClippyWatson.Analzyer;
 using IBM.Watson.Assistant.v2.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -107,7 +108,7 @@ namespace BlazorClippy
         /// <param name="speak"></param>
         /// <param name="apiurlbase"></param>
         /// <returns></returns>
-        public async Task<(bool,QuestionResponseDto?)> AskWatson(string question, string sessionId = "", bool speak = false, string apiurlbase = "")
+        public async Task<(bool,QuestionResponseDto?)> AskWatson(string question, string sessionId = "", bool speak = false, string apiurlbase = "", WatsonAssistantAnalyzer? analyzer = null)
         {
 
             if (string.IsNullOrEmpty(WatsonApiUrl) && string.IsNullOrEmpty(apiurlbase))
@@ -125,7 +126,7 @@ namespace BlazorClippy
 
             if (watsonService != null && !string.IsNullOrEmpty(watsonService.WatsonApiUrl))
             {
-                var res = await watsonService.AskWatson(question, SessionId);
+                var res = await watsonService.AskWatson(question, SessionId, analyzer:analyzer);
                 if (res.Item1)
                 {
                     if (speak)
@@ -142,9 +143,9 @@ namespace BlazorClippy
         /// </summary>
         /// <param name="sessionId"></param>
         /// <returns></returns>
-        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
+        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId, bool descending = false)
         {
-            return watsonService.GetMessageHistory(sessionId);
+            return watsonService.GetMessageHistory(sessionId, descending);
         }
         /// <summary>
         /// Find message by Id

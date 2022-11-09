@@ -1,6 +1,9 @@
-﻿using IBM.Watson.Assistant.v2.Model;
+﻿using BlazorClippyWatson.Analzyer;
+using IBM.Cloud.SDK.Core.Http;
+using IBM.Watson.Assistant.v2.Model;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using NBitcoin.Protocol;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -70,7 +73,7 @@ namespace BlazorClippy.AI
         /// <param name="inputquestion"></param>
         /// <param name="sessionId"></param>
         /// <returns></returns>
-        public async Task<(bool,QuestionResponseDto?)> AskWatson(string inputquestion, string sessionId)
+        public async Task<(bool,QuestionResponseDto?)> AskWatson(string inputquestion, string sessionId, WatsonAssistantAnalyzer? analyzer = null)
         {
             var data = new
             {
@@ -88,8 +91,47 @@ namespace BlazorClippy.AI
                 try
                 {
                     var result = JsonConvert.DeserializeObject<QuestionResponseDto>(resp);
+
+                    var response = string.Empty;
+                    var final = string.Empty;
+                    var mainstring = string.Empty;
+
                     if (result != null && result.MessageRecord != null)
                     {
+                        var r = result.MessageRecord.Response?.Result?.Output?.Generic?.FirstOrDefault();
+                        if (r != null)
+                            response = r.Text != null ? r.Text : string.Empty;
+
+                        if (analyzer != null)
+                        {
+                            if (response.Contains(AnswerRulesHelpers.RuleStart) && response.Contains(AnswerRulesHelpers.RuleEnd))
+                            {
+                                var rules = AnswerRulesHelpers.ParseRules(response);
+                                final = rules.Item1;
+                                mainstring = rules.Item1;
+
+                                foreach (var rule in rules.Item2)
+                                {
+                                    foreach (var answer in analyzer.GetStringFromRule(rule.Value))
+                                    {
+                                        final += " " + answer.Item2;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (string.IsNullOrEmpty(final) && !string.IsNullOrEmpty(mainstring))
+                            final = mainstring;
+                        if (string.IsNullOrEmpty(final) && string.IsNullOrEmpty(mainstring))
+                            final = response;
+
+                        result.MessageRecord.Response?.Result?.Output?.Generic.Clear();
+                        result.MessageRecord.Response?.Result?.Output?.Generic.Add(new RuntimeResponseGenericRuntimeResponseTypeText()
+                        {
+                            ResponseType = "text",
+                            Text = final
+                        });
+
                         MessageRecordHandler.SaveResponseToRecord(recordId, result.MessageRecord.Response);
                         return (true, result);
                     }
@@ -197,9 +239,9 @@ namespace BlazorClippy.AI
         /// </summary>
         /// <param name="sessionId"></param>
         /// <returns></returns>
-        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId)
+        public IEnumerable<WatsonMessageRequestRecord> GetMessageHistory(string sessionId, bool descending = false)
         {
-            return MessageRecordHandler.GetMessageHistory(sessionId);
+            return MessageRecordHandler.GetMessageHistory(sessionId, descending);
         }
         /// <summary>
         /// Get message by ID

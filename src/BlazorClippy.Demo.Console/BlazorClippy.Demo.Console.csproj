@@ -8,6 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="dataitems.mmd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="dataitems.mmd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BlazorClippyWatson\BlazorClippyWatson.csproj" />
   </ItemGroup>
 

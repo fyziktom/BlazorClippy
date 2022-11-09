@@ -90,7 +90,7 @@
                     @if (clippy != null)
                     {
                         var first = true;
-                        @foreach (var message in clippy.GetMessageHistory(sessionId))
+                        @foreach (var message in clippy.GetMessageHistory(sessionId, true))
                         {
                             if (first)
                             {
@@ -340,7 +340,22 @@
                         new RuntimeIntent(){ Intent = "kontrola_pájení" }
                     }
                 });
-
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "velikost_mala",
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "malý_produk", Value = "malý" }
+                    }
+                });
+            dataitems.Add(new AnalyzedObjectDataItem()
+                {
+                    Name = "velikost_velka",
+                    Entities = new List<RuntimeEntity>()
+                    {
+                        new RuntimeEntity(){ Entity = "velký_produkt", Value = "velký" }
+                    }
+                });
             // add dataitems to analyzer
             foreach (var di in dataitems)
                 analyzer.AddDataItem(di);
@@ -393,7 +408,7 @@
         if (analyzer.IsSomeMatch)
             inputquestion = inputquestion + " " + hash;
 
-        var resp = await clippy.AskWatson(inputquestion, sessionId);
+        var resp = await clippy.AskWatson(inputquestion, sessionId, analyzer:analyzer);
         if (resp.Item1)
         {
             if (resp.Item2 != null)
@@ -424,6 +439,7 @@
                 lastCapturedDataItems = analyzer.GetIdentifiedDataItemsDetailedMarkers();
 
                 response = resp.Item2.answer;
+
                 var split = resp.Item2.answer.Split('.');
                 if (split != null && split.Length > 0)
                 {

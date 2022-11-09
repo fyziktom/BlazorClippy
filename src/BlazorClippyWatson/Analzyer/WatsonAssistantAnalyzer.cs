@@ -459,7 +459,7 @@ namespace BlazorClippyWatson.Analzyer
 
         public IEnumerable<(string, string)> GetStringFromRule(AnswerRule rule)
         {
-            var marker = MarkerExtension;
+            var marker = MarkerExtension.Replace("@", AnswerRulesHelpers.ObjectStartEntity).Replace("#", AnswerRulesHelpers.ObjectStartIntent);
 
             if (!string.IsNullOrEmpty(marker))
             {

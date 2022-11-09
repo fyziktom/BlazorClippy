@@ -62,7 +62,7 @@ namespace BlazorClippy.AI
                         if (Response.Result.Output.Generic != null)
                         {
                             var res = Response.Result.Output.Generic.FirstOrDefault();
-                            if (res != null && res.ResponseType == "text")
+                            if (res != null && !string.IsNullOrEmpty(res.Text))
                             {
                                 _textResponse = res.Text;
                                 return res.Text;

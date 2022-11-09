@@ -16,7 +16,7 @@ namespace BlazorClippyWatson.Common
         /// <param name="input"></param>
         /// <param name="ownMD5"></param>
         /// <returns></returns>
-        public string GetHash(string input, bool ownMD5 = false)
+        public string GetHash(string input, bool ownMD5 = true)
         {
             if (ownMD5)
             {
