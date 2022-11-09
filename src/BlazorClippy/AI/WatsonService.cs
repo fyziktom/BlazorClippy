@@ -112,9 +112,12 @@ namespace BlazorClippy.AI
 
                                 foreach (var rule in rules.Item2)
                                 {
-                                    foreach (var answer in analyzer.GetStringFromRule(rule.Value))
+                                    if (rule.Value.Type == AnswerRuleType.Condition)
                                     {
-                                        final += " " + answer.Item2;
+                                        foreach (var answer in analyzer.GetStringFromRule(rule.Value))
+                                        {
+                                            final += " " + answer.Item2;
+                                        }
                                     }
                                 }
                             }
