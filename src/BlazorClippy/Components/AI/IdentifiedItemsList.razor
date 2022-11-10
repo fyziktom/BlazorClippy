@@ -4,7 +4,7 @@
     <CardBody>
         @if (Analyzer != null && Analyzer.DataItems.Count > 0)
         {
-            @foreach (var item in Analyzer.DataItems.Values)
+            @foreach (var item in Analyzer.DataItems.Values.OrderBy(i => !i.IsIdentified))
             {
                 <AnalyzedDataItemComponent Item="@item" />
             }
