@@ -1,0 +1,21 @@
+﻿@inject ClippyService clippy
+
+<div class="row" style="margin-top:15px;">
+    <div class="col">
+        <h5>Session Message History</h5>
+    </div>
+    <div class="col clearfix" style="margin-left:15px;">
+        <button class="btn btn-light float-end" onclick="@BackupConversation"><i class="oi oi-data-transfer-download" /></button>
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SessionId {get;set;} = string.Empty;
+
+    async Task BackupConversation()
+    {
+        await clippy.BackupConversation(SessionId, false);
+    }
+}

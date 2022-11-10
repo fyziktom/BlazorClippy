@@ -1,0 +1,20 @@
+﻿@using IBM.Watson.Assistant.v2.Model
+
+<div class="row" style="margin-top:3px;">
+    <div class="col">
+        <span>
+            #@Intent.Intent
+            @if (IsCaptured)
+            {
+                <i class="oi oi-check bg-success" />
+            }
+        </span>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RuntimeIntent Intent { get; set; } = new RuntimeIntent();
+    [Parameter]
+    public bool IsCaptured { get; set; } = false;
+}

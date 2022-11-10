@@ -1,0 +1,20 @@
+﻿<div class="row" style="margin-top:5px;">
+    <div class="col">
+        <div class="row" style="margin-top:10px;">
+            <div class="col">
+                <h6>Intents:</h6>
+            </div>
+        </div>
+        @foreach (var intent in Item.Intents)
+        {
+            var iscaptured = Item.FoundIntents.ContainsKey(intent.Intent);
+            <IntentItemSmall Intent="@intent" IsCaptured="@iscaptured" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public AnalyzedObjectDataItem Item { get; set; } = new AnalyzedObjectDataItem();
+}
+

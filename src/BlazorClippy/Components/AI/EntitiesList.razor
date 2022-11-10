@@ -1,0 +1,19 @@
+﻿<div class="row" style="margin-top:5px;">
+    <div class="col">
+        <div class="row" style="margin-top:2px;">
+            <div class="col">
+                <h6>Entities:</h6>
+            </div>
+        </div>
+        @foreach (var entity in Item.Entities)
+        {
+            var iscaptured = Item.FoundEntities.ContainsKey($"{entity.Entity}:{entity.Value}");
+            <EntityItemSmall Entity="@entity" IsCaptured="@iscaptured" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public AnalyzedObjectDataItem Item { get; set; } = new AnalyzedObjectDataItem();
+}

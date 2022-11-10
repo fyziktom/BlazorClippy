@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IBM.Watson.TextToSpeech.v1"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IBM.Watson.LanguageTranslator.v3", "..\..\watson\dotnet-standard-sdk\src\IBM.Watson.LanguageTranslator.v3\IBM.Watson.LanguageTranslator.v3.csproj", "{57B34B62-1ADB-46F5-93FE-D960EB04E0B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorClippyWatson", "BlazorClippyWatson\BlazorClippyWatson.csproj", "{4798DB6A-7021-46D8-9D52-27043B9FA10B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClippyWatson", "BlazorClippyWatson\BlazorClippyWatson.csproj", "{4798DB6A-7021-46D8-9D52-27043B9FA10B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorClippy.Demo.Console", "BlazorClippy.Demo.Console\BlazorClippy.Demo.Console.csproj", "{126E96A8-5403-457E-9AF0-B88DDF74995C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClippy.Demo.Console", "BlazorClippy.Demo.Console\BlazorClippy.Demo.Console.csproj", "{126E96A8-5403-457E-9AF0-B88DDF74995C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

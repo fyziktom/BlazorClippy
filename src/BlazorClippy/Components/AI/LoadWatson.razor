@@ -1,0 +1,33 @@
+﻿@inject ClippyService clippy
+
+<div class="row" style="margin-top:2px;">
+    <div class="col">
+        <button class="btn btn-primary w-100" onclick="@(async () => await LoadWatsonAssistant())">Load Watson</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SessionId { get; set; } = string.Empty;
+    [Parameter]
+    public EventCallback<string> SessionIdChanged { get; set; }
+    async Task Load()
+    {
+        await clippy.Load();
+    }
+
+    async Task LoadWatsonAssistant()
+    {
+        // load clippy
+        await Load();
+
+        var res = await clippy.StartWatsonSession(clippy.WatsonApiUrl);
+        if (res.Item1)
+        {
+            SessionId = res.Item2;
+            await SessionIdChanged.InvokeAsync(SessionId);
+        }
+        Console.WriteLine("Session Id: " + SessionId);
+        await InvokeAsync(StateHasChanged);
+    }
+}

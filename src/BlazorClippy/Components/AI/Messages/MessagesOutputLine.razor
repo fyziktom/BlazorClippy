@@ -1,0 +1,22 @@
+﻿@if (Message != null)
+{
+    <div class="row" style="margin-top:5px;">
+        <div class="col">
+            <span>
+                @(Message.Timestamp.ToString("MM.dd.yyyy hh:mm:ss"))
+            </span>
+        </div>
+    </div>
+    <div class="row" style="margin-top:5px;">
+        <div class="col w-100" style="min-width: 280px;">
+            <SentMessage Message="@Message" />
+        </div>
+        <div class="col w-100" style="min-width: 280px;">
+            <ReceivedMessage Message="@Message" />
+        </div>
+    </div>
+}
+@code {
+    [Parameter]
+    public WatsonMessageRequestRecord? Message { get; set; }
+}

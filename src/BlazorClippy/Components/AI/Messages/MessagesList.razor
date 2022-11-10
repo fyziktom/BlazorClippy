@@ -1,0 +1,54 @@
+﻿@inject ClippyService clippy
+
+<div class="row" style="margin-top:5px;">
+    <div class="col">
+        <div class="row" style="margin-top:5px;">
+            <div class="col">
+                <span>Questions</span>
+            </div>
+            <div class="col">
+                <span>Answers</span>
+            </div>
+        </div>
+        @if (clippy != null)
+        {
+            var first = true;
+            @foreach (var message in clippy.GetMessageHistory(SessionId, true))
+            {
+                if (first)
+                {
+                    <div class="row" style="margin-top:5px;">
+                        <div class="col">
+                            <h6>
+                                Latest Message
+                            </h6>
+                        </div>
+                    </div>
+                }
+                <MessagesOutputLine Message="@message" />
+                @if (first)
+                {
+                    <hr />
+                    <div class="row" style="margin-top:5px;">
+                        <div class="col">
+                            <h6>
+                                Older Messages
+                            </h6>
+                        </div>
+                    </div>
+                    first = false;
+                }
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SessionId { get; set; } = string.Empty;
+
+    public async Task Refresh()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

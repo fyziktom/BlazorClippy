@@ -1,0 +1,30 @@
+﻿
+<div class="row" style="margin-top:10px;">
+    <div class="col">
+        <h6>Name: @Item.Name</h6>
+    </div>
+</div>
+<div class="row" style="margin-top:15px;">
+    <div class="col">
+        <h6>Actual Detailed Marked Hash: @Item.CapturedMarkerDetailedHash</h6>
+    </div>
+</div>
+<div class="row" style="margin-top:10px;">
+    <div class="col">
+        <h6>Is Identified: @Item.IsIdentified</h6>
+    </div>
+</div>
+<div class="row" style="margin-top:15px;">
+    <div class="col">
+        <IntentsList Item="@Item" />
+    </div>
+    <div class="col">
+        <EntitiesList Item="@Item" />
+    </div>
+</div>
+<hr />
+
+@code {
+    [Parameter]
+    public AnalyzedObjectDataItem Item { get; set; } = new AnalyzedObjectDataItem();
+}

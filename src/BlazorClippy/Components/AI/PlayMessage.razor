@@ -1,0 +1,48 @@
+﻿@inject ClippyService clippy
+
+@if (!string.IsNullOrEmpty(Response))
+{
+    <div class="row" style="margin-top:15px;">
+        <div class="col">
+            <h5>Listen last message in English</h5>
+        </div>
+        <div class="col clearfix" style="margin-left:15px;">
+            @if (!string.IsNullOrEmpty(audiodata))
+            {
+                <audio autoplay
+                       controls
+                       src="@audiodata"
+                       type="audio/wav"
+                       name="media"
+                       title="Respond"
+                       style="min-height: 30px; max-height: 60px; width: 100%; min-width: 150px; max-width: 500px;" />
+            }
+            <button class="btn btn-light float-end" onclick="@PlayLastMessage"><i class="oi oi-play-circle" /></button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Response { get; set; } = string.Empty;
+    [Parameter]
+    public string LanguageTranslation { get; set; } = "cs-en";
+    public string LanguageSynthesis { get; set; } = "en-US-LisaV3Voice";
+
+    string audiodata = "";
+
+    async Task PlayLastMessage()
+    {
+        var translatedText = await clippy.Translate(Response, LanguageTranslation);
+        if (translatedText.Item1)
+        {
+            var res = await clippy.Synthetise(translatedText.Item2, LanguageSynthesis);
+            if (res.Item1)
+            {
+                audiodata = res.Item2;
+                Console.WriteLine(audiodata);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+}

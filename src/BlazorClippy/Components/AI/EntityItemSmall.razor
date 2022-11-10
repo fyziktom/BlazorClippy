@@ -1,0 +1,19 @@
+﻿@using IBM.Watson.Assistant.v2.Model
+
+<div class="row" style="margin-top:3px;">
+    <div class="col">
+        <span>@("@")@Entity.Entity:@Entity.Value 
+            @if (IsCaptured)
+            {
+                <i class="oi oi-check bg-success" />
+            }
+        </span>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RuntimeEntity Entity { get; set; } = new RuntimeEntity();
+    [Parameter]
+    public bool IsCaptured { get; set; } = false;
+}

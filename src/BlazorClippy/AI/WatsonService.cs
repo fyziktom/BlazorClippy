@@ -1,4 +1,5 @@
-﻿using BlazorClippyWatson.Analzyer;
+﻿using BlazorClippyWatson.AI;
+using BlazorClippyWatson.Analzyer;
 using IBM.Cloud.SDK.Core.Http;
 using IBM.Watson.Assistant.v2.Model;
 using Microsoft.AspNetCore.Components;

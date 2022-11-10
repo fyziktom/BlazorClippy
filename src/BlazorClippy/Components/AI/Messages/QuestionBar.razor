@@ -1,0 +1,96 @@
+﻿@inject ClippyService clippy
+
+<div class="row" style="margin-top:10px;">
+    <div class="col">
+        <input type="text" value="@Question" @oninput="(async (EventArgs) => { await SetValue(EventArgs.Value.ToString());})" @onkeypress="onInputKeyPress" style="min-width:100%;" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string SessionId { get; set; }  = string.Empty;
+    [Parameter]
+    public string Question { get; set; } = string.Empty;
+    [Parameter]
+    public EventCallback<string> QuestionChanged { get; set; }
+    [Parameter]
+    public EventCallback<(string, WatsonMessageRequestRecord?)> OnMessageReceived { get; set; }
+
+    string response = string.Empty;
+    MD5 cryptHandler = new MD5();
+
+    private async Task SetValue(string value)
+    {
+        if (value != null)
+            Question = value;
+        else
+            Question = string.Empty;
+        await QuestionChanged.InvokeAsync(Question);
+    }
+
+    async Task onInputKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await AskWatson(Question);
+    }
+
+    async Task AskWatson(string inputquestion)
+    {
+        var maxsentenses = 3;
+
+        var questionextension = clippy.Analyzer.MarkerExtension;
+
+        cryptHandler.Value = questionextension;
+        var hash = cryptHandler.FingerPrint;
+
+        if (clippy.Analyzer.IsSomeMatch)
+            inputquestion = inputquestion + " " + hash;
+
+        var resp = await clippy.AskWatson(inputquestion, SessionId, analyzer: clippy.Analyzer);
+        if (resp.Item1)
+        {
+            if (resp.Item2 != null && resp.Item2.MessageRecord != null)
+            {
+                var matchresult = clippy.Analyzer.MatchDataItems(resp.Item2.MessageRecord);
+                // get new list of identified items
+                clippy.LastCapturedDataItems = clippy.Analyzer.GetIdentifiedDataItemsDetailedMarkers();
+
+                response = resp.Item2.answer;
+                await OnMessageReceived.InvokeAsync((response, resp.Item2.MessageRecord));
+                // speak with clippy
+                var split = resp.Item2.answer.Split('.');
+                if (split != null && split.Length > 0)
+                {
+                    if (split.Length <= maxsentenses)
+                        ;// await clippy.Speak(resp.Item2);
+                    else
+                    {
+                        var splitcount = 0;
+                        var speak = string.Empty;
+                        foreach (var sentense in split)
+                        {
+                            speak += sentense + ". ";
+                            splitcount++;
+                            if (splitcount >= maxsentenses)
+                            {
+                                //await clippy.Speak(speak);
+                                speak = string.Empty;
+                                splitcount = 0;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Question = "";
+            await QuestionChanged.InvokeAsync(Question);
+        }
+        else
+        {
+            Console.WriteLine("Cannot get answer for the question:" + inputquestion);
+            response = "Cannot get answer for the question.";
+            await OnMessageReceived.InvokeAsync((response, null));
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BlazorClippy.AI;
+using BlazorClippyWatson.AI;
 using BlazorClippyWatson.Analzyer;
 using IBM.Watson.Assistant.v2.Model;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,6 +70,14 @@ namespace BlazorClippy
         /// Url for Watson service. It is addres of API of BlazorClippy.Demo.Server app
         /// </summary>
         public string WatsonApiUrl { get; set; } = "https://localhost:7008/api";
+        /// <summary>
+        /// Watson analyzer
+        /// </summary>
+        public WatsonAssistantAnalyzer Analyzer { get; set; } = new WatsonAssistantAnalyzer();
+        /// <summary>
+        /// Last captured DataItems Ids
+        /// </summary>
+        public List<string> LastCapturedDataItems = new List<string>();
         /// <summary>
         /// Id of session of actual dialogue with Watson
         /// </summary>
