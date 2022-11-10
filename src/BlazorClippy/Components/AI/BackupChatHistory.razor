@@ -1,14 +1,13 @@
 ﻿@inject ClippyService clippy
 
-<div class="row" style="margin-top:15px;">
-    <div class="col">
-        <h5>Session Message History</h5>
-    </div>
-    <div class="col clearfix" style="margin-left:15px;">
-        <button class="btn btn-light float-end" onclick="@BackupConversation"><i class="oi oi-data-transfer-download" /></button>
-
-    </div>
-</div>
+<Row Margin="Margin.Is4.FromTop">
+    <Column>
+        <Heading Size="HeadingSize.Is5">Session Message History</Heading>
+    </Column>
+    <Column>
+        <Button Float="Float.End" Color="Color.Light" Clicked="@BackupConversation"><Icon Name="IconName.Download" /></Button>
+    </Column>
+</Row>
 
 @code {
     [Parameter]

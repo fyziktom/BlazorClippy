@@ -8,39 +8,34 @@
 
 <PageTitle>Clippy Demo</PageTitle>
 
-<hr />
-<p></p>
-<h3>Watson Clippy</h3>
-<p></p>
+<Row Margin="Margin.Is3.FromTop">
+    <Column>
+        <Heading Size="HeadingSize.Is3">Watson Clippy</Heading>
+    </Column>
+</Row>
 <LoadWatson @bind-SessionId="@SessionId" />
 
-<div class="row" style="margin-top:10px;">
-    <div class="col">
+<Row Margin="Margin.Is4.FromTop">
+        <Column>
         @if (!string.IsNullOrEmpty(SessionId))
         {
-            <div class="row" style="margin-top:10px;">
-                <div class="col">
-                    <h6>SessionId: @SessionId</h6>
-                </div>
-            </div>
-
-            <div class="row" style="margin-top:10px;">
-                <div class="col">
-                    <h6>Type your question here</h6>
-                </div>
-            </div>
+            <Row Margin="Margin.Is2.FromTop">
+                <Column>
+                    <Heading Size="HeadingSize.Is6">SessionId: @SessionId</Heading>
+                </Column>
+            </Row>
             <QuestionBar OnMessageReceived="@OnMessageReceivedHandler" QuestionChanged="@OnQuestionHandler" />
             <BackupChatHistory SessionId="@SessionId" />
-            <hr />
+            <Divider />
             <PlayMessage Response="@response" />
-            <hr />
+            <Divider />
             <MessagesList @ref=messageListRef SessionId="@SessionId" />
         }
-    </div>
-    <div class="col">
+    </Column>
+    <Column>
         <IdentifiedItemsList Analyzer="@clippy.Analyzer" />
-    </div>
-</div>
+    </Column>
+</Row>
 
 @code {
     public string SessionId { get; set; } = string.Empty;

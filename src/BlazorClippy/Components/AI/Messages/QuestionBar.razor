@@ -1,12 +1,24 @@
 ﻿@inject ClippyService clippy
 
-<div class="row" style="margin-top:10px;">
-    <div class="col">
-        <input type="text" value="@Question" @oninput="(async (EventArgs) => { await SetValue(EventArgs.Value.ToString());})" @onkeypress="onInputKeyPress" style="min-width:100%;" />
-    </div>
-</div>
+<Row Margin="Margin.Is2.FromTop">
+    <Column>
+        <Addons>
+            <Addon AddonType="AddonType.Body">
+                <TextEdit Placeholder="Type your question please"
+                          Text="@Question"
+                          TextChanged="@(async (e) => await SetValue(e))"
+                          KeyPress="onInputKeyPress" />
+            </Addon>
+            <Addon AddonType="AddonType.End">
+                <Button Color="Color.Primary" Clicked="@(async () => await AskWatson(Question))">Ask</Button>
+            </Addon>
+        </Addons>
+    </Column>
+</Row>
 
 @code {
+    [Parameter]
+    public bool SpeakAnswersWithClippy { get; set; } = false;
     [Parameter]
     public string SessionId { get; set; }  = string.Empty;
     [Parameter]
@@ -62,7 +74,10 @@
                 if (split != null && split.Length > 0)
                 {
                     if (split.Length <= maxsentenses)
-                        ;// await clippy.Speak(resp.Item2);
+                    {
+                        if (SpeakAnswersWithClippy)
+                            await clippy.Speak(resp.Item2.answer);
+                    }
                     else
                     {
                         var splitcount = 0;
@@ -73,7 +88,8 @@
                             splitcount++;
                             if (splitcount >= maxsentenses)
                             {
-                                //await clippy.Speak(speak);
+                                if (SpeakAnswersWithClippy)
+                                    await clippy.Speak(speak);
                                 speak = string.Empty;
                                 splitcount = 0;
                             }
@@ -89,6 +105,8 @@
         {
             Console.WriteLine("Cannot get answer for the question:" + inputquestion);
             response = "Cannot get answer for the question.";
+            if (SpeakAnswersWithClippy)
+                await clippy.Speak(response);
             await OnMessageReceived.InvokeAsync((response, null));
         }
         await InvokeAsync(StateHasChanged);

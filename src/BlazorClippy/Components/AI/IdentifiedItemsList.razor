@@ -1,21 +1,22 @@
-﻿<div class="row" style="margin-top:15px;">
-    <div class="col">
-        <h5>Identified Items</h5>
-    </div>
-</div>
-@if (Analyzer != null && Analyzer.DataItems.Count > 0)
-{
-    <div class="row" style="margin-top:15px;">
-        <div class="col">
-            <h6>Actual Hash: @Analyzer.MarkerExtensionHash</h6>
-        </div>
-    </div>
-    <hr />
-    @foreach (var item in Analyzer.DataItems.Values)
-    {
-        <AnalyzedDataItemComponent Item="@item" />
-    }
-}
+﻿
+<Card>
+    <CardHeader>Identified Items</CardHeader>
+    <CardBody>
+        @if (Analyzer != null && Analyzer.DataItems.Count > 0)
+        {
+            <Row Margin="Margin.Is4.FromTop">
+                <Column>
+                    <Heading Size="HeadingSize.Is6">Actual Hash: @Analyzer.MarkerExtensionHash</Heading>
+                </Column>
+            </Row>
+            <hr />
+            @foreach (var item in Analyzer.DataItems.Values)
+            {
+                <AnalyzedDataItemComponent Item="@item" />
+            }
+        }
+    </CardBody>
+</Card>
 
 @code {
     [Parameter]

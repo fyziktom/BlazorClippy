@@ -1,15 +1,12 @@
-﻿<div class="row" style="margin-top:2px;">
-    <div class="col w-100" style="min-width: 280px;">
-        <div class="card bg-opacity-25 bg-warning">
-            <div class="card-body">
-                @if (Message != null)
-                {
-                    <p class="card-text">@((MarkupString)Message.TextResponse)</p>
-                }
-            </div>
-        </div>
-    </div>
-</div>
+﻿
+<Card Background="Background.Warning" Class="bg-opacity-25" Style="min-width: 280px;" Margin="Margin.Is2.FromTop">
+    <CardBody>
+        @if (Message != null) 
+        { 
+            <CardText>@((MarkupString)Message.TextResponse)</CardText>
+        }
+    </CardBody>
+</Card>
 
 @code {
     [Parameter]

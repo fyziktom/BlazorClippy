@@ -1,15 +1,16 @@
 ﻿@using IBM.Watson.Assistant.v2.Model
 
-<div class="row" style="margin-top:3px;">
-    <div class="col">
-        <span>@("@")@Entity.Entity:@Entity.Value 
+<Row Margin="Margin.Is2.FromTop">
+    <Column>
+        <Span>
+            @("@")@Entity.Entity:@Entity.Value
             @if (IsCaptured)
             {
-                <i class="oi oi-check bg-success" />
+                <Icon Name="IconName.Check" TextColor="TextColor.Success" />
             }
-        </span>
-    </div>
-</div>
+        </Span>
+    </Column>
+</Row>
 
 @code {
     [Parameter]

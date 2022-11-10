@@ -1,10 +1,10 @@
 ﻿@inject ClippyService clippy
 
-<div class="row" style="margin-top:2px;">
-    <div class="col">
-        <button class="btn btn-primary w-100" onclick="@(async () => await LoadWatsonAssistant())">Load Watson</button>
-    </div>
-</div>
+<Row Margin="Margin.Is2.FromTop">
+    <Column>
+       <Button Color="Color.Primary" Block Clicked="LoadWatsonAssistant">Load Watson</Button>
+    </Column>
+</Row>
 
 @code {
     [Parameter]

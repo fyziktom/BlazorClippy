@@ -1,17 +1,18 @@
-﻿<div class="row" style="margin-top:5px;">
-    <div class="col">
-        <div class="row" style="margin-top:10px;">
-            <div class="col">
-                <h6>Intents:</h6>
-            </div>
-        </div>
+﻿
+<Row Margin="Margin.Is2.FromTop">
+    <Column>
+        <Row Margin="Margin.Is2.FromTop">
+            <Column>
+                <Heading Size="HeadingSize.Is6">Intents:</Heading>
+            </Column>
+        </Row>
         @foreach (var intent in Item.Intents)
         {
             var iscaptured = Item.FoundIntents.ContainsKey(intent.Intent);
             <IntentItemSmall Intent="@intent" IsCaptured="@iscaptured" />
         }
-    </div>
-</div>
+    </Column>
+</Row>
 
 @code {
     [Parameter]

@@ -1,17 +1,18 @@
-﻿<div class="row" style="margin-top:5px;">
-    <div class="col">
-        <div class="row" style="margin-top:2px;">
-            <div class="col">
-                <h6>Entities:</h6>
-            </div>
-        </div>
+﻿
+<Row Margin="Margin.Is5.FromTop">
+    <Column>
+        <Row Margin="Margin.Is2.FromTop">
+            <Column>
+                <Heading Size="HeadingSize.Is6">Entities:</Heading>
+            </Column>
+        </Row>
         @foreach (var entity in Item.Entities)
         {
             var iscaptured = Item.FoundEntities.ContainsKey($"{entity.Entity}:{entity.Value}");
             <EntityItemSmall Entity="@entity" IsCaptured="@iscaptured" />
         }
-    </div>
-</div>
+    </Column>
+</Row>
 
 @code {
     [Parameter]
