@@ -1,15 +1,9 @@
 ﻿
 <Card>
-    <CardHeader>Identified Items</CardHeader>
+    <CardHeader>Identified Items <HashToCopy Hash="@Analyzer.MarkerExtensionHash" /></CardHeader>
     <CardBody>
         @if (Analyzer != null && Analyzer.DataItems.Count > 0)
         {
-            <Row Margin="Margin.Is4.FromTop">
-                <Column>
-                    <Heading Size="HeadingSize.Is6">Actual Hash: @Analyzer.MarkerExtensionHash</Heading>
-                </Column>
-            </Row>
-            <hr />
             @foreach (var item in Analyzer.DataItems.Values)
             {
                 <AnalyzedDataItemComponent Item="@item" />

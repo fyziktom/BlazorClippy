@@ -1,15 +1,7 @@
 ﻿@inject ClippyService clippy
 
 <Row Margin="Margin.Is4.FromTop">
-    <Column>
-        <Row Margin="Margin.Is2.FromTop">
-            <Column>
-                <Span>Questions</Span>
-            </Column>
-            <Column>
-                <Span>Answers</Span>
-            </Column>
-        </Row>
+    <Column Overflow="Overflow.Auto" Style="max-height:600px;height:600px;">
         <Row Margin="Margin.Is2.FromTop">
             <Column>
                 @if (clippy != null)
@@ -21,7 +13,7 @@
                         {
                             <Row Margin="Margin.Is4.FromTop">
                                 <Column>
-                                    <Heading Size="HeadingSize.Is6">Latest Message</Heading>
+                                    <Heading Size="HeadingSize.Is6">New Message</Heading>
                                 </Column>
                             </Row>
                         }
@@ -31,7 +23,7 @@
                             <Divider />
                             <Row Margin="Margin.Is4.FromTop">
                                 <Column>
-                                    <Heading Size="HeadingSize.Is6">Older Messages</Heading>
+                                    <Small>Older Messages</Small>
                                 </Column>
                             </Row>
                             first = false;

@@ -6,7 +6,11 @@
             @("@")@Entity.Entity:@Entity.Value
             @if (IsCaptured)
             {
-                <Icon Name="IconName.Check" TextColor="TextColor.Success" />
+                <Icon Name="IconName.Check" TextColor="TextColor.Success" Margin="Margin.Is2.FromStart" />
+            }
+            else 
+            {
+                <Icon Name="IconName.QuestionCircle" TextColor="TextColor.Info" Margin="Margin.Is2.FromStart" />
             }
         </Span>
     </Column>

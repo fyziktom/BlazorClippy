@@ -4,6 +4,7 @@
         @if (Message != null) 
         { 
             <CardText>@((MarkupString)Message.TextResponse)</CardText>
+            <PlayMessage Response="@Message.TextResponse" />
         }
     </CardBody>
 </Card>

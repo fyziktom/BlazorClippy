@@ -8,11 +8,6 @@
 
 <PageTitle>Clippy Demo</PageTitle>
 
-<Row Margin="Margin.Is3.FromTop">
-    <Column>
-        <Heading Size="HeadingSize.Is3">Watson Clippy</Heading>
-    </Column>
-</Row>
 <LoadWatson @bind-SessionId="@SessionId" />
 
 <Row Margin="Margin.Is4.FromTop">
@@ -21,15 +16,13 @@
         {
             <Row Margin="Margin.Is2.FromTop">
                 <Column>
-                    <Heading Size="HeadingSize.Is6">SessionId: @SessionId</Heading>
+                    <Small>SessionId: @SessionId</Small>
                 </Column>
             </Row>
-            <QuestionBar OnMessageReceived="@OnMessageReceivedHandler" QuestionChanged="@OnQuestionHandler" />
             <BackupChatHistory SessionId="@SessionId" />
             <Divider />
-            <PlayMessage Response="@response" />
-            <Divider />
-            <MessagesList @ref=messageListRef SessionId="@SessionId" />
+            <QuestionBar OnMessageReceived="@OnMessageReceivedHandler" QuestionChanged="@OnQuestionHandler" />
+            <MessagesList @ref=messageListRef SessionId="@SessionId" />                    
         }
     </Column>
     <Column>

@@ -314,6 +314,10 @@ namespace BlazorClippy
         {
             await js.InvokeVoidAsync("blazorClippy.stop");
         }
+        public async Task CopyToClipboard(string text)
+        {
+            await js.InvokeVoidAsync("blazorClippy.copyToClipboard", text);
+        }
         /// <summary>
         /// Get list of animations
         /// </summary>

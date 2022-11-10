@@ -1,0 +1,14 @@
+﻿@inject ClippyService clippy
+
+<Tooltip Text="@Hash" Float="Float.End">
+    <Button Size="Size.ExtraSmall" Margin="Margin.Is2.FromStart" Float="Float.End" Color="Color.Light" Clicked="copyHash">Hash</Button>
+</Tooltip>
+@code {
+    [Parameter]
+    public string Hash { get; set; } = string.Empty;
+
+    private async Task copyHash()
+    {
+        await clippy.CopyToClipboard(Hash);
+    }
+}
