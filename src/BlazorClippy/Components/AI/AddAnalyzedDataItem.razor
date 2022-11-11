@@ -16,7 +16,7 @@
                             <TextEdit Placeholder="Item Name" @bind-Text="@Item.Name" />
                         </Field>
                     </Column>
-                    </Row>
+                </Row>
                 <Row>
                     <Column>
                         <Field>
@@ -97,6 +97,7 @@
 }
 
 @code {
+    [Inject] IMessageService MessageService { get; set; }
 
     [Parameter]
     public bool WithButton { get; set; } = false;
@@ -220,6 +221,10 @@
 
     private async Task add()
     {
+        if (!await MessageService.Confirm("Are you sure you want to add this Item?", "Add Item"))
+        {
+            return;
+        }
         if (Item == null)
         {
             await NotificationService.Error("Panel cannot be null.", "Cannot Add Item");
