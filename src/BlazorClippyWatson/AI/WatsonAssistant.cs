@@ -135,6 +135,33 @@ namespace BlazorClippyWatson.AI
             }
         }
 
+        public async Task<(bool, string)> GetSkills(string assistantId)
+        {
+            if (Service == null)
+                return (false, "Please initiate the Service.");
+
+            var result = Service.GetSkills(
+                assistantId: assistantId
+                );
+
+            Console.WriteLine(result.Response);
+
+            var session = result.Result;
+            return (true, JsonConvert.SerializeObject(session));
+        }
+
+        public async Task<(bool, List<IBM.Watson.Assistant.v2.Model.Environment>?)> ListEnvironments(string assistantId)
+        {
+            if (Service == null)
+                return (false, null);
+
+            var result = Service.ListEnvironments(
+                assistantId: assistantId
+                );
+
+            return (true, result.Result.Environments);
+        }
+
         /// <summary>
         /// Get history of conversation
         /// </summary>

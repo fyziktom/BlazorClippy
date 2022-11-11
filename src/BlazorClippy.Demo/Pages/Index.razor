@@ -5,6 +5,7 @@
 @page "/"
 @inject ClippyService clippy
 @inject AppData AppData
+@inject HttpClient Http
 
 <PageTitle>Clippy Demo</PageTitle>
 
@@ -35,122 +36,14 @@
     string response = "";
     MessagesList? messageListRef;
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             // create data items which should be captured
-            var dataitems = new List<AnalyzedObjectDataItem>();
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "dokumentace3dModel",
-                    IsWhenAllOnly = true,
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "podklady", Value = "3d model" }
-                    },
-                    Intents = new List<RuntimeIntent>()
-                    {
-                        new RuntimeIntent(){ Intent = "my_máme" }
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "dokumentaceVykres",
-                    IsWhenAllOnly = true,
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "podklady", Value = "výkres" },
-                    },
-                    Intents = new List<RuntimeIntent>()
-                    {
-                        new RuntimeIntent(){ Intent = "my_máme" }
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "material produktu",
-                    IsWhenAllOnly = true,
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "materiál", Value = "" },
-                        new RuntimeEntity(){ Entity = "produkt", Value = "produkt" },
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "material komponenty",
-                    IsWhenAllOnly = true,
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "materiál", Value = "" },
-                        new RuntimeEntity(){ Entity = "komponenta", Value = "komponenta" },
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "maji server",
-                    IsWhenAllOnly = true,
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "itinfrastruktura", Value = "server" },
-                    },
-                    Intents = new List<RuntimeIntent>()
-                    {
-                        new RuntimeIntent(){ Intent = "my_máme" }
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "Velikost produktu",
-                    IsWhenAllOnly = true,
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "produkt", Value = "produkt" }
-                    },
-                    Intents = new List<RuntimeIntent>()
-                    {
-                        new RuntimeIntent(){ Intent = "velikost_produktu" }
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "kategorie elektroniky",
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "elektronika", Value = "" }
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "pajeni",
-                    Intents = new List<RuntimeIntent>()
-                    {
-                        new RuntimeIntent(){ Intent = "kontrola_pájení" }
-                    }
-                });
-
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "velikost_mala",
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "malý_produk", Value = "malý" }
-                    }
-                });
-            dataitems.Add(new AnalyzedObjectDataItem()
-                {
-                    Name = "velikost_velka",
-                    Entities = new List<RuntimeEntity>()
-                    {
-                        new RuntimeEntity(){ Entity = "velký_produkt", Value = "velký" }
-                    }
-                });
-
-            // add dataitems to analyzer
-            foreach (var di in dataitems)
-                clippy.Analyzer.AddDataItem(di);
-
+            var storeddataitems = await Http.GetStringAsync("dataitems.mmd");
+            if (storeddataitems != null)
+                await clippy.LoadDataItemsFromMermaid(storeddataitems);
         }
         base.OnAfterRender(firstRender);
     }

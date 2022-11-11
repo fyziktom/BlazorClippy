@@ -411,30 +411,9 @@
         var resp = await clippy.AskWatson(inputquestion, sessionId, analyzer:analyzer);
         if (resp.Item1)
         {
-            if (resp.Item2 != null)
+            if (resp.Item2 != null && resp.Item2.MessageRecord != null)
             {
-
-                var mr = new BlazorClippyWatson.AI.WatsonMessageRequestRecord(sessionId, inputquestion);
-                foreach (var param in typeof(BlazorClippy.AI.WatsonMessageRequestRecord).GetProperties())
-                {
-                    try
-                    {
-                        if (param.CanWrite)
-                        {
-                            var value = param.GetValue(resp.Item2.MessageRecord);
-                            var paramname = param.Name;
-                            var pr = typeof(BlazorClippyWatson.AI.WatsonMessageRequestRecord).GetProperties().FirstOrDefault(p => p.Name == paramname);
-                            if (pr != null)
-                                pr.SetValue(mr, value);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Cannot load parameter." + ex.Message);
-                    }
-                }
-
-                var matchresult = analyzer.MatchDataItems(mr);
+                var matchresult = analyzer.MatchDataItems(resp.Item2.MessageRecord);
                 // get new list of identified items
                 lastCapturedDataItems = analyzer.GetIdentifiedDataItemsDetailedMarkers();
 

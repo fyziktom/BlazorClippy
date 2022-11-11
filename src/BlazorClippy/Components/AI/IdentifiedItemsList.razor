@@ -11,7 +11,8 @@
                              WithButtonText="false" 
                              FloatButton="Float.End" 
                              Item="@(new AnalyzedObjectDataItem())" />
-        </CardHeader>
+        <Button Float="Float.End" Color="Color.Light" Clicked="@BackupDataItems"><Icon Name="IconName.Download" /></Button>
+    </CardHeader>
     <CardBody>
         @if (Analyzer != null && Analyzer.DataItems.Count > 0)
         {
@@ -92,6 +93,11 @@
                     visibleItems.Remove(id);
             }
         }
+    }
+
+    private async Task BackupDataItems(MouseEventArgs e)
+    {
+        await clippy.SaveDataItemsAsMermaid();
     }
 
     private void OnAddedDataItemHandler(string id)
