@@ -591,7 +591,6 @@ namespace BlazorClippyWatson.Analzyer
             "rentgen:",
             "rentgen:filament",
             "rentgen:zákony",
-            "rentgen:filament",
             "rentgen:kolimátor",
             "rentgen:poziční systém",
             "rentgen:stínění",
