@@ -1,11 +1,15 @@
 ﻿@inject ClippyService clippy
 
 <Tooltip Text="@Hash" Float="Float.End">
-    <Button Size="Size.ExtraSmall" Margin="Margin.Is2.FromStart" Float="Float.End" Color="Color.Light" Clicked="copyHash">Hash</Button>
+    <Button Size="Size.ExtraSmall" Margin="Margin" Float="Float" Color="Color.Light" Clicked="copyHash">Hash</Button>
 </Tooltip>
 @code {
     [Parameter]
     public string Hash { get; set; } = string.Empty;
+    [Parameter]
+    public Float Float { get; set; } = Float.Default;
+    [Parameter]
+    public IFluentSpacing Margin { get; set; } = Blazorise.Margin.Is2.FromStart.Is2.FromEnd;
 
     private async Task copyHash()
     {

@@ -4,10 +4,40 @@
     <CardBody>
         @if (Analyzer != null && Analyzer.DataItems.Count > 0)
         {
-            @foreach (var item in Analyzer.DataItems.Values.OrderBy(i => !i.IsIdentified))
-            {
-                <AnalyzedDataItemComponent Item="@item" />
-            }
+            <Accordion>
+                @foreach (var item in Analyzer.DataItems.Values.OrderBy(i => !i.IsIdentified))
+                {
+                    var isVisible = IsVisibleItem(item.Id);
+                    <Collapse Visible="@isVisible">
+                        <CollapseHeader>
+                            @item.Name
+                            @if (item.IsIdentified)
+                            {
+                                <Badge Color="Color.Success" Margin="Margin.Is2.FromStart">Is Identified</Badge>
+                            }
+                            else
+                            {
+                                <Badge Color="Color.Warning" Margin="Margin.Is2.FromStart">Not Identified yet</Badge>
+                            }
+                            <Button Float="Float.End" Clicked="@(() => SetVisiblility(item.Id))">
+                                @if (isVisible)
+                                {
+                                    <Icon Name="IconName.ArrowUp" />
+                                }
+                                else
+                                {
+                                    <Icon Name="IconName.ArrowDown" />
+                                }
+                            </Button>
+                            <HashToCopy Hash="@item.CapturedMarkerDetailedHash" Float="Float.End" />
+                        
+                        </CollapseHeader>
+                        <CollapseBody>
+                            <AnalyzedDataItemComponent Item="@item" />
+                         </CollapseBody>
+                    </Collapse>
+                }
+            </Accordion>
         }
     </CardBody>
 </Card>
@@ -15,4 +45,23 @@
 @code {
     [Parameter]
     public WatsonAssistantAnalyzer Analyzer { get; set; } = new WatsonAssistantAnalyzer();
+
+    public Dictionary<string, bool> visibleItems { get; set; } = new Dictionary<string, bool>();
+
+    private bool IsVisibleItem(string id)
+    {
+        if (visibleItems.TryGetValue(id, out var res))
+            return res;
+        else
+            return false;
+    }
+
+    private void SetVisiblility(string id)
+    {
+        if (visibleItems.TryGetValue(id, out var res))
+            visibleItems[id] = !res;
+        else
+            visibleItems.TryAdd(id, true);
+        StateHasChanged();
+    }
 }

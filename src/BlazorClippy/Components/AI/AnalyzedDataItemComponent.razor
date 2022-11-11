@@ -1,5 +1,7 @@
 ﻿
 <Card>
+    @if (DisplayHeader)
+    {
     <CardHeader>
         @Item.Name
         @if (Item.IsIdentified)
@@ -12,6 +14,7 @@
         }
         <HashToCopy Hash="@Item.CapturedMarkerDetailedHash" />
     </CardHeader>
+    }
     <CardBody>
         <Row>
             <Column>
@@ -27,4 +30,6 @@
 @code {
     [Parameter]
     public AnalyzedObjectDataItem Item { get; set; } = new AnalyzedObjectDataItem();
+    [Parameter]
+    public bool DisplayHeader { get; set; } = false;
 }
