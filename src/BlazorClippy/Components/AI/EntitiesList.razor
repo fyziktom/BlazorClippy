@@ -9,7 +9,7 @@
         @foreach (var entity in Item.Entities)
         {
             var iscaptured = Item.FoundEntities.ContainsKey($"{entity.Entity}:{entity.Value}");
-            <EntityItemSmall Entity="@entity" IsCaptured="@iscaptured" />
+            <EntityItemSmall Entity="@entity" IsCaptured="@iscaptured" OnRemoveEntity="@OnRemoveEntityHandler" />
         }
     </Column>
 </Row>
@@ -17,4 +17,19 @@
 @code {
     [Parameter]
     public AnalyzedObjectDataItem Item { get; set; } = new AnalyzedObjectDataItem();
+    [Parameter]
+    public EventCallback<AnalyzedObjectDataItem> ItemChanged { get; set; }
+
+    private void OnDataItemRefreshedHandler(string id)
+    {
+        ItemChanged.InvokeAsync(Item);
+        StateHasChanged();
+    }
+
+    private void OnRemoveEntityHandler(RuntimeEntity entity)
+    {
+        Item.Entities.Remove(entity);
+        ItemChanged.InvokeAsync(Item);
+        StateHasChanged();
+    }
 }

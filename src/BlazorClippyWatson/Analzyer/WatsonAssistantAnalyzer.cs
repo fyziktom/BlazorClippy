@@ -87,23 +87,20 @@ namespace BlazorClippyWatson.Analzyer
         /// Add DataItem which should be captured during dialogue
         /// </summary>
         /// <param name="dataItem"></param>
-        public void AddDataItem(AnalyzedObjectDataItem dataItem)
+        public bool AddDataItem(AnalyzedObjectDataItem dataItem)
         {
             if (!DataItems.ContainsKey(dataItem.CapturedMarker))
-            {
-                DataItems.TryAdd(dataItem.CapturedMarker, dataItem);
-            }            
+                return DataItems.TryAdd(dataItem.CapturedMarker, dataItem);
+            
+            return false;
         }
         /// <summary>
         /// Remove data item
         /// </summary>
         /// <param name="dataItemMarker"></param>
-        public void RemoveDataItem(string dataItemMarker)
+        public bool RemoveDataItem(string dataItemMarker)
         {
-            if (DataItems.TryRemove(dataItemMarker, out var di))
-            {
-                return;
-            }
+            return DataItems.TryRemove(dataItemMarker, out var di);
         }
         /// <summary>
         /// Get exact data item based on its Id

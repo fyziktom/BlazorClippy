@@ -18,7 +18,7 @@
     <CardBody>
         <Row>
             <Column>
-                <IntentsList Item="@Item" />
+                <IntentsList Item="@Item" ItemChanged="@OnItemChangedHandler" />
             </Column>
             <Column>
                 <EntitiesList Item="@Item" />
@@ -32,4 +32,15 @@
     public AnalyzedObjectDataItem Item { get; set; } = new AnalyzedObjectDataItem();
     [Parameter]
     public bool DisplayHeader { get; set; } = false;
+    [Parameter]
+    public EventCallback<AnalyzedObjectDataItem> ItemChanged { get; set; }
+
+    private void OnItemChangedHandler(AnalyzedObjectDataItem e)
+    {
+        if (e != null)
+        {
+            Item = e;
+            ItemChanged.InvokeAsync(Item);
+        }
+    }
 }

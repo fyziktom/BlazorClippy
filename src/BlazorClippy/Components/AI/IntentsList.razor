@@ -9,7 +9,7 @@
         @foreach (var intent in Item.Intents)
         {
             var iscaptured = Item.FoundIntents.ContainsKey(intent.Intent);
-            <IntentItemSmall Intent="@intent" IsCaptured="@iscaptured" />
+            <IntentItemSmall Intent="@intent" IsCaptured="@iscaptured" OnRemoveIntent="@OnRemoveIntentHandler" />
         }
     </Column>
 </Row>
@@ -17,5 +17,19 @@
 @code {
     [Parameter]
     public AnalyzedObjectDataItem Item { get; set; } = new AnalyzedObjectDataItem();
+    [Parameter]
+    public EventCallback<AnalyzedObjectDataItem> ItemChanged { get; set; }
+
+    private void OnDataItemRefreshedHandler(string id)
+    {
+        ItemChanged.InvokeAsync(Item);
+        StateHasChanged();
+    }
+    private void OnRemoveIntentHandler(RuntimeIntent intent)
+    {
+        Item.Intents.Remove(intent);
+        ItemChanged.InvokeAsync(Item);
+        StateHasChanged();
+    }
 }
 

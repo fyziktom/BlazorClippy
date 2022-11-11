@@ -1,6 +1,16 @@
 ﻿
 <Card>
-    <CardHeader>Identified Items <HashToCopy Hash="@Analyzer.MarkerExtensionHash" /></CardHeader>
+    <CardHeader>
+        <Span>Identified Items</Span>
+        <HashToCopy Hash="@Analyzer.MarkerExtensionHash" />
+        <AddAnalyzedDataItem @ref=addAnalyzedDataItemRef 
+                             Added="@OnAddedDataItemHandler" 
+                             WithButton="true" 
+                             WithButtonIcon=true 
+                             WithButtonText="false" 
+                             FloatButton="Float.End" 
+                             Item="@(new AnalyzedObjectDataItem())" />
+        </CardHeader>
     <CardBody>
         @if (Analyzer != null && Analyzer.DataItems.Count > 0)
         {
@@ -47,6 +57,7 @@
     public WatsonAssistantAnalyzer Analyzer { get; set; } = new WatsonAssistantAnalyzer();
 
     public Dictionary<string, bool> visibleItems { get; set; } = new Dictionary<string, bool>();
+    AddAnalyzedDataItem? addAnalyzedDataItemRef;
 
     private bool IsVisibleItem(string id)
     {
@@ -62,6 +73,11 @@
             visibleItems[id] = !res;
         else
             visibleItems.TryAdd(id, true);
+        StateHasChanged();
+    }
+    
+    private void OnAddedDataItemHandler(string id)
+    {
         StateHasChanged();
     }
 }

@@ -13,6 +13,7 @@
                 <Icon Name="IconName.QuestionCircle" TextColor="TextColor.Info" Margin="Margin.Is2.FromStart" />
             }
         </Span>
+        <Button Float="Float.End" Clicked="@Remove"><Icon Name="IconName.MinusCircle" TextColor="TextColor.Danger" /></Button>
     </Column>
 </Row>
 
@@ -21,4 +22,19 @@
     public RuntimeIntent Intent { get; set; } = new RuntimeIntent();
     [Parameter]
     public bool IsCaptured { get; set; } = false;
+    [Parameter]
+    public EventCallback<RuntimeIntent> IntentChanged { get; set; }
+    [Parameter]
+    public EventCallback<RuntimeIntent> OnRemoveIntent { get; set; }
+
+    private void OnDataItemRefreshedHandler(string id)
+    {
+        IntentChanged.InvokeAsync(Intent);
+        StateHasChanged();
+    }
+
+    private void Remove()
+    {
+        OnRemoveIntent.InvokeAsync(Intent);
+    }
 }

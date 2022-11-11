@@ -1,6 +1,4 @@
-﻿@using IBM.Watson.Assistant.v2.Model
-
-<Row Margin="Margin.Is2.FromTop">
+﻿<Row Margin="Margin.Is2.FromTop">
     <Column>
         <Span>
             @("@")@Entity.Entity:@Entity.Value
@@ -13,6 +11,7 @@
                 <Icon Name="IconName.QuestionCircle" TextColor="TextColor.Info" Margin="Margin.Is2.FromStart" />
             }
         </Span>
+        <Button Float="Float.End" Clicked="@Remove"><Icon Name="IconName.MinusCircle" TextColor="TextColor.Danger" /></Button>
     </Column>
 </Row>
 
@@ -21,4 +20,19 @@
     public RuntimeEntity Entity { get; set; } = new RuntimeEntity();
     [Parameter]
     public bool IsCaptured { get; set; } = false;
+    [Parameter]
+    public EventCallback<RuntimeEntity> EntityChanged { get; set; }
+    [Parameter]
+    public EventCallback<RuntimeEntity> OnRemoveEntity { get; set; }
+
+    private void OnDataItemRefreshedHandler(string id)
+    {
+        EntityChanged.InvokeAsync(Entity);
+        StateHasChanged();
+    }
+
+    private void Remove()
+    {
+        OnRemoveEntity.InvokeAsync(Entity);
+    }
 }

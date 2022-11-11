@@ -1,0 +1,248 @@
+﻿@inject ClippyService clippy
+
+<Modal @ref="AddModal">
+    <ModalContent Centered Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>@(!changing ? "Add" : "Change") Item</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            @if (Item != null)
+            {
+                <Row>
+                    <Column>
+                        <Field>
+                            <FieldLabel>Name</FieldLabel>
+                            <TextEdit Placeholder="Item Name" @bind-Text="@Item.Name" />
+                        </Field>
+                    </Column>
+                    </Row>
+                <Row>
+                    <Column>
+                        <Field>
+                            <FieldLabel>Intent</FieldLabel>
+                            <Addons>
+                                <Addon AddonType="AddonType.Start">
+                                    <Heading Size="HeadingSize.Is5" Margin="Margin.Is2.FromEnd.Is2.FromTop">#</Heading>
+                                </Addon>
+                                <Addon AddonType="AddonType.Body">
+                                    <TextEdit Placeholder="Intent Name" @bind-Text="@newIntent" KeyPress="@onInputKeyPressIntent" />
+                                </Addon>
+                                <Addon AddonType="AddonType.End">
+                                    <Button Clicked="@AddIntent" ><Icon Name="IconName.Add" /></Button>
+                                </Addon>
+                            </Addons>
+                        </Field>
+                    </Column>
+                    <Column>
+                        <Field>
+                            <FieldLabel>Entity</FieldLabel>
+                            <Addons>
+                                <Addon AddonType="AddonType.Start" >
+                                    <Heading Size="HeadingSize.Is5" Margin="Margin.Is2.FromEnd.Is2.FromTop">@("@")</Heading>
+                                </Addon>
+                                <Addon AddonType="AddonType.Body">
+                                    <TextEdit Placeholder="Entity Name" @bind-Text="@newEntity" KeyPress="@onInputKeyPressEntity" />
+                                </Addon>
+                                <Addon AddonType="AddonType.End">
+                                    <Button Clicked="@AddEntity"><Icon Name="IconName.Add" /></Button>
+                                </Addon>
+                            </Addons>
+                        </Field>
+                    </Column>
+                </Row>
+                <Row>
+                    <Column>
+                        <IntentsList Item="@Item" />
+                    </Column>
+                    <Column>
+                        <EntitiesList Item="@Item" />
+                    </Column>
+                </Row>
+                <Row>
+                    <Column>
+                        @if (changing)
+                        {
+                            <Button Color="Color.Primary" Outline Clicked="@change">Change Battery Block</Button>
+                        }
+                        else
+                        {
+                            <Button Color="Color.Primary" Outline Clicked="@add">Add Battery Block</Button>
+                        }
+                    </Column>
+                </Row>
+            }
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@if (WithButton)
+{
+    <Button Color="Color.Primary" Block="@BlockButton" Outline Float="@FloatButton" Clicked="@openAddModal">
+        <Row>
+            @if (WithButtonIcon)
+            {
+                <Column>
+                    <Icon Name="IconName.Add" />
+                </Column>
+            }
+            @if (WithButtonText)
+            {
+                <Column Margin="Margin.Is2.FromStart">
+                    @ButtonText
+                </Column>
+            }
+        </Row>
+    </Button>
+}
+
+@code {
+
+    [Parameter]
+    public bool WithButton { get; set; } = false;
+    [Parameter]
+    public bool BlockButton { get; set; } = false;
+    [Parameter]
+    public Float FloatButton { get; set; } = Float.Default;
+    [Parameter]
+    public bool WithButtonIcon { get; set; } = false;
+    [Parameter]
+    public bool WithButtonText { get; set; } = false;
+    [Parameter]
+    public string ButtonText { get; set; } = "Add Item";
+    [Parameter]
+    public EventCallback<string> Added { get; set; }
+    [Parameter]
+    public AnalyzedObjectDataItem? Item { get; set; }
+
+    Modal? AddModal;
+    bool changing = false;
+    string newIntent = string.Empty;
+    string newEntity = string.Empty;
+
+    [Inject] INotificationService NotificationService { get; set; }
+
+    public async Task Load(AnalyzedObjectDataItem input, bool showmodal = false, bool changeofitem = false)
+    {
+        if (input != null)
+            Item = input;
+        if (showmodal)
+        {
+            if (AddModal != null)
+            {
+                await AddModal.Show();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        changing = changeofitem;
+        await InvokeAsync(StateHasChanged);
+    }
+    private async Task openAddModal()
+    {
+        if (AddModal != null)
+        {
+            changing = false;
+            await AddModal.Show();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void onInputKeyPressIntent(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            AddIntent(null);
+    }
+
+    private void onInputKeyPressEntity(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            AddEntity(null);
+    }
+
+    private void AddIntent(MouseEventArgs e)
+    {
+        if (Item != null && Item.Intents.FirstOrDefault(i => i.Intent == newIntent) == null)
+        {
+            Item.Intents.Add(new RuntimeIntent()
+            {
+                 Intent = newIntent
+            });
+            StateHasChanged();
+        }
+    }
+
+    private void AddEntity(MouseEventArgs e)
+    {
+        var split = newEntity.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        if (split != null && split.Length > 1)
+        {
+            var entity = split[0];
+            var value = split[1];
+            if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == entity && i.Value == value) == null)
+            {
+                Item.Entities.Add(new RuntimeEntity()
+                    {
+                        Entity = entity,
+                        Value = value
+                    });
+            }
+            StateHasChanged();
+        }
+        else if (split != null && split.Length == 1)
+        {
+            var entity = split[0];
+            if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == entity && string.IsNullOrEmpty(i.Value)) == null)
+            {
+                Item.Entities.Add(new RuntimeEntity()
+                    {
+                        Entity = entity
+                    });
+            }
+            StateHasChanged();
+        }
+        else if (split != null && split.Length == 0)
+        {
+            if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == newEntity && string.IsNullOrEmpty(i.Value)) == null)
+            {
+                Item.Entities.Add(new RuntimeEntity()
+                    {
+                        Entity = newEntity
+                    });
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void OnDataItemRefreshedHandler(string id)
+    {
+        StateHasChanged();
+    }
+
+    private async Task add()
+    {
+        if (Item == null)
+        {
+            await NotificationService.Error("Panel cannot be null.", "Cannot Add Item");
+            return;
+        }
+        if (string.IsNullOrEmpty(Item.Name))
+        {
+            await NotificationService.Error("Please fill the name of the item", "Cannot Add Item");
+            return;
+        }
+
+        var result = clippy.Analyzer.AddDataItem(Item);
+
+        if (AddModal != null)
+            await AddModal.Hide();
+
+        await NotificationService.Success($"Item {Item.Name} added.", "Add Item");
+
+        await Added.InvokeAsync(Item.Id);
+    }
+
+    async Task change()
+    {
+
+    }
+}
