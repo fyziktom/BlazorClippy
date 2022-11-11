@@ -26,7 +26,18 @@
                                     <Heading Size="HeadingSize.Is5" Margin="Margin.Is2.FromEnd.Is2.FromTop">#</Heading>
                                 </Addon>
                                 <Addon AddonType="AddonType.Body">
-                                    <TextEdit Placeholder="Intent Name" @bind-Text="@newIntent" KeyPress="@onInputKeyPressIntent" />
+                                    <Autocomplete TItem="string"
+                                                  TValue="string"
+                                                  Data="@intentsAutocomplete"
+                                                  TextField="@(( item ) => item)"
+                                                  ValueField="@(( item ) => item)"
+                                                  Placeholder="Add Intent"
+                                                  FreeTyping
+                                                  @bind-SelectedText="@newIntent"
+                                                  @bind-SelectedValue="@newIntentAutocompleted"
+                                                  Filter="AutocompleteFilter.StartsWith"
+                                                  @onkeypress="@((e) => onInputKeyPressIntent(e))">
+                                    </Autocomplete>
                                 </Addon>
                                 <Addon AddonType="AddonType.End">
                                     <Button Clicked="@AddIntent" ><Icon Name="IconName.Add" /></Button>
@@ -42,7 +53,18 @@
                                     <Heading Size="HeadingSize.Is5" Margin="Margin.Is2.FromEnd.Is2.FromTop">@("@")</Heading>
                                 </Addon>
                                 <Addon AddonType="AddonType.Body">
-                                    <TextEdit Placeholder="Entity Name" @bind-Text="@newEntity" KeyPress="@onInputKeyPressEntity" />
+                                        <Autocomplete TItem="string"
+                                                      TValue="string"
+                                                      Data="@entitiesAutocomplete"
+                                                      TextField="@(( item ) => item)"
+                                                      ValueField="@(( item ) => item)"
+                                                      Placeholder="Add Entity"
+                                                      FreeTyping
+                                                      @bind-SelectedText="@newEntity"
+                                                      @bind-SelectedValue="@newEntityAutocompleted"
+                                                      Filter="AutocompleteFilter.StartsWith"
+                                                      @onkeypress="@((e) => onInputKeyPressEntity(e))">
+                                        </Autocomplete>
                                 </Addon>
                                 <Addon AddonType="AddonType.End">
                                     <Button Clicked="@AddEntity"><Icon Name="IconName.Add" /></Button>
@@ -119,7 +141,12 @@
     Modal? AddModal;
     bool changing = false;
     string newIntent = string.Empty;
+    string newIntentAutocompleted = string.Empty;
     string newEntity = string.Empty;
+    string newEntityAutocompleted = string.Empty;
+
+    List<string> intentsAutocomplete = AnalyzerHelpers.DefaultTestIntents;
+    List<string> entitiesAutocomplete = AnalyzerHelpers.DefaultTestEntities;
 
     [Inject] INotificationService NotificationService { get; set; }
 
@@ -150,13 +177,13 @@
 
     private void onInputKeyPressIntent(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter")
+        if (e != null && e.Key == "Enter")
             AddIntent(null);
     }
 
     private void onInputKeyPressEntity(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter")
+        if (e != null && e.Key == "Enter")
             AddEntity(null);
     }
 
