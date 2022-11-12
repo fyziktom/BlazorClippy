@@ -527,7 +527,7 @@ namespace BlazorClippyWatson.Analzyer
         /// <param name="combinations"></param>
         /// <param name="sessionId"></param>
         /// <returns></returns>
-        public static Dialogue? GetDialogueFromCombos(Dictionary<string,string>? combinations, string sessionId = "default")
+        public static Dialogue? GetDialogueFromCombos(Dictionary<string,string>? combinations, string sessionId = "default", int limitDepthOfPrevStepsSearch = 4)
         {
             if (combinations == null)
                 return null;
@@ -546,21 +546,22 @@ namespace BlazorClippyWatson.Analzyer
                 foreach(var it in fullItemSplit)
                     allBaseItems.Add("marker_" + it);
             }
-            var items = combosWithCountOfMarkers.Where(c => c.Value > 0).OrderBy(c => c.Value).ToList();
-            //for (var i = 0; i < items.Count; i++)
+            var items = combosWithCountOfMarkers.Where(c => c.Value > 0).OrderBy(c => c.Value);
             Parallel.ForEach(items, (item) => 
             {
-                //var item = items[i];
                 var step = GetDialogueStepFromCombo(item, combosWithCountOfMarkers, allBaseItems, sessionId);
                 steps.TryAdd(step.MarkerHash, step);
 
             });
 
-            var sts = steps.Values.Where(s => s.Level > 1).Select(s => s).ToList();
+            if (limitDepthOfPrevStepsSearch == -1)
+                limitDepthOfPrevStepsSearch = fullItemN;
+
+            var sts = steps.Values.Where(s => s.Level > 1 && s.Level <= limitDepthOfPrevStepsSearch).Select(s => s).ToList();
             Parallel.ForEach(sts, (item) =>
             {
                 var prevsteps = new List<string>();
-                var its = combosWithCountOfMarkers.Where(c => c.Value > item.Level - 1).OrderBy(c => c.Value).ToList();
+                var its = combosWithCountOfMarkers.Where(c => c.Value == item.Level - 1).Select(c => c).ToList();
                 var actualSplit = item.Marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var i in its)
@@ -571,8 +572,8 @@ namespace BlazorClippyWatson.Analzyer
 
                 if (steps.TryGetValue(item.MarkerHash, out var step))
                     step.PossiblePreviousSteps = prevsteps;
-
             });
+            
 
             if (steps != null)
             {
@@ -592,7 +593,11 @@ namespace BlazorClippyWatson.Analzyer
             return new Dialogue();
         }
 
-
+        /// <summary>
+        /// Convert Data Item to Mermaid class diagram
+        /// </summary>
+        /// <param name="dataitem"></param>
+        /// <returns></returns>
         public static string GetMermaidFromDataItem(AnalyzedObjectDataItem dataitem)
         {
             var result = string.Empty;
@@ -600,6 +605,12 @@ namespace BlazorClippyWatson.Analzyer
                 result += line;
             return result;
         }
+        /// <summary>
+        /// Get separated lines of mermaid diagram from DataItem.
+        /// Lines are combined together in function: GetMermaidFromDataItem
+        /// </summary>
+        /// <param name="dataitem"></param>
+        /// <returns></returns>
         public static IEnumerable<string> GetMermaidFromDataItemLines(AnalyzedObjectDataItem dataitem)
         {
             yield return $"\tclass {dataitem.Name + "{"}\r\n";

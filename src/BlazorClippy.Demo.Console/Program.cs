@@ -254,7 +254,7 @@ if (calcCombos)
     spw = new Stopwatch();
     spw.Start();
     Console.WriteLine("Create full combo dialogue from combos...");
-    var dialogueOfAllCombos = AnalyzerHelpers.GetDialogueFromCombos(combinations, assistant.SessionId);
+    var dialogueOfAllCombos = AnalyzerHelpers.GetDialogueFromCombos(combinations, assistant.SessionId, -1);
     spw.Stop();
     Console.WriteLine($"Elapsed: {spw.ElapsedMilliseconds / 1000} seconds to get all dialogue combo.");
 
