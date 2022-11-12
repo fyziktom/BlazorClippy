@@ -251,8 +251,14 @@ if (calcCombos)
         File.AppendAllLines(difilename, dilines);
     }
 
+    spw = new Stopwatch();
+    spw.Start();
+    Console.WriteLine("Create full combo dialogue from combos...");
     var dialogueOfAllCombos = AnalyzerHelpers.GetDialogueFromCombos(combinations, assistant.SessionId);
+    spw.Stop();
+    Console.WriteLine($"Elapsed: {spw.ElapsedMilliseconds / 1000} seconds to get all dialogue combo.");
 
+    Console.WriteLine("Dialogue created...");
 
 }
 ///////////////////////
@@ -299,7 +305,7 @@ var dialogue = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid, assi
 var dialogue1 = AnalyzerHelpers.GetDialogueFromMermaid(inputDialogueMermaid1, assistant.SessionId);
 
 // example export of Mermaid from dialogue
-var mermaidOutput = AnalyzerHelpers.GetMermaidFromDialogue(dialogue);
+var mermaidOutput = AnalyzerHelpers.GetMermaidFromDialogue(dialogue1);
 Console.WriteLine("Dialogue from mermaid loaded:");
 Console.WriteLine("");
 Console.WriteLine(inputDialogueMermaid1);

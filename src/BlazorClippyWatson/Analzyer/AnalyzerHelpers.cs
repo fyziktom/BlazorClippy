@@ -1,10 +1,13 @@
 ﻿using BlazorClippyWatson.AI;
+using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VEDriversLite.NeblioAPI;
 
 namespace BlazorClippyWatson.Analzyer
 {
@@ -453,6 +456,71 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
+        public static Dictionary<KeyValuePair<string, string>, int> GetCombosWithCountOfMarkers(Dictionary<string, string>? combinations)
+        {
+            var combosWithCountOfMarkers = new Dictionary<KeyValuePair<string, string>, int>();
+            foreach (var combo in combinations)
+            {
+                var a = combo.Value.Split("marker_");
+                combosWithCountOfMarkers.Add(combo, a.Length - 1);
+            }
+            return combosWithCountOfMarkers;
+        }
+
+        public static DialogueStep? GetDialogueStepFromCombo(KeyValuePair<KeyValuePair<string, string>, int> item, Dictionary<KeyValuePair<string, string>, int> combos, List<string> allBaseItems, string sessionId)
+        {
+            var msg = AnalyzerHelpers.GetMessageFromMarker(item.Key.Value, sessionId);
+
+            var intents = new List<string>();
+            var entities = new List<KeyValuePair<string, string>>();
+            if (msg != null)
+            {
+                if (msg?.Response?.Result?.Output?.Intents != null && msg.Response.Result.Output.Intents.Count > 0)
+                {
+                    foreach (var intent in msg.Response.Result.Output.Intents)
+                        intents.Add(intent.Intent);
+                }
+                if (msg?.Response?.Result?.Output?.Entities != null && msg.Response.Result.Output.Entities.Count > 0)
+                {
+                    foreach (var entity in msg.Response.Result.Output.Entities)
+                        entities.Add(new KeyValuePair<string, string>(entity.Entity, entity.Value));
+                }
+            }
+
+            var it = new DialogueStep()
+            {
+                Marker = item.Key.Value,
+                MarkerHash = item.Key.Key,
+                Level = item.Value,
+                Intents = intents,
+                Entities = entities,
+                MessageRecord = msg
+            };
+
+            var actualSplit = it.Marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+
+            var possibleNextItems = new List<string>();
+            for (var i = 0; i < allBaseItems.Count; i++)
+            {
+                if (!actualSplit.Contains(allBaseItems[i]))
+                    possibleNextItems.Add(allBaseItems[i]);
+            }
+
+            var bag = new ConcurrentBag<string>();
+            Parallel.ForEach(possibleNextItems, (nextItem) =>
+            {
+                var marker = it.Marker + " " + nextItem;
+                var ch = new CryptographyHelpers();
+                var hash = ch.GetHash(marker);
+
+                bag.Add(hash);
+            });
+            foreach (var b in bag)
+                it.PossibleNextSteps.Add(b);
+
+            return it;
+        }
+
         /// <summary>
         /// Get Dialogue with tree details of all possible ways through dialogue based on input combinations
         /// </summary>
@@ -464,80 +532,64 @@ namespace BlazorClippyWatson.Analzyer
             if (combinations == null)
                 return null;
 
-            var combosWithCountOfMarkers = new Dictionary<KeyValuePair<string, string>, int>();
-            foreach (var combo in combinations)
+            var combosWithCountOfMarkers = GetCombosWithCountOfMarkers(combinations);
+
+            var steps = new ConcurrentDictionary<string, DialogueStep>();
+            var fullItemN = combosWithCountOfMarkers.Where(c => c.Value > 0).Select(c => c.Value).Max();
+            var fullItem = combosWithCountOfMarkers.FirstOrDefault(c => c.Value == fullItemN);
+            var allBaseItems = new List<string>();
+
+            var fullItemSplit = fullItem.Key.Value.Split("marker_", StringSplitOptions.RemoveEmptyEntries).ToList();
+            if (fullItemSplit.Count > 1)
             {
-                var a = combo.Value.Split("marker_");
-                combosWithCountOfMarkers.Add(combo, a.Length - 1);
+                fullItemSplit.RemoveAt(0);
+                foreach(var it in fullItemSplit)
+                    allBaseItems.Add("marker_" + it);
             }
-            var l = combosWithCountOfMarkers.OrderBy(c => c.Value).ToList();
-
-            var steps = new Dictionary<string, DialogueStep>();
-            var aaaa = combosWithCountOfMarkers.Where(c => c.Value == 1).OrderBy(c => c.Key.Value).ToList();
-            var aaaaa = combosWithCountOfMarkers.Where(c => c.Value == 2).OrderBy(c => c.Key.Value).ToList();
-            foreach (var item in combosWithCountOfMarkers.Where(c => c.Value > 0).OrderBy(c => c.Value))
+            var items = combosWithCountOfMarkers.Where(c => c.Value > 0).OrderBy(c => c.Value).ToList();
+            //for (var i = 0; i < items.Count; i++)
+            Parallel.ForEach(items, (item) => 
             {
-                var msg = AnalyzerHelpers.GetMessageFromMarker(item.Key.Value, sessionId);
-                if (msg == null)
-                    continue;
-                var intents = new List<string>();
-                var entities = new List<KeyValuePair<string, string>>();
-                if (msg?.Response?.Result?.Output?.Intents != null && msg.Response.Result.Output.Intents.Count > 0)
+                //var item = items[i];
+                var step = GetDialogueStepFromCombo(item, combosWithCountOfMarkers, allBaseItems, sessionId);
+                steps.TryAdd(step.MarkerHash, step);
+
+            });
+
+            var sts = steps.Values.Where(s => s.Level > 1).Select(s => s).ToList();
+            Parallel.ForEach(sts, (item) =>
+            {
+                var prevsteps = new List<string>();
+                var its = combosWithCountOfMarkers.Where(c => c.Value > item.Level - 1).OrderBy(c => c.Value).ToList();
+                var actualSplit = item.Marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var i in its)
                 {
-                    foreach (var intent in msg.Response.Result.Output.Intents)
-                        intents.Add(intent.Intent);
-                }
-                if (msg?.Response?.Result?.Output?.Entities != null && msg.Response.Result.Output.Entities.Count > 0)
-                {
-                    foreach (var entity in msg.Response.Result.Output.Entities)
-                        entities.Add(new KeyValuePair<string, string>(entity.Entity, entity.Value));
+                    if (!i.Key.Value.Contains(actualSplit[actualSplit.Length - 1]))
+                        prevsteps.Add(i.Key.Key);
                 }
 
-                var it = new DialogueStep()
+                if (steps.TryGetValue(item.MarkerHash, out var step))
+                    step.PossiblePreviousSteps = prevsteps;
+
+            });
+
+            if (steps != null)
+            {
+                var result = new Dialogue()
                 {
-                    Marker = item.Key.Value,
-                    MarkerHash = item.Key.Key,
-                    Level = item.Value,
-                    Intents = intents,
-                    Entities = entities,
-                    MessageRecord = msg
+                    Steps = steps.Values.ToList(),
+                    SessionId = sessionId,
+                    Participatns = new List<string>() { "Client", "Assistant" },
                 };
-                foreach (var nextStep in combosWithCountOfMarkers.Where(c => c.Value == item.Value + 1))
-                {
-                    var isActualInNext = true;
-                    var actualSplit = it.Marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
-                    var nextStepSplit = nextStep.Key.Value.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
-                    for(var i = 1; i < actualSplit.Length; i++)
-                    {
-                        if (!nextStepSplit.Contains(actualSplit[i].Trim(';')))
-                            isActualInNext = false;
-                    }
-                    if (isActualInNext && (nextStepSplit.Length - actualSplit.Length) > 0)
-                    {
-                        it.PossibleNextSteps.Add(nextStep.Key.Key);
-                    }
-                }
-                if (item.Value > 1)
-                {
-                    foreach (var previousStep in combosWithCountOfMarkers.Where(c => c.Value == item.Value - 1))
-                    {
-                        if (steps.TryGetValue(previousStep.Key.Key, out var prevStep))
-                            if (prevStep.PossibleNextSteps.Contains(it.MarkerHash))
-                                it.PossiblePreviousSteps.Add(prevStep.MarkerHash);
-                    }
-                }
-                steps.Add(it.MarkerHash, it);
+                var msgs = steps.Values.Where(s => s.MessageRecord != null).Select(s => s.MessageRecord).ToList();
+                if (msgs != null)
+                    result.Messages = msgs;
+                
+                return result;
             }
-
-            var result = new Dialogue()
-            {
-                Messages = steps.Values.Where(s => s.MessageRecord != null).Select(s => s.MessageRecord).ToList(),
-                Steps = steps.Values.ToList(),
-                SessionId = sessionId,
-                Participatns = new List<string>() { "Client", "Assistant" },
-            };
-
-            return result;
+            
+            return new Dialogue();
         }
 
 
