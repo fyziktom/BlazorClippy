@@ -1,5 +1,6 @@
 ﻿using BlazorClippyWatson.AI;
 using BlazorClippyWatson.Common;
+using Google.Protobuf.Collections;
 using IBM.Watson.Assistant.v2.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -50,7 +51,7 @@ namespace BlazorClippyWatson.Analzyer
                     foreach (var d in LastMatchedDataItemsState)
                         questionextension += $"{d} ";
                 }
-                return questionextension ;
+                return questionextension.Trim();
             } 
         }
 
@@ -332,7 +333,7 @@ namespace BlazorClippyWatson.Analzyer
         public Dictionary<string, string> GetHashesOfAllCombinations()
         {
             var result = new Dictionary<string, string>();
-            var combos = new List<List<string>>();
+            var combos = new List<string>();
 
             Console.WriteLine("\tCreating individual combinations...");
             foreach(var dataitem in DataItemsOrderedByName)
@@ -342,17 +343,34 @@ namespace BlazorClippyWatson.Analzyer
                 foreach (var r in res)
                 {
                     if (r.Contains(dataitem.Value.NameWithoutUnsuportedChars))
-                        combos.Add(new List<string>() { r, null });
+                        combos.Add(r);
                 }
             }
 
             Console.WriteLine("\tCalculation all possible combos...");
-            var output = ComboHelpers.GetAllPossibleCombosOptimizedNotGeneric(combos);
-            //var output = ComboHelpers.GetAllPossibleCombosOptimized<string>(combos);
+            var outputAll = new List<List<string>>();
+
+            var output1 = new List<List<string>>();
+            for (var i = 1; i <= combos.Count; i++)
+            {
+                var op = ComboHelpers.GetKCombs<string>(combos, i).ToList();
+                foreach (var item in op)
+                {
+                    output1.Add(item.ToList());
+                }
+            }
+
+            var output = new List<List<string>>();
+            foreach (var ot in output1)
+            {
+                var o = ComboHelpers.GetPermutations<string>(ot.ToArray(), ot.Count);
+                foreach (var oo in o)
+                    outputAll.Add(oo.ToList());
+            }
 
             Console.WriteLine("\tCreating MarkersExtensions...");
             var cmbs = new ConcurrentBag<string>();
-            Parallel.ForEach(output, item =>
+            Parallel.ForEach(outputAll, item =>
             {
                 var sb = new StringBuilder(AnalyzerHelpers.MarkerExtensionStartDefault);
                 
@@ -364,14 +382,12 @@ namespace BlazorClippyWatson.Analzyer
                     if (counter >= 0 && counter < item.Count - 1)
                         sb.Append($" ");
 
-                    cmbs.Add(sb.ToString());
+                    var tmp = sb.ToString().Trim();
+                        cmbs.Add(tmp);
                     counter++;
                 }
             });
-
-            output.Clear();
-            output = null;
-
+            
             Console.WriteLine("\tCalculating hashes...");
             var fbag = new ConcurrentQueue<KeyValuePair<string, string>>();
             Parallel.ForEach(cmbs, item =>

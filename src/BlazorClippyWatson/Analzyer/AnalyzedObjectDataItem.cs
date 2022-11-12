@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static NBitcoin.Scripting.OutputDescriptor;
 
 namespace BlazorClippyWatson.Analzyer
 {
@@ -265,7 +266,7 @@ namespace BlazorClippyWatson.Analzyer
 
                             if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
                             {
-                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&{ecombo.Trim()}";
                                 if (!final.Contains(combo))
                                     final.Add(combo);
                             }
@@ -289,7 +290,7 @@ namespace BlazorClippyWatson.Analzyer
                             if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
                             {
                                 //combo = ecombo + " " + icombo;
-                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&{ecombo.Trim()}";
                                 if (!final.Contains(combo))
                                     final.Add(combo);
                             }
@@ -310,7 +311,32 @@ namespace BlazorClippyWatson.Analzyer
                             {
                                 if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
                                 {
-                                    combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                                    if (IsWhenAllOnly)
+                                    {
+                                        var alli = true;
+                                        var alle = true;
+                                        foreach (var e in Entities)
+                                            if (!ecombo.Contains($"{e.Entity}:{e.Value}"))
+                                                alle = false;
+                                        
+                                        foreach (var i in Intents)
+                                            if (!icombo.Contains($"{i.Intent}"))
+                                                alli = false;
+                                        
+                                        if (alli && alle)
+                                        {
+                                            combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&{ecombo.Trim()}";
+                                            if (!final.Contains(combo))
+                                                final.Add(combo);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        combo = $"marker_{NameWithoutUnsuportedChars}&&&&{icombo.Trim()}";
+                                        if (!final.Contains(combo))
+                                            final.Add(combo);
+                                    }
+                                    combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&{ecombo.Trim()}";
                                     if (!final.Contains(combo))
                                         final.Add(combo);
                                 }
@@ -325,9 +351,28 @@ namespace BlazorClippyWatson.Analzyer
                         var combo = string.Empty;
                         if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
                         {
-                            combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&";
-                            if (!final.Contains(combo))
-                                final.Add(combo);
+                            if (IsWhenAllOnly)
+                            {
+                                var all = true;
+                                foreach (var i in Intents)
+                                {
+                                    if (!icombo.Contains($"{i.Intent}"))
+                                        all = false;
+                                }
+                                if (all)
+                                {
+                                    combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&";
+                                    if (!final.Contains(combo))
+                                        final.Add(combo);
+
+                                }
+                            }
+                            else
+                            {
+                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&";
+                                if (!final.Contains(combo))
+                                    final.Add(combo);
+                            }
                         }
                     }
                 }
@@ -338,9 +383,27 @@ namespace BlazorClippyWatson.Analzyer
                         var combo = string.Empty;
                         if (!ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
                         {
-                            combo = $"marker_{NameWithoutUnsuportedChars}&&&&{ecombo}";
-                            if (!final.Contains(combo))
-                                final.Add(combo);
+                            if (IsWhenAllOnly)
+                            {
+                                var all = true;
+                                foreach(var e in Entities)
+                                {
+                                    if (!ecombo.Contains($"{e.Entity}:{e.Value}"))
+                                        all = false;
+                                }
+                                if (all)
+                                {
+                                    combo = $"marker_{NameWithoutUnsuportedChars}&&&&{ecombo.Trim()}";
+                                    if (!final.Contains(combo))
+                                        final.Add(combo);
+                                }
+                            }
+                            else
+                            {
+                                combo = $"marker_{NameWithoutUnsuportedChars}&&&&{ecombo.Trim()}";
+                                if (!final.Contains(combo))
+                                    final.Add(combo);
+                            }
                         }
                     }
                 }

@@ -189,7 +189,7 @@ namespace BlazorClippyWatson.Analzyer
             if (split != null && split.Length > 1)
                 for (var i = 1; i < split.Length; i++)
                     if (!string.IsNullOrEmpty(split[i]) && !string.IsNullOrWhiteSpace(split[i]))
-                        mk = mk.Replace(split[i] + "; ", string.Empty);
+                        mk = mk.Replace(split[i].Trim(';') + "; ", string.Empty);
 
             return mk;
         }
@@ -473,6 +473,8 @@ namespace BlazorClippyWatson.Analzyer
             var l = combosWithCountOfMarkers.OrderBy(c => c.Value).ToList();
 
             var steps = new Dictionary<string, DialogueStep>();
+            var aaaa = combosWithCountOfMarkers.Where(c => c.Value == 1).OrderBy(c => c.Key.Value).ToList();
+            var aaaaa = combosWithCountOfMarkers.Where(c => c.Value == 2).OrderBy(c => c.Key.Value).ToList();
             foreach (var item in combosWithCountOfMarkers.Where(c => c.Value > 0).OrderBy(c => c.Value))
             {
                 var msg = AnalyzerHelpers.GetMessageFromMarker(item.Key.Value, sessionId);
@@ -502,21 +504,26 @@ namespace BlazorClippyWatson.Analzyer
                 };
                 foreach (var nextStep in combosWithCountOfMarkers.Where(c => c.Value == item.Value + 1))
                 {
-                    if (nextStep.Key.Value.Contains(it.Marker))
+                    var isActualInNext = true;
+                    var actualSplit = it.Marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+                    var nextStepSplit = nextStep.Key.Value.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+                    for(var i = 1; i < actualSplit.Length; i++)
                     {
-                        var a = nextStep.Key.Value.Replace(it.Marker, string.Empty).Split("marker_", StringSplitOptions.RemoveEmptyEntries);
-                        if (a != null && a.Length > 0)
-                            it.PossibleNextSteps.Add(nextStep.Key.Key);
+                        if (!nextStepSplit.Contains(actualSplit[i].Trim(';')))
+                            isActualInNext = false;
+                    }
+                    if (isActualInNext && (nextStepSplit.Length - actualSplit.Length) > 0)
+                    {
+                        it.PossibleNextSteps.Add(nextStep.Key.Key);
                     }
                 }
                 if (item.Value > 1)
                 {
-                    foreach (var previousStep in steps.Where(c => c.Value.Level == item.Value - 1))
+                    foreach (var previousStep in combosWithCountOfMarkers.Where(c => c.Value == item.Value - 1))
                     {
-                        if (steps.TryGetValue(previousStep.Value.MarkerHash, out var prevStep))
+                        if (steps.TryGetValue(previousStep.Key.Key, out var prevStep))
                             if (prevStep.PossibleNextSteps.Contains(it.MarkerHash))
                                 it.PossiblePreviousSteps.Add(prevStep.MarkerHash);
-
                     }
                 }
                 steps.Add(it.MarkerHash, it);

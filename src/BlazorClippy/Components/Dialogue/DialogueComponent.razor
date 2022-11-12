@@ -1,0 +1,116 @@
+﻿@using BlazorClippy.Components.AI
+
+@if (Item.Steps.Count > 0)
+{
+<Accordion>
+    @{
+        var maxLevel = GetMaxLevel();
+        @for (var i = 1; i < maxLevel; i++)
+        {
+            var level = i;
+            var isVisibleLevel = IsVisibleLevel(level);
+            <Collapse Visible="@isVisibleLevel">
+                <CollapseHeader>
+                    <Span>Dialogue Level: @level</Span>
+                    <Button Float="Float.End" Clicked="@(() => SetLevelVisiblility(level))">
+                        @if (isVisibleLevel)
+                        {
+                            <Icon Name="IconName.ArrowUp" />
+                        }
+                        else
+                        {
+                            <Icon Name="IconName.ArrowDown" />
+                        }
+                    </Button>
+                </CollapseHeader>
+                <CollapseBody>
+                    <Accordion>
+                        @foreach (var step in Item.Steps.Where(s => s.Level == level))
+                        {
+                            var isVisible = IsVisibleItem(step.MarkerHash);
+                            <Collapse Visible="@isVisible">
+                                <CollapseHeader>
+                                    <Tooltip Text="@step.Marker">
+                                        <Span>@step.MarkerHash</Span>
+                                    </Tooltip>
+                                    <Button Float="Float.End" Clicked="@(() => SetVisiblility(step.MarkerHash))">
+                                        @if (isVisible)
+                                        {
+                                            <Icon Name="IconName.ArrowUp" />
+                                        }
+                                        else
+                                        {
+                                            <Icon Name="IconName.ArrowDown" />
+                                        }
+                                    </Button>
+                                    <HashToCopy Hash="@step.MarkerHash" Float="Float.End" />                      
+                                </CollapseHeader>
+                                <CollapseBody>
+                                    <DialogueStepComponent Step="@step" OnOpenStep="@onOpenStepHandler" />
+                                </CollapseBody>
+                            </Collapse>
+                        }
+                    </Accordion>
+                </CollapseBody>
+            </Collapse>
+        }
+    }
+</Accordion>
+}
+<DialogueStepModal @ref=dialogueStepModalRef OnOpenStep="@onOpenStepHandler"/>
+
+@code {
+    [Parameter]
+    public Dialogue Item { get; set; } = new Dialogue();
+    public Dictionary<string, bool> visibleItems { get; set; } = new Dictionary<string, bool>();
+    public Dictionary<int, bool> visibleLevel { get; set; } = new Dictionary<int, bool>();
+
+    DialogueStepModal? dialogueStepModalRef;
+
+    public int GetMaxLevel()
+    {
+        return Item.Steps.Where(s => s.Level > 0).Select(s => s.Level).Max();
+    }
+
+    private bool IsVisibleItem(string id)
+    {
+        if (visibleItems.TryGetValue(id, out var res))
+            return res;
+        else
+            return false;
+    }
+
+    private void SetVisiblility(string id)
+    {
+        if (visibleItems.TryGetValue(id, out var res))
+            visibleItems[id] = !res;
+        else
+            visibleItems.TryAdd(id, true);
+        StateHasChanged();
+    }
+
+
+    private bool IsVisibleLevel(int id)
+    {
+        if (visibleLevel.TryGetValue(id, out var res))
+            return res;
+        else
+            return false;
+    }
+
+    private void SetLevelVisiblility(int id)
+    {
+        if (visibleLevel.TryGetValue(id, out var res))
+            visibleLevel[id] = !res;
+        else
+            visibleLevel.TryAdd(id, true);
+        StateHasChanged();
+    }
+
+    private async Task onOpenStepHandler(string stepHash)
+    {
+        var step = Item.Steps.FirstOrDefault(s => s.MarkerHash == stepHash);
+        if (step != null && dialogueStepModalRef != null)
+            await dialogueStepModalRef.Load(step, true);
+    }
+}

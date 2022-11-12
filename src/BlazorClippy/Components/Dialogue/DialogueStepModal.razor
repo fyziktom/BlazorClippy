@@ -1,0 +1,53 @@
+﻿<Modal @ref="stepModal">
+    <ModalContent Centered Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>Step</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <DialogueStepComponent Step="@Step" OnOpenStep="@openStep"/>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter]
+    public DialogueStep Step { get; set; } = new DialogueStep();
+    [Parameter]
+    public EventCallback<string> OnOpenStep { get; set; }
+
+    async Task openStep(string stepHash)
+    {
+        await OnOpenStep.InvokeAsync(stepHash);
+    }
+
+    Modal? stepModal;
+
+    public async Task Load(DialogueStep input, bool showmodal = false)
+    {
+        if (input != null)
+            Step = input;
+        if (showmodal)
+            await ShowModal();
+        else
+            await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task ShowModal()
+    {
+        if (stepModal != null)
+        {
+            await stepModal.Show();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public async Task Hide()
+    {
+        if (stepModal != null)
+        {
+            await stepModal.Hide();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}

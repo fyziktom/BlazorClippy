@@ -43,6 +43,7 @@ namespace BlazorClippyWatson.Analzyer
         /// Message Record
         /// </summary>
         public WatsonMessageRequestRecord? MessageRecord { get; set; }
+
         /// <summary>
         /// Get Message Record object created from Marker
         /// </summary>
