@@ -1,12 +1,14 @@
 ﻿using BlazorClippyWatson.AI;
 using BlazorClippyWatson.Analzyer;
 using BlazorClippyWatson.Common;
+using Google.Protobuf.WellKnownTypes;
 using IBM.Watson.Assistant.v2.Model;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Formats.Asn1;
 using System.Reflection;
+using static NBitcoin.Scripting.OutputDescriptor;
 
 Console.WriteLine("Hello, World! I am Watson Replay Console demo");
 
@@ -248,6 +250,10 @@ if (calcCombos)
         }
         File.AppendAllLines(difilename, dilines);
     }
+
+    var dialogueOfAllCombos = AnalyzerHelpers.GetDialogueFromCombos(combinations, assistant.SessionId);
+
+
 }
 ///////////////////////
 
@@ -279,8 +285,8 @@ if (printMsgsFromMarker)
 
 // load data from mermaid
 var inputDialogueMermaid = "sequenceDiagram\r\n" +
-                           "Client->>Analyzer: i.my_máme, e.podklady:3d model,\r\n" +
-                           "Client->>Analyzer: i.my_máme, e.podklady:výkres,";
+                           "Client->>Assistant: i.my_máme, e.podklady:3d model,\r\n" +
+                           "Client->>Assistant: i.my_máme, e.podklady:výkres,";
 var inputDialogueMermaid1 = "sequenceDiagram\r\n" + "" +
                             "\tClient->>Assistant: i.my_máme, e.podklady:3d model, \r\n" +
                             "\tClient->>Assistant: e.materiál:, e.produkt:produkt,\r\n" +

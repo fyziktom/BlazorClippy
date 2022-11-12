@@ -453,6 +453,86 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
+        /// <summary>
+        /// Get Dialogue with tree details of all possible ways through dialogue based on input combinations
+        /// </summary>
+        /// <param name="combinations"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
+        public static Dialogue? GetDialogueFromCombos(Dictionary<string,string>? combinations, string sessionId = "default")
+        {
+            if (combinations == null)
+                return null;
+
+            var combosWithCountOfMarkers = new Dictionary<KeyValuePair<string, string>, int>();
+            foreach (var combo in combinations)
+            {
+                var a = combo.Value.Split("marker_");
+                combosWithCountOfMarkers.Add(combo, a.Length - 1);
+            }
+            var l = combosWithCountOfMarkers.OrderBy(c => c.Value).ToList();
+
+            var steps = new Dictionary<string, DialogueStep>();
+            foreach (var item in combosWithCountOfMarkers.Where(c => c.Value > 0).OrderBy(c => c.Value))
+            {
+                var msg = AnalyzerHelpers.GetMessageFromMarker(item.Key.Value, sessionId);
+                if (msg == null)
+                    continue;
+                var intents = new List<string>();
+                var entities = new List<KeyValuePair<string, string>>();
+                if (msg?.Response?.Result?.Output?.Intents != null && msg.Response.Result.Output.Intents.Count > 0)
+                {
+                    foreach (var intent in msg.Response.Result.Output.Intents)
+                        intents.Add(intent.Intent);
+                }
+                if (msg?.Response?.Result?.Output?.Entities != null && msg.Response.Result.Output.Entities.Count > 0)
+                {
+                    foreach (var entity in msg.Response.Result.Output.Entities)
+                        entities.Add(new KeyValuePair<string, string>(entity.Entity, entity.Value));
+                }
+
+                var it = new DialogueStep()
+                {
+                    Marker = item.Key.Value,
+                    MarkerHash = item.Key.Key,
+                    Level = item.Value,
+                    Intents = intents,
+                    Entities = entities,
+                    MessageRecord = msg
+                };
+                foreach (var nextStep in combosWithCountOfMarkers.Where(c => c.Value == item.Value + 1))
+                {
+                    if (nextStep.Key.Value.Contains(it.Marker))
+                    {
+                        var a = nextStep.Key.Value.Replace(it.Marker, string.Empty).Split("marker_", StringSplitOptions.RemoveEmptyEntries);
+                        if (a != null && a.Length > 0)
+                            it.PossibleNextSteps.Add(nextStep.Key.Key);
+                    }
+                }
+                if (item.Value > 1)
+                {
+                    foreach (var previousStep in steps.Where(c => c.Value.Level == item.Value - 1))
+                    {
+                        if (steps.TryGetValue(previousStep.Value.MarkerHash, out var prevStep))
+                            if (prevStep.PossibleNextSteps.Contains(it.MarkerHash))
+                                it.PossiblePreviousSteps.Add(prevStep.MarkerHash);
+
+                    }
+                }
+                steps.Add(it.MarkerHash, it);
+            }
+
+            var result = new Dialogue()
+            {
+                Messages = steps.Values.Where(s => s.MessageRecord != null).Select(s => s.MessageRecord).ToList(),
+                Steps = steps.Values.ToList(),
+                SessionId = sessionId,
+                Participatns = new List<string>() { "Client", "Assistant" },
+            };
+
+            return result;
+        }
+
 
         public static string GetMermaidFromDataItem(AnalyzedObjectDataItem dataitem)
         {
