@@ -248,53 +248,105 @@ namespace BlazorClippyWatson.Analzyer
             }
 
             var final = new List<string>();
-            foreach(var icombo in intentsCombinations.OrderBy(i => i))
+            if (!IsWhenAllOnly && (Intents.Count + Entities.Count) > 1)
             {
-                if (!final.Contains(icombo))
-                    final.Add(icombo);
-
-                var combo = icombo;
-                foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
-                {
-                    if (icombo != ecombo)
-                    {
-                        if (!final.Contains(ecombo))
-                            final.Add(ecombo);
-
-                        if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
-                        {
-                            combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
-                            if (!final.Contains(combo))
-                                final.Add(combo);
-                        }
-                    }
-                }
-            }
-            
-            foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
-            {
-                if (!final.Contains(ecombo))
-                    final.Add(ecombo);
-
-                var combo = ecombo;
                 foreach (var icombo in intentsCombinations.OrderBy(i => i))
                 {
-                    if (icombo != ecombo)
-                    {
-                        if (!final.Contains(icombo))
-                            final.Add(icombo);
+                    if (!final.Contains(icombo))
+                        final.Add(icombo);
 
-                        if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                    var combo = icombo;
+                    foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
+                    {
+                        if (icombo != ecombo)
                         {
-                            //combo = ecombo + " " + icombo;
-                            combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                            if (!final.Contains(ecombo))
+                                final.Add(ecombo);
+
+                            if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                            {
+                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                                if (!final.Contains(combo))
+                                    final.Add(combo);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
+                {
+                    if (!final.Contains(ecombo))
+                        final.Add(ecombo);
+
+                    var combo = ecombo;
+                    foreach (var icombo in intentsCombinations.OrderBy(i => i))
+                    {
+                        if (icombo != ecombo)
+                        {
+                            if (!final.Contains(icombo))
+                                final.Add(icombo);
+
+                            if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                            {
+                                //combo = ecombo + " " + icombo;
+                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                                if (!final.Contains(combo))
+                                    final.Add(combo);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (IsWhenAllOnly || (Intents.Count + Entities.Count) == 1)
+            {
+                if (intentsCombinations.Count > 0 && entitiesCombinations.Count > 0)
+                {
+                    foreach (var icombo in intentsCombinations.OrderBy(i => i))
+                    {
+                        var combo = icombo;
+                        foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
+                        {
+                            if (icombo != ecombo)
+                            {
+                                if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&") && !ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                                {
+                                    combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&{ecombo}";
+                                    if (!final.Contains(combo))
+                                        final.Add(combo);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (intentsCombinations.Count > 0 && entitiesCombinations.Count == 0)
+                {
+                    foreach (var icombo in intentsCombinations.OrderBy(e => e))
+                    {
+                        var combo = string.Empty;
+                        if (!icombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                        {
+                            combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo}&&";
                             if (!final.Contains(combo))
                                 final.Add(combo);
                         }
                     }
                 }
+                else if (intentsCombinations.Count == 0 && entitiesCombinations.Count > 0)
+                {
+                    foreach (var ecombo in entitiesCombinations.OrderBy(e => e))
+                    {
+                        var combo = string.Empty;
+                        if (!ecombo.Contains($"marker_{NameWithoutUnsuportedChars}&&"))
+                        {
+                            combo = $"marker_{NameWithoutUnsuportedChars}&&&&{ecombo}";
+                            if (!final.Contains(combo))
+                                final.Add(combo);
+                        }
+                    }
+                }
+                
             }
-            
+
             return final;
         }
     }

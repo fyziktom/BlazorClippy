@@ -379,6 +379,7 @@ namespace BlazorClippyWatson.Analzyer
             {
                 for (string line = reader.ReadLine(); line != null; line = reader.ReadLine())
                 {
+                    line = line.Replace("\t", string.Empty).Trim();
                     if (!string.IsNullOrEmpty(line) && !line.Contains(mermaidDataItemDiagramType))
                     {
                         if (line.Contains("}"))
