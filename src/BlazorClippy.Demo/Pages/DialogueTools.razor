@@ -13,7 +13,7 @@
 
 <Row Margin="Margin.Is4.FromTop">
     <Column>
-        <Button Block Clicked="GetCombos" Loading="@loading" Color="Color.Primary" >Calculate Dialogue Ways Tree</Button>
+        <Button Block Clicked="@(async (e) => await GetCombos(e))" Loading="@loading" Color="Color.Primary" >Calculate Dialogue Ways Tree</Button>
     </Column>
     </Row>
     <Row Margin="Margin.Is4.FromTop">
@@ -45,11 +45,10 @@
 
     async Task GetCombos(MouseEventArgs e)
     {
+        loading = true;
         if (dialogueComponentRef != null)
-        {
-            loading = true;
             await dialogueComponentRef.GetCombos();
-            loading = false;
-        }
+        
+        loading = false;
     }
 }

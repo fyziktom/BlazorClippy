@@ -3,28 +3,20 @@
 
 @if (Dialogue.Steps.Count > 0)
 {
-<Accordion>
-    @{
-        var maxLevel = GetMaxLevel();
-        @for (var i = 1; i < MaxLevelToGetPreviousSteps; i++)
-        {
-            var level = i;
-            var isVisibleLevel = IsVisibleLevel(level);
-            <Collapse Visible="@isVisibleLevel">
-                <CollapseHeader>
-                    <Span>Dialogue Level: @level</Span>
-                    <Button Float="Float.End" Clicked="@(() => SetLevelVisiblility(level))">
-                        @if (isVisibleLevel)
-                        {
-                            <Icon Name="IconName.ArrowUp" />
-                        }
-                        else
-                        {
-                            <Icon Name="IconName.ArrowDown" />
-                        }
-                    </Button>
-                </CollapseHeader>
-                <CollapseBody>
+    var maxLevel = GetMaxLevel();
+    <Tabs RenderMode="TabsRenderMode.LazyReload" @bind-SelectedTab="@selectedTab">
+        <Items>
+            @for (var i = 1; i < maxLevel; i++)
+            {
+                var level = i;
+                <Tab Name="@($"Level {level}")">@($"Level {level}")</Tab>
+            }
+        </Items>
+        <Content>
+            @for (var i = 1; i < maxLevel; i++)
+            {
+                var level = i;
+                <TabPanel Name="@($"Level {level}")">
                     <Accordion>
                         @foreach (var step in Dialogue.Steps.Where(s => s.Level == level))
                         {
@@ -44,7 +36,7 @@
                                             <Icon Name="IconName.ArrowDown" />
                                         }
                                     </Button>
-                                    <HashToCopy Hash="@step.MarkerHash" Float="Float.End" />                      
+                                    <HashToCopy Hash="@step.MarkerHash" Float="Float.End" />
                                 </CollapseHeader>
                                 <CollapseBody>
                                     <DialogueStepComponent Step="@step" OnOpenStep="@onOpenStepHandler" />
@@ -52,11 +44,10 @@
                             </Collapse>
                         }
                     </Accordion>
-                </CollapseBody>
-            </Collapse>
-        }
-    }
-</Accordion>
+                </TabPanel>
+            }
+        </Content>
+    </Tabs>
 }
 <DialogueStepModal @ref=dialogueStepModalRef OnOpenStep="@onOpenStepHandler"/>
 
@@ -67,12 +58,13 @@
     public int MaxLevelToGetPreviousSteps { get; set; } = 4;
 
     public Dictionary<string, bool> visibleItems { get; set; } = new Dictionary<string, bool>();
-    public Dictionary<int, bool> visibleLevel { get; set; } = new Dictionary<int, bool>();
 
     Dictionary<KeyValuePair<string, string>, int>? combosWithCountOfMarkers;
     List<KeyValuePair<KeyValuePair<string, string>, int>[]> combosByLevel;
     string[] allBaseItems;
     int fullItemN = 0;
+
+    string selectedTab = "Level 1";
 
     DialogueStepModal? dialogueStepModalRef;
 
@@ -95,33 +87,22 @@
             visibleItems[id] = !res;
         else
             visibleItems.TryAdd(id, true);
-        StateHasChanged();
+
+        // for case that some PreviousSteps are not loaded yet
+        if (visibleItems.TryGetValue(id, out var value))
+        {
+            if (value)
+            {
+                var step = GetStep(id);
+            }
+        }
     }
 
-    private bool IsVisibleLevel(int id)
-    {
-        if (visibleLevel.TryGetValue(id, out var res))
-            return res;
-        else
-            return false;
-    }
-
-    private void SetLevelVisiblility(int id)
-    {
-        if (visibleLevel.TryGetValue(id, out var res))
-            visibleLevel[id] = !res;
-        else
-            visibleLevel.TryAdd(id, true);
-        StateHasChanged();
-    }
-
-    private async Task onOpenStepHandler(string stepHash)
+    public DialogueStep? GetStep(string stepHash)
     {
         var step = Dialogue.Steps.FirstOrDefault(s => s.MarkerHash == stepHash);
-        if (step != null && dialogueStepModalRef != null)
+        if (step != null)
         {
-            await dialogueStepModalRef.ShowLoadingOverlay();
-
             if (step.Level < fullItemN && step.PossibleNextSteps.Count == 0)
             {
                 var nexts = AnalyzerHelpers.GetDialogueStepPossibleNexts(step.Marker, allBaseItems);
@@ -133,7 +114,20 @@
                 step.PossiblePreviousSteps = new List<string>(prevsteps);
                 prevsteps = null;
             }
-            await dialogueStepModalRef.Load(step, true);
+            return step;
+        }
+        return null;
+    }
+
+    private async Task onOpenStepHandler(string stepHash)
+    {
+        if (dialogueStepModalRef != null)
+        {
+            await dialogueStepModalRef.ShowLoadingOverlay();
+
+            var step = GetStep(stepHash);
+            if (step != null)
+                await dialogueStepModalRef.Load(step, true);
         }
     }
 
@@ -155,6 +149,7 @@
                                                                    allBaseItems);
         if (combosDialogue != null)
             Dialogue = combosDialogue;
-        StateHasChanged();
+
+        await InvokeAsync(StateHasChanged);
     }
 }
