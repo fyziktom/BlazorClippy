@@ -13,10 +13,10 @@
 
 <Row Margin="Margin.Is4.FromTop">
     <Column>
-        <Button Block Clicked="GetCombos" Color="Color.Primary" >Calculate Dialogue Ways Tree</Button>
+        <Button Block Clicked="GetCombos" Loading="@loading" Color="Color.Primary" >Calculate Dialogue Ways Tree</Button>
     </Column>
     </Row>
-<Row Margin="Margin.Is4.FromTop">
+    <Row Margin="Margin.Is4.FromTop">
     <Column>
         <DialogueComponent @ref=dialogueComponentRef/>
     </Column>
@@ -28,6 +28,7 @@
 @code {
     public string SessionId { get; set; } = string.Empty;
 
+    bool loading = false;
     DialogueComponent? dialogueComponentRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -45,6 +46,10 @@
     async Task GetCombos(MouseEventArgs e)
     {
         if (dialogueComponentRef != null)
+        {
+            loading = true;
             await dialogueComponentRef.GetCombos();
+            loading = false;
+        }
     }
 }

@@ -22,7 +22,7 @@
             </Row>
             <BackupChatHistory SessionId="@SessionId" />
             <Divider />
-            <QuestionBar OnMessageReceived="@OnMessageReceivedHandler" QuestionChanged="@OnQuestionHandler" />
+            <QuestionBar OnMessageReceived="@OnMessageReceivedHandler" />
             <MessagesList @ref=messageListRef SessionId="@SessionId" />                    
         }
     </Column>
@@ -46,11 +46,6 @@
                 await clippy.LoadDataItemsFromMermaid(storeddataitems);
         }
         base.OnAfterRender(firstRender);
-    }
-
-    private async Task OnQuestionHandler(string question)
-    {
-        await InvokeAsync (StateHasChanged);
     }
 
     private async Task OnMessageReceivedHandler((string, WatsonMessageRequestRecord) e)

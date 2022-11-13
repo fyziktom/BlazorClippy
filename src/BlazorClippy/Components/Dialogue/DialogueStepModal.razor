@@ -5,7 +5,9 @@
             <CloseButton />
         </ModalHeader>
         <ModalBody>
-            <DialogueStepComponent Step="@Step" OnOpenStep="@openStep"/>
+            <LoadingIndicator @ref=loadingIndicator>
+                <DialogueStepComponent Step="@Step" OnOpenStep="@openStep"/>
+            </LoadingIndicator>
         </ModalBody>
     </ModalContent>
 </Modal>
@@ -16,9 +18,22 @@
     [Parameter]
     public EventCallback<string> OnOpenStep { get; set; }
 
+    LoadingIndicator? loadingIndicator;
+
     async Task openStep(string stepHash)
     {
         await OnOpenStep.InvokeAsync(stepHash);
+    }
+
+    public async Task ShowLoadingOverlay()
+    {
+        if (loadingIndicator != null)
+            await loadingIndicator.Show();
+    }
+    public async Task HideLoadingOverlay()
+    {
+        if (loadingIndicator != null)
+            await loadingIndicator.Hide();
     }
 
     Modal? stepModal;
@@ -31,6 +46,8 @@
             await ShowModal();
         else
             await InvokeAsync(StateHasChanged);
+
+        await HideLoadingOverlay();
     }
 
     public async Task ShowModal()

@@ -98,7 +98,6 @@
         StateHasChanged();
     }
 
-
     private bool IsVisibleLevel(int id)
     {
         if (visibleLevel.TryGetValue(id, out var res))
@@ -121,6 +120,8 @@
         var step = Dialogue.Steps.FirstOrDefault(s => s.MarkerHash == stepHash);
         if (step != null && dialogueStepModalRef != null)
         {
+            await dialogueStepModalRef.ShowLoadingOverlay();
+
             if (step.Level < fullItemN && step.PossibleNextSteps.Count == 0)
             {
                 var nexts = AnalyzerHelpers.GetDialogueStepPossibleNexts(step.Marker, allBaseItems);
