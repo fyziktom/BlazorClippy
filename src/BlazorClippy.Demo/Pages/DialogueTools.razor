@@ -11,7 +11,6 @@
 
 <LoadWatson @bind-SessionId="@SessionId" />
 
-
 <Row Margin="Margin.Is4.FromTop">
     <Column>
         <Button Block Clicked="GetCombos" Color="Color.Primary" >Calculate Dialogue Ways Tree</Button>
@@ -19,7 +18,7 @@
     </Row>
 <Row Margin="Margin.Is4.FromTop">
     <Column>
-        <DialogueComponent Item="@dialogue" />
+        <DialogueComponent @ref=dialogueComponentRef/>
     </Column>
     <Column>
         <IdentifiedItemsList Analyzer="@clippy.Analyzer" />
@@ -28,7 +27,8 @@
 
 @code {
     public string SessionId { get; set; } = string.Empty;
-    public Dialogue dialogue { get; set; } = new Dialogue();
+
+    DialogueComponent? dialogueComponentRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -42,12 +42,9 @@
         base.OnAfterRender(firstRender);
     }
 
-    public void GetCombos(MouseEventArgs e)
+    async Task GetCombos(MouseEventArgs e)
     {
-        var combos = clippy.Analyzer.GetHashesOfAllCombinations();
-        var combosDialogue = AnalyzerHelpers.GetDialogueFromCombos(combos, clippy.SessionId);
-        if (combosDialogue != null)
-            dialogue = combosDialogue;
-        StateHasChanged();
+        if (dialogueComponentRef != null)
+            await dialogueComponentRef.GetCombos();
     }
 }

@@ -617,23 +617,34 @@ namespace BlazorClippyWatson.Analzyer
 
         /// <summary>
         /// Get Dialogue with tree details of all possible ways through dialogue based on input combinations
+        /// Function allows to provide precalculated lists to speed up calculation if you allready have them for different reasosn like calc steps separatelly
         /// </summary>
         /// <param name="combinations"></param>
         /// <param name="sessionId"></param>
+        /// <param name="combosWithCountOfMarkers"></param>
+        /// <param name="combosByLevel"></param>
+        /// <param name="allBaseItems"></param>
         /// <returns></returns>
-        public static Dialogue? GetDialogueFromCombos(Dictionary<string,string>? combinations, string sessionId = "default", int limitDepthOfPrevStepsSearch = 4)
+        public static Dialogue? GetDialogueFromCombos(Dictionary<string, string>? combinations, 
+                                                      string sessionId = "default", 
+                                                      int limitDepthOfPrevStepsSearch = 4,
+                                                      Dictionary<KeyValuePair<string, string>, int>? combosWithCountOfMarkers = null,
+                                                      List<KeyValuePair<KeyValuePair<string, string>, int>[]>? combosByLevel = null,
+                                                      string[]? allBaseItems = null)
         {
             if (combinations == null)
                 return null;
 
             var steps = new ConcurrentDictionary<string, DialogueStep>();
 
-            var combosWithCountOfMarkers = GetCombosWithCountOfMarkers(combinations);
-            var allBaseItems = GetAllBaseItemsForCombos(combosWithCountOfMarkers);
+            if (combosWithCountOfMarkers == null)
+                combosWithCountOfMarkers = GetCombosWithCountOfMarkers(combinations);
+            if (allBaseItems == null)
+                allBaseItems = GetAllBaseItemsForCombos(combosWithCountOfMarkers);
             var fullItemN = allBaseItems.Length;
 
             var items = combosWithCountOfMarkers.Where(c => c.Value > 0).Select(c => c).ToArray();
-            Parallel.ForEach(items, (item) => 
+            Parallel.ForEach(items, (item) =>
             {
                 var step = GetDialogueStepFromCombo(item, combosWithCountOfMarkers, allBaseItems, sessionId);
                 steps.TryAdd(step.MarkerHash, step);
@@ -643,7 +654,9 @@ namespace BlazorClippyWatson.Analzyer
                 limitDepthOfPrevStepsSearch = fullItemN;
 
             var sts = steps.Values.Where(s => s.Level > 1 && s.Level <= limitDepthOfPrevStepsSearch).Select(s => s).ToList();
-            var combosByLevel = GetAllCombosItemsListsBasedLevel(combosWithCountOfMarkers, limitDepthOfPrevStepsSearch);
+            if (combosByLevel == null)
+                combosByLevel = GetAllCombosItemsListsBasedLevel(combosWithCountOfMarkers, limitDepthOfPrevStepsSearch);
+            
             Parallel.ForEach(sts, (item) =>
             {
                 var prevsteps = GetDialogueStepPossiblePrevious(allBaseItems, item.Marker, combosByLevel[item.Level - 2]);
@@ -651,7 +664,7 @@ namespace BlazorClippyWatson.Analzyer
                     step.PossiblePreviousSteps = new List<string>(prevsteps);
                 prevsteps = null;
             });
-            
+
             if (steps != null)
             {
                 var stepsValues = steps.Values.ToList();
@@ -668,11 +681,11 @@ namespace BlazorClippyWatson.Analzyer
                 if (stepsValues.Count > 1)
                     foreach (var val in stepsValues)
                         if (val != null && val.MessageRecord != null)
-                        result.Messages.Add(val.MessageRecord);
-                
+                            result.Messages.Add(val.MessageRecord);
+
                 return result;
             }
-            
+
             return new Dialogue();
         }
 

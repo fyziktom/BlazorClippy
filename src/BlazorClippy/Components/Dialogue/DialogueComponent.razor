@@ -1,11 +1,12 @@
 ﻿@using BlazorClippy.Components.AI
+@inject ClippyService clippy
 
-@if (Item.Steps.Count > 0)
+@if (Dialogue.Steps.Count > 0)
 {
 <Accordion>
     @{
         var maxLevel = GetMaxLevel();
-        @for (var i = 1; i < 3; i++)
+        @for (var i = 1; i < MaxLevelToGetPreviousSteps; i++)
         {
             var level = i;
             var isVisibleLevel = IsVisibleLevel(level);
@@ -25,7 +26,7 @@
                 </CollapseHeader>
                 <CollapseBody>
                     <Accordion>
-                        @foreach (var step in Item.Steps.Where(s => s.Level == level))
+                        @foreach (var step in Dialogue.Steps.Where(s => s.Level == level))
                         {
                             var isVisible = IsVisibleItem(step.MarkerHash);
                             <Collapse Visible="@isVisible">
@@ -61,15 +62,23 @@
 
 @code {
     [Parameter]
-    public Dialogue Item { get; set; } = new Dialogue();
+    public Dialogue Dialogue { get; set; } = new Dialogue();
+    [Parameter]
+    public int MaxLevelToGetPreviousSteps { get; set; } = 4;
+
     public Dictionary<string, bool> visibleItems { get; set; } = new Dictionary<string, bool>();
     public Dictionary<int, bool> visibleLevel { get; set; } = new Dictionary<int, bool>();
+
+    Dictionary<KeyValuePair<string, string>, int>? combosWithCountOfMarkers;
+    List<KeyValuePair<KeyValuePair<string, string>, int>[]> combosByLevel;
+    string[] allBaseItems;
+    int fullItemN = 0;
 
     DialogueStepModal? dialogueStepModalRef;
 
     public int GetMaxLevel()
     {
-        return Item.Steps.Where(s => s.Level > 0).Select(s => s.Level).Max();
+        return Dialogue.Steps.Where(s => s.Level > 0).Select(s => s.Level).Max();
     }
 
     private bool IsVisibleItem(string id)
@@ -109,8 +118,42 @@
 
     private async Task onOpenStepHandler(string stepHash)
     {
-        var step = Item.Steps.FirstOrDefault(s => s.MarkerHash == stepHash);
+        var step = Dialogue.Steps.FirstOrDefault(s => s.MarkerHash == stepHash);
         if (step != null && dialogueStepModalRef != null)
+        {
+            if (step.Level < fullItemN && step.PossibleNextSteps.Count == 0)
+            {
+                var nexts = AnalyzerHelpers.GetDialogueStepPossibleNexts(step.Marker, allBaseItems);
+                step.PossibleNextSteps = new List<string>(nexts);
+            }
+            if (step.Level > 1 && step.PossiblePreviousSteps.Count == 0)
+            {
+                var prevsteps = AnalyzerHelpers.GetDialogueStepPossiblePrevious(allBaseItems, step.Marker, combosByLevel[step.Level - 2]);
+                step.PossiblePreviousSteps = new List<string>(prevsteps);
+                prevsteps = null;
+            }
             await dialogueStepModalRef.Load(step, true);
+        }
+    }
+
+    public async Task GetCombos()
+    {
+        var combos = clippy.Analyzer.GetHashesOfAllCombinations();
+        combosWithCountOfMarkers = AnalyzerHelpers.GetCombosWithCountOfMarkers(combos);
+        allBaseItems = AnalyzerHelpers.GetAllBaseItemsForCombos(combosWithCountOfMarkers);
+        if (allBaseItems != null)
+            fullItemN = allBaseItems.Length;
+        if (fullItemN > 1)
+            combosByLevel = AnalyzerHelpers.GetAllCombosItemsListsBasedLevel(combosWithCountOfMarkers, fullItemN);
+
+        var combosDialogue = AnalyzerHelpers.GetDialogueFromCombos(combos,
+                                                                   clippy.SessionId,
+                                                                   MaxLevelToGetPreviousSteps,
+                                                                   combosWithCountOfMarkers,
+                                                                   combosByLevel,
+                                                                   allBaseItems);
+        if (combosDialogue != null)
+            Dialogue = combosDialogue;
+        StateHasChanged();
     }
 }
