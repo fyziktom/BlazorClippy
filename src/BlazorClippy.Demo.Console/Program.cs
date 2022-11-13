@@ -255,7 +255,7 @@ if (calcCombos)
     spw.Start();
     Console.WriteLine("Create full combo dialogue from combos...");
     // calc of deeper levels takes long time. It is better to calc just few levels and rest calc on purpose for separated items when needed
-    var dialogueLevelForPreviousStepsSearch = 6;
+    var dialogueLevelForPreviousStepsSearch = 3;
     Console.WriteLine($"Maximum level for explore previous steps is {dialogueLevelForPreviousStepsSearch}");
     var dialogueOfAllCombos = AnalyzerHelpers.GetDialogueFromCombos(combinations, assistant.SessionId, dialogueLevelForPreviousStepsSearch);
     spw.Stop();
