@@ -229,7 +229,7 @@ namespace BlazorClippyWatson.Analzyer
                 intentsCombinations.Add(lastCombo);
                 if (!tmp.Contains($"marker_{NameWithoutUnsuportedChars}&&)"))
                 {
-                    var comboextra = $"marker_{NameWithoutUnsuportedChars}&&{tmp}&&";
+                    var comboextra = $"marker_{NameWithoutUnsuportedChars}&&{tmp}&&;";
                     intentsCombinations.Add(comboextra);
                 }
             }
@@ -361,7 +361,7 @@ namespace BlazorClippyWatson.Analzyer
                                 }
                                 if (all)
                                 {
-                                    combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&";
+                                    combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&;";
                                     if (!final.Contains(combo))
                                         final.Add(combo);
 
@@ -369,7 +369,7 @@ namespace BlazorClippyWatson.Analzyer
                             }
                             else
                             {
-                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&";
+                                combo = $"marker_{NameWithoutUnsuportedChars}&&{icombo.Trim()}&&;";
                                 if (!final.Contains(combo))
                                     final.Add(combo);
                             }

@@ -456,6 +456,11 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
+        /// <summary>
+        /// Get combos with information about level of dialogue. It means how many markers it has
+        /// </summary>
+        /// <param name="combinations"></param>
+        /// <returns></returns>
         public static Dictionary<KeyValuePair<string, string>, int> GetCombosWithCountOfMarkers(Dictionary<string, string>? combinations)
         {
             var combosWithCountOfMarkers = new Dictionary<KeyValuePair<string, string>, int>();
@@ -467,7 +472,15 @@ namespace BlazorClippyWatson.Analzyer
             return combosWithCountOfMarkers;
         }
 
-        public static DialogueStep? GetDialogueStepFromCombo(KeyValuePair<KeyValuePair<string, string>, int> item, Dictionary<KeyValuePair<string, string>, int> combos, List<string> allBaseItems, string sessionId)
+        /// <summary>
+        /// Get dialogue step for specific combos set
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="combos"></param>
+        /// <param name="allBaseItems"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
+        public static DialogueStep? GetDialogueStepFromCombo(KeyValuePair<KeyValuePair<string, string>, int> item, Dictionary<KeyValuePair<string, string>, int> combos, string[] allBaseItems, string sessionId)
         {
             var msg = AnalyzerHelpers.GetMessageFromMarker(item.Key.Value, sessionId);
 
@@ -496,29 +509,110 @@ namespace BlazorClippyWatson.Analzyer
                 Entities = entities,
                 MessageRecord = msg
             };
-
-            var actualSplit = it.Marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
-
-            var possibleNextItems = new List<string>();
-            for (var i = 0; i < allBaseItems.Count; i++)
-            {
-                if (!actualSplit.Contains(allBaseItems[i]))
-                    possibleNextItems.Add(allBaseItems[i]);
-            }
-
-            var bag = new ConcurrentBag<string>();
-            Parallel.ForEach(possibleNextItems, (nextItem) =>
-            {
-                var marker = it.Marker + " " + nextItem;
-                var ch = new CryptographyHelpers();
-                var hash = ch.GetHash(marker);
-
-                bag.Add(hash);
-            });
-            foreach (var b in bag)
-                it.PossibleNextSteps.Add(b);
+            
+            var nexts = GetDialogueStepPossibleNexts(it.Marker, allBaseItems);
+            it.PossibleNextSteps = new List<string>(nexts);
 
             return it;
+        }
+
+        /// <summary>
+        /// Get possible next steps for the marker
+        /// </summary>
+        /// <param name="marker"></param>
+        /// <param name="allBaseItems"></param>
+        /// <returns></returns>
+        public static List<string> GetDialogueStepPossibleNexts(string marker, string[] allBaseItems)
+        {
+            var result = new List<string>();
+            var actualSplit = marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < actualSplit.Length; i++)
+                actualSplit[i] = actualSplit[i].Trim().Trim(';') + ";";
+
+            var possibleNextItems = new string[allBaseItems.Length];
+            for (var i = 0; i < allBaseItems.Length; i++)
+            {
+                if (!actualSplit.Contains(allBaseItems[i].Trim().Trim(';') + ";"))
+                    possibleNextItems[i] = (allBaseItems[i].Trim().Trim(';') + ";");
+            }
+
+            for (var i = 0; i < possibleNextItems.Length; i++)
+            {
+                if (possibleNextItems[i] != null)
+                {
+                    var markerFull = marker.Trim() + " " + possibleNextItems[i].Trim().Trim(';') + ";";
+                    var ch = new CryptographyHelpers();
+                    var hash = ch.GetHash(markerFull.Trim());
+
+                    result.Add(hash);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Get possible previous steps for this marker
+        /// </summary>
+        /// <param name="allBaseItems"></param>
+        /// <param name="marker"></param>
+        /// <param name="its"></param>
+        /// <returns></returns>
+        public static List<string> GetDialogueStepPossiblePrevious(string[] allBaseItems, string marker, KeyValuePair<KeyValuePair<string,string>,int>[] its)
+        {
+            var prevsteps = new List<string>();
+            var actualSplit = marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < actualSplit.Length; i++)
+                actualSplit[i] = actualSplit[i].Trim().Trim(';') + ";";
+
+            for (var i = 0; i < its.Length; i++)
+            {
+                if (!its[i].Key.Value.Contains(actualSplit[actualSplit.Length - 1]))
+                    prevsteps.Add(its[i].Key.Key);
+            }
+            return prevsteps;
+        }
+
+        /// <summary>
+        /// Find longest combo in all combos with count of markers, take it and split to array of separated markers.
+        /// It means it returns array with all possible markers in these combos
+        /// </summary>
+        /// <param name="combosWithCountOfMarkers"></param>
+        /// <returns></returns>
+        public static string[] GetAllBaseItemsForCombos(Dictionary<KeyValuePair<string, string>, int> combosWithCountOfMarkers)
+        {
+            var fullItemN = combosWithCountOfMarkers.Where(c => c.Value > 0).Select(c => c.Value).Max();
+            var fullItem = combosWithCountOfMarkers.FirstOrDefault(c => c.Value == fullItemN);
+            var allBaseItems = new string[fullItemN];
+
+            var fullItemSplit = fullItem.Key.Value.Split("marker_", StringSplitOptions.RemoveEmptyEntries).ToArray();
+            if (fullItemSplit.Length > 1)
+            {
+                for (var i = 1; i < fullItemSplit.Length; i++)
+                    allBaseItems[i - 1] = "marker_" + fullItemSplit[i].Trim();
+            }
+            return allBaseItems;
+        }
+
+        /// <summary>
+        /// Get list of combos for each level. 
+        /// Each item in list represents one level of dialogue. 
+        /// Each item contains list of combos related to this level
+        /// It is important for input of function GetDialogueStepPossiblePrevious
+        /// </summary>
+        /// <param name="combosWithCountOfMarkers"></param>
+        /// <param name="limitOfLevel"></param>
+        /// <returns></returns>
+        public static List<KeyValuePair<KeyValuePair<string, string>, int>[]> GetAllCombosItemsListsBasedLevel(Dictionary<KeyValuePair<string, string>, int> combosWithCountOfMarkers, int limitOfLevel)
+        {
+            var combosByLevel = new List<KeyValuePair<KeyValuePair<string, string>, int>[]>();
+
+            for (var i = 1; i <= limitOfLevel; i++)
+            {
+                var its = combosWithCountOfMarkers.Where(c => c.Value == i).Select(c => c).ToArray();
+                if (its != null)
+                    combosByLevel.Add(its);
+            }
+            return combosByLevel;
         }
 
         /// <summary>
@@ -532,60 +626,49 @@ namespace BlazorClippyWatson.Analzyer
             if (combinations == null)
                 return null;
 
-            var combosWithCountOfMarkers = GetCombosWithCountOfMarkers(combinations);
-
             var steps = new ConcurrentDictionary<string, DialogueStep>();
-            var fullItemN = combosWithCountOfMarkers.Where(c => c.Value > 0).Select(c => c.Value).Max();
-            var fullItem = combosWithCountOfMarkers.FirstOrDefault(c => c.Value == fullItemN);
-            var allBaseItems = new List<string>();
 
-            var fullItemSplit = fullItem.Key.Value.Split("marker_", StringSplitOptions.RemoveEmptyEntries).ToList();
-            if (fullItemSplit.Count > 1)
-            {
-                fullItemSplit.RemoveAt(0);
-                foreach(var it in fullItemSplit)
-                    allBaseItems.Add("marker_" + it);
-            }
-            var items = combosWithCountOfMarkers.Where(c => c.Value > 0).OrderBy(c => c.Value);
+            var combosWithCountOfMarkers = GetCombosWithCountOfMarkers(combinations);
+            var allBaseItems = GetAllBaseItemsForCombos(combosWithCountOfMarkers);
+            var fullItemN = allBaseItems.Length;
+
+            var items = combosWithCountOfMarkers.Where(c => c.Value > 0).Select(c => c).ToArray();
             Parallel.ForEach(items, (item) => 
             {
                 var step = GetDialogueStepFromCombo(item, combosWithCountOfMarkers, allBaseItems, sessionId);
                 steps.TryAdd(step.MarkerHash, step);
-
             });
 
             if (limitDepthOfPrevStepsSearch == -1)
                 limitDepthOfPrevStepsSearch = fullItemN;
 
             var sts = steps.Values.Where(s => s.Level > 1 && s.Level <= limitDepthOfPrevStepsSearch).Select(s => s).ToList();
+            var combosByLevel = GetAllCombosItemsListsBasedLevel(combosWithCountOfMarkers, limitDepthOfPrevStepsSearch);
             Parallel.ForEach(sts, (item) =>
             {
-                var prevsteps = new List<string>();
-                var its = combosWithCountOfMarkers.Where(c => c.Value == item.Level - 1).Select(c => c).ToList();
-                var actualSplit = item.Marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (var i in its)
-                {
-                    if (!i.Key.Value.Contains(actualSplit[actualSplit.Length - 1]))
-                        prevsteps.Add(i.Key.Key);
-                }
-
+                var prevsteps = GetDialogueStepPossiblePrevious(allBaseItems, item.Marker, combosByLevel[item.Level - 2]);
                 if (steps.TryGetValue(item.MarkerHash, out var step))
-                    step.PossiblePreviousSteps = prevsteps;
+                    step.PossiblePreviousSteps = new List<string>(prevsteps);
+                prevsteps = null;
             });
             
-
             if (steps != null)
             {
+                var stepsValues = steps.Values.ToList();
+                if (stepsValues == null)
+                    stepsValues = new List<DialogueStep>();
+
                 var result = new Dialogue()
                 {
-                    Steps = steps.Values.ToList(),
+                    Steps = stepsValues,
                     SessionId = sessionId,
                     Participatns = new List<string>() { "Client", "Assistant" },
                 };
-                var msgs = steps.Values.Where(s => s.MessageRecord != null).Select(s => s.MessageRecord).ToList();
-                if (msgs != null)
-                    result.Messages = msgs;
+
+                if (stepsValues.Count > 1)
+                    foreach (var val in stepsValues)
+                        if (val != null && val.MessageRecord != null)
+                        result.Messages.Add(val.MessageRecord);
                 
                 return result;
             }

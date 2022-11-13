@@ -254,7 +254,10 @@ if (calcCombos)
     spw = new Stopwatch();
     spw.Start();
     Console.WriteLine("Create full combo dialogue from combos...");
-    var dialogueOfAllCombos = AnalyzerHelpers.GetDialogueFromCombos(combinations, assistant.SessionId, -1);
+    // calc of deeper levels takes long time. It is better to calc just few levels and rest calc on purpose for separated items when needed
+    var dialogueLevelForPreviousStepsSearch = 6;
+    Console.WriteLine($"Maximum level for explore previous steps is {dialogueLevelForPreviousStepsSearch}");
+    var dialogueOfAllCombos = AnalyzerHelpers.GetDialogueFromCombos(combinations, assistant.SessionId, dialogueLevelForPreviousStepsSearch);
     spw.Stop();
     Console.WriteLine($"Elapsed: {spw.ElapsedMilliseconds / 1000} seconds to get all dialogue combo.");
 
