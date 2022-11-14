@@ -108,7 +108,7 @@ namespace BlazorClippyWatson.Analzyer
         /// </summary>
         /// <param name="dataItemMarker"></param>
         /// <returns></returns>
-        public AnalyzedObjectDataItem GetDataItem(string dataItemMarker)
+        public AnalyzedObjectDataItem? GetDataItem(string dataItemMarker)
         {
             if (DataItems.TryGetValue(dataItemMarker, out var di))
                 return di;
@@ -120,7 +120,7 @@ namespace BlazorClippyWatson.Analzyer
         /// </summary>
         /// <param name="dataItemMarkerDetailed"></param>
         /// <returns></returns>
-        public AnalyzedObjectDataItem GetDataItemByDetailedMarker(string dataItemMarkerDetailed)
+        public AnalyzedObjectDataItem? GetDataItemByDetailedMarker(string dataItemMarkerDetailed)
         {
             return DataItems.Values.FirstOrDefault(d => d.CapturedMarkerDetailed == dataItemMarkerDetailed);
         }

@@ -268,6 +268,63 @@ namespace BlazorClippy.Tests
 
         }
 
+        [Fact]
+        public void ClearFoundInAnalyzedDataItemTest()
+        {
+            var messageHandler = new WatsonMessageRecordsHandler();
+
+            var message = messageHandler.GetEmptyMessageDto("test",
+                                    "test message",
+                                    new List<string> { "intent1", "intent2" },
+                                    new List<KeyValuePair<string, string>>
+                                    {
+                                        new KeyValuePair<string,string>("entity1", "evalue1"),
+                                        new KeyValuePair<string,string>("entity2", "evalue2"),
+                                        new KeyValuePair<string,string>("entity3", "evalue3")
+                                    });
+
+            var item = new AnalyzedObjectDataItem();
+            var intent1 = new IBM.Watson.Assistant.v2.Model.RuntimeIntent()
+            {
+                Intent = "intent1"
+            };
+            item.Intents.Add(intent1);
+            var intent2 = new IBM.Watson.Assistant.v2.Model.RuntimeIntent()
+            {
+                Intent = "intent2"
+            };
+            item.Intents.Add(intent2);
+
+            var entity1 = new IBM.Watson.Assistant.v2.Model.RuntimeEntity()
+            {
+                Entity = "entity1",
+                Value = "evalue1"
+            };
+            item.Entities.Add(entity1);
+            var entity2 = new IBM.Watson.Assistant.v2.Model.RuntimeEntity()
+            {
+                Entity = "entity2",
+                Value = "evalue2"
+            };
+            item.Entities.Add(entity2);
+
+            var result = item.IsMessageInterestMatch(message);
+            Assert.Equal(2, result.Item1.Count);
+            Assert.Equal(2, result.Item2.Count);
+            Assert.Equal("intent1", result.Item1[0].Intent);
+            Assert.Equal("intent2", result.Item1[1].Intent);
+            Assert.Equal("entity1", result.Item2[0].Entity);
+            Assert.Equal("evalue1", result.Item2[0].Value);
+            Assert.Equal("entity2", result.Item2[1].Entity);
+            Assert.Equal("evalue2", result.Item2[1].Value);
+            Assert.True(item.IsIdentified);
+
+            item.ClearAllFound();
+            Assert.False(item.IsIdentified);
+            Assert.Empty(item.FoundIntents);
+            Assert.Empty(item.FoundEntities);
+        }
+
 
         [Fact]
         public void GetCombosOfAnalyzedDataItemJustIntentsTest()
