@@ -189,55 +189,61 @@
 
     private void AddIntent(MouseEventArgs e)
     {
-        if (Item != null && Item.Intents.FirstOrDefault(i => i.Intent == newIntent) == null)
+        if (!string.IsNullOrEmpty(newIntent))
         {
-            Item.Intents.Add(new RuntimeIntent()
+            if (Item != null && Item.Intents.FirstOrDefault(i => i.Intent == newIntent) == null)
+            {
+                Item.Intents.Add(new RuntimeIntent()
             {
                  Intent = newIntent
             });
-            StateHasChanged();
+                StateHasChanged();
+            }
         }
     }
 
     private void AddEntity(MouseEventArgs e)
     {
-        var split = newEntity.Split(':', StringSplitOptions.RemoveEmptyEntries);
-        if (split != null && split.Length > 1)
+        if (!string.IsNullOrEmpty(newEntity))
         {
-            var entity = split[0];
-            var value = split[1];
-            if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == entity && i.Value == value) == null)
+            var split = newEntity.Split(':', StringSplitOptions.RemoveEmptyEntries);
+            if (split != null && split.Length > 1)
             {
-                Item.Entities.Add(new RuntimeEntity()
-                    {
-                        Entity = entity,
-                        Value = value
-                    });
+                var entity = split[0];
+                var value = split[1];
+                if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == entity && i.Value == value) == null)
+                {
+                    Item.Entities.Add(new RuntimeEntity()
+                        {
+                            Entity = entity,
+                            Value = value
+                        });
+                }
+                StateHasChanged();
             }
-            StateHasChanged();
-        }
-        else if (split != null && split.Length == 1)
-        {
-            var entity = split[0];
-            if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == entity && string.IsNullOrEmpty(i.Value)) == null)
+            else if (split != null && split.Length == 1)
             {
-                Item.Entities.Add(new RuntimeEntity()
-                    {
-                        Entity = entity
-                    });
+                var entity = split[0];
+                if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == entity && string.IsNullOrEmpty(i.Value)) == null)
+                {
+                    Item.Entities.Add(new RuntimeEntity()
+                        {
+                            Entity = entity
+                        });
+                }
+                StateHasChanged();
             }
-            StateHasChanged();
-        }
-        else if (split != null && split.Length == 0)
-        {
-            if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == newEntity && string.IsNullOrEmpty(i.Value)) == null)
+            else if (split != null && split.Length == 0)
             {
-                Item.Entities.Add(new RuntimeEntity()
-                    {
-                        Entity = newEntity
-                    });
+                if (Item != null && Item.Entities.FirstOrDefault(i => i.Entity == newEntity && string.IsNullOrEmpty(i.Value)) == null)
+                {
+                    Item.Entities.Add(new RuntimeEntity()
+                        {
+                            Entity = newEntity
+                        });
+                }
+                StateHasChanged();
             }
-            StateHasChanged();
         }
     }
 

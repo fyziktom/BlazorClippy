@@ -69,9 +69,14 @@ namespace BlazorClippyWatson.Analzyer
         /// Watson assisent to create empty messages
         /// </summary>
         private static WatsonAssistant assistant = new WatsonAssistant();
+        /// <summary>
+        /// Get Dialogue with parsed messages including intents and entities from mermaid.
+        /// </summary>
+        /// <param name="mermaid"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public static Dialogue GetDialogueFromMermaid(string mermaid, string sessionId)
         {
-            var parcitipants = new List<string>();
             var dialogue = new Dialogue() { SessionId = sessionId };
 
             try
@@ -86,9 +91,14 @@ namespace BlazorClippyWatson.Analzyer
                             if (split != null && split.Length > 1)
                             {
                                 var participants = split[0].Split(MermaidParticipantsRelationMark);
-                                if (parcitipants != null && participants.Length > 0)
+                                if (participants != null && participants.Length > 0)
                                 {
-                                    dialogue.Participatns = parcitipants.ToList();
+                                    foreach (var participant in participants)
+                                    {
+                                        var p = participant.Trim().Trim('\t').Trim();
+                                        if (!dialogue.Participatns.Contains(p))
+                                            dialogue.Participatns.Add(p);
+                                    }
                                 }
                                 var parameters = string.Empty;
                                 for (var i = 1; i < split.Length; i++)
@@ -358,22 +368,34 @@ namespace BlazorClippyWatson.Analzyer
         }
 
         
-        private static KeyValuePair<string, string> GetEntityPair(string item)
+        /// <summary>
+        /// Parse string with entity:value string
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static KeyValuePair<string, string> GetEntityPair(string item)
         {
             var ps = item.Split(":");
             if (ps != null && ps.Length > 0)
             {
                 var tmp = ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(',');
-                var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
 
                 if (ps != null && ps.Length == 1)
                     return new KeyValuePair<string, string>(tmp, string.Empty);
                 else if (ps != null && ps.Length == 2)
+                {
+                    var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
                     return new KeyValuePair<string, string>(tmp, tmp1);
+                }
             }
             return new KeyValuePair<string, string>(string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Parse DataItems from Mermaid Class diagram
+        /// </summary>
+        /// <param name="mermaid"></param>
+        /// <returns></returns>
         public static IEnumerable<AnalyzedObjectDataItem> GetAnalyzedDataItemFromMermaid(string mermaid)
         {
             var result = new AnalyzedObjectDataItem();
