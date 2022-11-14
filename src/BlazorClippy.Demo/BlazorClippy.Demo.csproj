@@ -16,4 +16,10 @@
     <ProjectReference Include="..\BlazorClippy\BlazorClippy.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\dataitems.mmd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

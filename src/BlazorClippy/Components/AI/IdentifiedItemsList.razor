@@ -1,4 +1,5 @@
-﻿
+﻿@inject ClippyService clippy 
+
 <Card>
     <CardHeader>
         <Span>Identified Items</Span>
@@ -10,7 +11,8 @@
                              WithButtonText="false" 
                              FloatButton="Float.End" 
                              Item="@(new AnalyzedObjectDataItem())" />
-        </CardHeader>
+        <Button Float="Float.End" Color="Color.Light" Clicked="@BackupDataItems"><Icon Name="IconName.Download" /></Button>
+    </CardHeader>
     <CardBody>
         @if (Analyzer != null && Analyzer.DataItems.Count > 0)
         {
@@ -44,6 +46,7 @@
                         </CollapseHeader>
                         <CollapseBody>
                             <AnalyzedDataItemComponent Item="@item" />
+                            <Button Color="Color.Light" Clicked="@(async () => await removeItem(item.CapturedMarker))" Float="Float.End" Margin="Margin.Is2.FromStart" ><Icon Name="IconName.Delete" TextColor="TextColor.Danger" /></Button>
                          </CollapseBody>
                     </Collapse>
                 }
@@ -53,10 +56,13 @@
 </Card>
 
 @code {
+    [Inject] IMessageService MessageService { get; set; }
+
     [Parameter]
     public WatsonAssistantAnalyzer Analyzer { get; set; } = new WatsonAssistantAnalyzer();
 
     public Dictionary<string, bool> visibleItems { get; set; } = new Dictionary<string, bool>();
+
     AddAnalyzedDataItem? addAnalyzedDataItemRef;
 
     private bool IsVisibleItem(string id)
@@ -75,7 +81,25 @@
             visibleItems.TryAdd(id, true);
         StateHasChanged();
     }
-    
+
+    private async Task removeItem(string id)
+    {
+        if (await MessageService.Confirm("Are you sure you want to delete this Item?", "Delete Item"))
+        {
+            if (clippy.Analyzer.RemoveDataItem(id))
+            {
+                await InvokeAsync(StateHasChanged);
+                if (visibleItems.ContainsKey(id))
+                    visibleItems.Remove(id);
+            }
+        }
+    }
+
+    private async Task BackupDataItems(MouseEventArgs e)
+    {
+        await clippy.SaveDataItemsAsMermaid();
+    }
+
     private void OnAddedDataItemHandler(string id)
     {
         StateHasChanged();

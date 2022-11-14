@@ -1,20 +1,22 @@
 ﻿@inject ClippyService clippy
 
-<Row Margin="Margin.Is2.FromTop">
-    <Column>
-        <Addons>
-            <Addon AddonType="AddonType.Body">
-                <TextEdit Placeholder="Type your question please"
-                          Text="@Question"
-                          TextChanged="@(async (e) => await SetValue(e))"
-                          KeyPress="onInputKeyPress" />
-            </Addon>
-            <Addon AddonType="AddonType.End">
-                <Button Color="Color.Primary" Clicked="@(async () => await AskWatson(Question))">Ask</Button>
-            </Addon>
-        </Addons>
-    </Column>
-</Row>
+<LoadingIndicator @ref=loadingIndicator>
+    <Row Margin="Margin.Is2.FromTop">
+        <Column>
+            <Addons>
+                <Addon AddonType="AddonType.Body">
+                    <TextEdit Placeholder="Type your question please"
+                              Text="@Question"
+                              TextChanged="@(async (e) => await SetValue(e))"
+                              KeyPress="onInputKeyPress" />
+                </Addon>
+                <Addon AddonType="AddonType.End">
+                    <Button Color="Color.Primary" Clicked="@(async () => await AskWatson(Question))">Ask</Button>
+                </Addon>
+            </Addons>
+        </Column>
+    </Row>
+</LoadingIndicator>
 
 @code {
     [Parameter]
@@ -28,6 +30,7 @@
     [Parameter]
     public EventCallback<(string, WatsonMessageRequestRecord?)> OnMessageReceived { get; set; }
 
+    LoadingIndicator? loadingIndicator;
     string response = string.Empty;
     MD5 cryptHandler = new MD5();
 
@@ -37,7 +40,6 @@
             Question = value;
         else
             Question = string.Empty;
-        await QuestionChanged.InvokeAsync(Question);
     }
 
     async Task onInputKeyPress(KeyboardEventArgs e)
@@ -48,6 +50,9 @@
 
     async Task AskWatson(string inputquestion)
     {
+        if (loadingIndicator != null)
+            await loadingIndicator.Show();
+
         var maxsentenses = 3;
 
         var questionextension = clippy.Analyzer.MarkerExtension;
@@ -98,6 +103,9 @@
                 }
             }
 
+            if (loadingIndicator != null)
+                await loadingIndicator.Hide();
+
             Question = "";
             await QuestionChanged.InvokeAsync(Question);
         }
@@ -109,6 +117,5 @@
                 await clippy.Speak(response);
             await OnMessageReceived.InvokeAsync((response, null));
         }
-        await InvokeAsync(StateHasChanged);
     }
 }

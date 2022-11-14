@@ -1,0 +1,88 @@
+﻿<Row>
+    <Column>
+        <Span>Level: @Step.Level</Span>
+        <Span>Marker: @Step.Marker</Span>
+    </Column>
+</Row>
+<Row>
+    <Column>
+        <Row>
+            <Column>
+                <Heading Size="HeadingSize.Is5">Intents</Heading>
+            </Column>
+        </Row>
+        <Row>
+            <Column>
+            @foreach (var intent in Step.Intents)
+            {
+                <Badge Color="Color.Info" Margin="Margin.Is2.FromStart">#@intent</Badge>
+            }
+            </Column>
+        </Row>
+    </Column>
+    <Column>
+        <Row>
+            <Column>
+                <Heading Size="HeadingSize.Is5">Entities</Heading>
+            </Column>
+        </Row>
+        <Row>
+            <Column>
+            @foreach (var entity in Step.Entities)
+            {
+                 <Badge Color="Color.Warning" Margin="Margin.Is2.FromStart">@("@")@entity.Key:@entity.Value</Badge>
+            }
+            </Column>
+        </Row>
+    </Column>
+</Row>
+
+<Row Margin="Margin.Is1.FromTop">
+    <Column>
+        <Row>
+            <Column>
+                <Heading>Previous:</Heading>
+            </Column>
+        </Row>
+        @foreach (var step in Step.PossiblePreviousSteps)
+        {
+            <Row Margin="Margin.Is1.FromTop">
+                <Column>
+                    <Button Color="Color.Light" Clicked="@(async () => await openStep(step))">
+                        @step
+                    </Button>
+                </Column>
+            </Row>
+        }
+    </Column>
+    <Column>
+        <Row>
+            <Column>
+                <Heading>Next:</Heading>
+            </Column>
+        </Row>
+
+        @foreach (var step in Step.PossibleNextSteps)
+        {
+            <Row Margin="Margin.Is1.FromTop">
+                <Column>
+                    <Button Color="Color.Light" Clicked="@(async () => await openStep(step))">
+                        @step
+                    </Button>
+                </Column>
+            </Row>
+        }
+    </Column>
+</Row>
+
+@code {
+    [Parameter]
+    public DialogueStep Step { get; set; } = new DialogueStep();
+    [Parameter]
+    public EventCallback<string> OnOpenStep { get; set; }
+
+    async Task openStep(string stepHash)
+    {
+        await OnOpenStep.InvokeAsync(stepHash);
+    }
+}

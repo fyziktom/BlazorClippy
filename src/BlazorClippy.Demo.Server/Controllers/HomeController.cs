@@ -54,20 +54,21 @@ namespace BlazorClippy.Demo.Server.Controlers
     [ApiController]
     public class HomeController : Controller
     {
-        
+
         [HttpGet("StartWatsonSession")]
         //[AllowCrossSiteJsonAttribute]
         public async Task<string> StartWatsonSession()
         {
             var wa = new WatsonAssistant();
-            var resinit = await wa.InitAssistantService(MainDataContext.WatsonConfig.ApiKey, 
-                                                        MainDataContext.WatsonConfig.ApiUrlBase, 
+            var resinit = await wa.InitAssistantService(MainDataContext.WatsonConfig.ApiKey,
+                                                        MainDataContext.WatsonConfig.ApiUrlBase,
                                                         MainDataContext.WatsonConfig.InstanceId);
             if (resinit.Item1)
             {
                 var res = await wa.CreateSession(MainDataContext.WatsonConfig.AssistantId);
                 if (res.Item1)
                 {
+                    wa.AssistantId = MainDataContext.WatsonConfig.AssistantId;
                     MainDataContext.Assistants.TryAdd(res.Item2, wa);
                     if (res.Item1)
                         return res.Item2;
@@ -89,6 +90,28 @@ namespace BlazorClippy.Demo.Server.Controlers
 
             foreach (var id in list)
                 MainDataContext.Assistants.TryRemove(id, out var rwa);
+        }
+
+        [HttpPost("GetSkills")]
+        public async Task<string> GetSkills([FromBody] GetSessionRequestDto data)
+        {
+            if (MainDataContext.Assistants.TryGetValue(data.sessionId, out var wa))
+            {
+                var skills = await wa.GetSkills(wa.AssistantId);
+                return skills.Item2;
+            }
+            return "Cannot get Skills.";
+        }
+
+        [HttpPost("ListEnvironments")]
+        public async Task<List<IBM.Watson.Assistant.v2.Model.Environment>?> ListEnvironments([FromBody] GetSessionRequestDto data)
+        {
+            if (MainDataContext.Assistants.TryGetValue(data.sessionId, out var wa))
+            {
+                var environments = await wa.ListEnvironments(wa.AssistantId);
+                return environments.Item2;
+            }
+            return null;
         }
 
         public class Question

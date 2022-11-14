@@ -252,6 +252,39 @@ namespace BlazorClippy
         }
 
         /// <summary>
+        /// Save actual Analyzer DataItems as mermaid
+        /// </summary>
+        /// <returns></returns>
+        public async Task SaveDataItemsAsMermaid()
+        {
+            var filename = $"Backup-SessionId-{SessionId}-DataItems_Time_" + DateTime.UtcNow.ToString("dd-MM-yyyyThh_mm_ss") + ".txt";
+
+            var result = string.Empty;
+            result += "classDiagram\r\n";
+            foreach (var item in Analyzer.DataItems)
+            {
+                var res = AnalyzerHelpers.GetMermaidFromDataItem(item.Value);
+                if (!string.IsNullOrEmpty(res))
+                    result += res;
+            }
+
+            await js.InvokeVoidAsync("blazorClippy.downloadText", result, filename);
+        }
+
+        /// <summary>
+        /// Load DataItems from Mermaid script to Analyzer 
+        /// </summary>
+        /// <param name="mermaid">Input mermaid class diagram</param>
+        /// <returns></returns>
+        public async Task LoadDataItemsFromMermaid(string mermaid)
+        {
+            Analyzer.DataItems.Clear();
+
+            foreach(var item in AnalyzerHelpers.GetAnalyzedDataItemFromMermaid(mermaid))
+                Analyzer.AddDataItem(item);
+        }
+
+        /// <summary>
         /// Load Clippy
         /// </summary>
         /// <returns></returns>

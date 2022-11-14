@@ -1,0 +1,70 @@
+﻿<Modal @ref="stepModal">
+    <ModalContent Centered Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>Step</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <LoadingIndicator @ref=loadingIndicator>
+                <DialogueStepComponent Step="@Step" OnOpenStep="@openStep"/>
+            </LoadingIndicator>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter]
+    public DialogueStep Step { get; set; } = new DialogueStep();
+    [Parameter]
+    public EventCallback<string> OnOpenStep { get; set; }
+
+    LoadingIndicator? loadingIndicator;
+
+    async Task openStep(string stepHash)
+    {
+        await OnOpenStep.InvokeAsync(stepHash);
+    }
+
+    public async Task ShowLoadingOverlay()
+    {
+        if (loadingIndicator != null)
+            await loadingIndicator.Show();
+    }
+    public async Task HideLoadingOverlay()
+    {
+        if (loadingIndicator != null)
+            await loadingIndicator.Hide();
+    }
+
+    Modal? stepModal;
+
+    public async Task Load(DialogueStep input, bool showmodal = false)
+    {
+        if (input != null)
+            Step = input;
+        if (showmodal)
+            await ShowModal();
+        else
+            await InvokeAsync(StateHasChanged);
+
+        await HideLoadingOverlay();
+    }
+
+    public async Task ShowModal()
+    {
+        if (stepModal != null)
+        {
+            await stepModal.Show();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public async Task Hide()
+    {
+        if (stepModal != null)
+        {
+            await stepModal.Hide();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}

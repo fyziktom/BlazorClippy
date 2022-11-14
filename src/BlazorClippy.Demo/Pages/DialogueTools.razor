@@ -1,0 +1,54 @@
+﻿@using BlazorClippyWatson.Analzyer
+@using BlazorClippyWatson.Common
+@using IBM.Watson.Assistant.v2.Model
+
+@page "/dialoguetools"
+@inject ClippyService clippy
+@inject AppData AppData
+@inject HttpClient Http
+
+<PageTitle>Dialogue Tools</PageTitle>
+
+<LoadWatson @bind-SessionId="@SessionId" />
+
+<Row Margin="Margin.Is4.FromTop">
+    <Column>
+        <Button Block Clicked="@(async (e) => await GetCombos(e))" Loading="@loading" Color="Color.Primary" >Calculate Dialogue Ways Tree</Button>
+    </Column>
+    </Row>
+    <Row Margin="Margin.Is4.FromTop">
+    <Column>
+        <DialogueComponent @ref=dialogueComponentRef/>
+    </Column>
+    <Column>
+        <IdentifiedItemsList Analyzer="@clippy.Analyzer" />
+    </Column>
+</Row>
+
+@code {
+    public string SessionId { get; set; } = string.Empty;
+
+    bool loading = false;
+    DialogueComponent? dialogueComponentRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // create data items which should be captured
+            var storeddataitems = await Http.GetStringAsync("dataitems.mmd");
+            if (storeddataitems != null)
+                await clippy.LoadDataItemsFromMermaid(storeddataitems);
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    async Task GetCombos(MouseEventArgs e)
+    {
+        loading = true;
+        if (dialogueComponentRef != null)
+            await dialogueComponentRef.GetCombos();
+        
+        loading = false;
+    }
+}

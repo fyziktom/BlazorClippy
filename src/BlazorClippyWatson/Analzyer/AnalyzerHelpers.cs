@@ -1,10 +1,13 @@
 ﻿using BlazorClippyWatson.AI;
+using BlazorClippyWatson.Common;
 using IBM.Watson.Assistant.v2.Model;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VEDriversLite.NeblioAPI;
 
 namespace BlazorClippyWatson.Analzyer
 {
@@ -66,9 +69,14 @@ namespace BlazorClippyWatson.Analzyer
         /// Watson assisent to create empty messages
         /// </summary>
         private static WatsonAssistant assistant = new WatsonAssistant();
+        /// <summary>
+        /// Get Dialogue with parsed messages including intents and entities from mermaid.
+        /// </summary>
+        /// <param name="mermaid"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
         public static Dialogue GetDialogueFromMermaid(string mermaid, string sessionId)
         {
-            var parcitipants = new List<string>();
             var dialogue = new Dialogue() { SessionId = sessionId };
 
             try
@@ -83,9 +91,14 @@ namespace BlazorClippyWatson.Analzyer
                             if (split != null && split.Length > 1)
                             {
                                 var participants = split[0].Split(MermaidParticipantsRelationMark);
-                                if (parcitipants != null && participants.Length > 0)
+                                if (participants != null && participants.Length > 0)
                                 {
-                                    dialogue.Participatns = parcitipants.ToList();
+                                    foreach (var participant in participants)
+                                    {
+                                        var p = participant.Trim().Trim('\t').Trim();
+                                        if (!dialogue.Participatns.Contains(p))
+                                            dialogue.Participatns.Add(p);
+                                    }
                                 }
                                 var parameters = string.Empty;
                                 for (var i = 1; i < split.Length; i++)
@@ -189,7 +202,7 @@ namespace BlazorClippyWatson.Analzyer
             if (split != null && split.Length > 1)
                 for (var i = 1; i < split.Length; i++)
                     if (!string.IsNullOrEmpty(split[i]) && !string.IsNullOrWhiteSpace(split[i]))
-                        mk = mk.Replace(split[i] + "; ", string.Empty);
+                        mk = mk.Replace(split[i].Trim(';') + "; ", string.Empty);
 
             return mk;
         }
@@ -355,22 +368,34 @@ namespace BlazorClippyWatson.Analzyer
         }
 
         
-        private static KeyValuePair<string, string> GetEntityPair(string item)
+        /// <summary>
+        /// Parse string with entity:value string
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static KeyValuePair<string, string> GetEntityPair(string item)
         {
             var ps = item.Split(":");
             if (ps != null && ps.Length > 0)
             {
                 var tmp = ps[0].Replace(AnalyzerHelpers.MarkerEntityMark, string.Empty).Trim(' ').Trim(';').Trim(',');
-                var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
 
                 if (ps != null && ps.Length == 1)
                     return new KeyValuePair<string, string>(tmp, string.Empty);
                 else if (ps != null && ps.Length == 2)
+                {
+                    var tmp1 = ps[1].Trim(' ').Trim(';').Trim(',');
                     return new KeyValuePair<string, string>(tmp, tmp1);
+                }
             }
             return new KeyValuePair<string, string>(string.Empty, string.Empty);
         }
 
+        /// <summary>
+        /// Parse DataItems from Mermaid Class diagram
+        /// </summary>
+        /// <param name="mermaid"></param>
+        /// <returns></returns>
         public static IEnumerable<AnalyzedObjectDataItem> GetAnalyzedDataItemFromMermaid(string mermaid)
         {
             var result = new AnalyzedObjectDataItem();
@@ -379,6 +404,7 @@ namespace BlazorClippyWatson.Analzyer
             {
                 for (string line = reader.ReadLine(); line != null; line = reader.ReadLine())
                 {
+                    line = line.Replace("\t", string.Empty).Trim();
                     if (!string.IsNullOrEmpty(line) && !line.Contains(mermaidDataItemDiagramType))
                     {
                         if (line.Contains("}"))
@@ -452,7 +478,244 @@ namespace BlazorClippyWatson.Analzyer
             }
         }
 
+        /// <summary>
+        /// Get combos with information about level of dialogue. It means how many markers it has
+        /// </summary>
+        /// <param name="combinations"></param>
+        /// <returns></returns>
+        public static Dictionary<KeyValuePair<string, string>, int> GetCombosWithCountOfMarkers(Dictionary<string, string>? combinations)
+        {
+            var combosWithCountOfMarkers = new Dictionary<KeyValuePair<string, string>, int>();
+            foreach (var combo in combinations)
+            {
+                var a = combo.Value.Split("marker_");
+                combosWithCountOfMarkers.Add(combo, a.Length - 1);
+            }
+            return combosWithCountOfMarkers;
+        }
 
+        /// <summary>
+        /// Get dialogue step for specific combos set
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="combos"></param>
+        /// <param name="allBaseItems"></param>
+        /// <param name="sessionId"></param>
+        /// <returns></returns>
+        public static DialogueStep? GetDialogueStepFromCombo(KeyValuePair<KeyValuePair<string, string>, int> item, Dictionary<KeyValuePair<string, string>, int> combos, string[] allBaseItems, string sessionId)
+        {
+            var msg = AnalyzerHelpers.GetMessageFromMarker(item.Key.Value, sessionId);
+
+            var intents = new List<string>();
+            var entities = new List<KeyValuePair<string, string>>();
+            if (msg != null)
+            {
+                if (msg?.Response?.Result?.Output?.Intents != null && msg.Response.Result.Output.Intents.Count > 0)
+                {
+                    foreach (var intent in msg.Response.Result.Output.Intents)
+                        intents.Add(intent.Intent);
+                }
+                if (msg?.Response?.Result?.Output?.Entities != null && msg.Response.Result.Output.Entities.Count > 0)
+                {
+                    foreach (var entity in msg.Response.Result.Output.Entities)
+                        entities.Add(new KeyValuePair<string, string>(entity.Entity, entity.Value));
+                }
+            }
+
+            var it = new DialogueStep()
+            {
+                Marker = item.Key.Value,
+                MarkerHash = item.Key.Key,
+                Level = item.Value,
+                Intents = intents,
+                Entities = entities,
+                MessageRecord = msg
+            };
+            
+            var nexts = GetDialogueStepPossibleNexts(it.Marker, allBaseItems);
+            it.PossibleNextSteps = new List<string>(nexts);
+
+            return it;
+        }
+
+        /// <summary>
+        /// Get possible next steps for the marker
+        /// </summary>
+        /// <param name="marker"></param>
+        /// <param name="allBaseItems"></param>
+        /// <returns></returns>
+        public static List<string> GetDialogueStepPossibleNexts(string marker, string[] allBaseItems)
+        {
+            var result = new List<string>();
+            var actualSplit = marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < actualSplit.Length; i++)
+                actualSplit[i] = actualSplit[i].Trim().Trim(';') + ";";
+
+            var possibleNextItems = new string[allBaseItems.Length];
+            for (var i = 0; i < allBaseItems.Length; i++)
+            {
+                if (!actualSplit.Contains(allBaseItems[i].Trim().Trim(';') + ";"))
+                    possibleNextItems[i] = (allBaseItems[i].Trim().Trim(';') + ";");
+            }
+
+            for (var i = 0; i < possibleNextItems.Length; i++)
+            {
+                if (possibleNextItems[i] != null)
+                {
+                    var markerFull = marker.Trim() + " " + possibleNextItems[i].Trim().Trim(';') + ";";
+                    var ch = new CryptographyHelpers();
+                    var hash = ch.GetHash(markerFull.Trim());
+
+                    result.Add(hash);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Get possible previous steps for this marker
+        /// </summary>
+        /// <param name="allBaseItems"></param>
+        /// <param name="marker"></param>
+        /// <param name="its"></param>
+        /// <returns></returns>
+        public static List<string> GetDialogueStepPossiblePrevious(string[] allBaseItems, string marker, KeyValuePair<KeyValuePair<string,string>,int>[] its)
+        {
+            var prevsteps = new List<string>();
+            var actualSplit = marker.Split(new[] { ": ", "; " }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < actualSplit.Length; i++)
+                actualSplit[i] = actualSplit[i].Trim().Trim(';') + ";";
+
+            for (var i = 0; i < its.Length; i++)
+            {
+                if (!its[i].Key.Value.Contains(actualSplit[actualSplit.Length - 1]))
+                    prevsteps.Add(its[i].Key.Key);
+            }
+            return prevsteps;
+        }
+
+        /// <summary>
+        /// Find longest combo in all combos with count of markers, take it and split to array of separated markers.
+        /// It means it returns array with all possible markers in these combos
+        /// </summary>
+        /// <param name="combosWithCountOfMarkers"></param>
+        /// <returns></returns>
+        public static string[] GetAllBaseItemsForCombos(Dictionary<KeyValuePair<string, string>, int> combosWithCountOfMarkers)
+        {
+            var fullItemN = combosWithCountOfMarkers.Where(c => c.Value > 0).Select(c => c.Value).Max();
+            var fullItem = combosWithCountOfMarkers.FirstOrDefault(c => c.Value == fullItemN);
+            var allBaseItems = new string[fullItemN];
+
+            var fullItemSplit = fullItem.Key.Value.Split("marker_", StringSplitOptions.RemoveEmptyEntries).ToArray();
+            if (fullItemSplit.Length > 1)
+            {
+                for (var i = 1; i < fullItemSplit.Length; i++)
+                    allBaseItems[i - 1] = "marker_" + fullItemSplit[i].Trim();
+            }
+            return allBaseItems;
+        }
+
+        /// <summary>
+        /// Get list of combos for each level. 
+        /// Each item in list represents one level of dialogue. 
+        /// Each item contains list of combos related to this level
+        /// It is important for input of function GetDialogueStepPossiblePrevious
+        /// </summary>
+        /// <param name="combosWithCountOfMarkers"></param>
+        /// <param name="limitOfLevel"></param>
+        /// <returns></returns>
+        public static List<KeyValuePair<KeyValuePair<string, string>, int>[]> GetAllCombosItemsListsBasedLevel(Dictionary<KeyValuePair<string, string>, int> combosWithCountOfMarkers, int limitOfLevel)
+        {
+            var combosByLevel = new List<KeyValuePair<KeyValuePair<string, string>, int>[]>();
+
+            for (var i = 1; i <= limitOfLevel; i++)
+            {
+                var its = combosWithCountOfMarkers.Where(c => c.Value == i).Select(c => c).ToArray();
+                if (its != null)
+                    combosByLevel.Add(its);
+            }
+            return combosByLevel;
+        }
+
+        /// <summary>
+        /// Get Dialogue with tree details of all possible ways through dialogue based on input combinations
+        /// Function allows to provide precalculated lists to speed up calculation if you allready have them for different reasosn like calc steps separatelly
+        /// </summary>
+        /// <param name="combinations"></param>
+        /// <param name="sessionId"></param>
+        /// <param name="combosWithCountOfMarkers"></param>
+        /// <param name="combosByLevel"></param>
+        /// <param name="allBaseItems"></param>
+        /// <returns></returns>
+        public static Dialogue? GetDialogueFromCombos(Dictionary<string, string>? combinations, 
+                                                      string sessionId = "default", 
+                                                      int limitDepthOfPrevStepsSearch = 4,
+                                                      Dictionary<KeyValuePair<string, string>, int>? combosWithCountOfMarkers = null,
+                                                      List<KeyValuePair<KeyValuePair<string, string>, int>[]>? combosByLevel = null,
+                                                      string[]? allBaseItems = null)
+        {
+            if (combinations == null)
+                return null;
+
+            var steps = new ConcurrentDictionary<string, DialogueStep>();
+
+            if (combosWithCountOfMarkers == null)
+                combosWithCountOfMarkers = GetCombosWithCountOfMarkers(combinations);
+            if (allBaseItems == null)
+                allBaseItems = GetAllBaseItemsForCombos(combosWithCountOfMarkers);
+            var fullItemN = allBaseItems.Length;
+
+            var items = combosWithCountOfMarkers.Where(c => c.Value > 0).Select(c => c).ToArray();
+            Parallel.ForEach(items, (item) =>
+            {
+                var step = GetDialogueStepFromCombo(item, combosWithCountOfMarkers, allBaseItems, sessionId);
+                steps.TryAdd(step.MarkerHash, step);
+            });
+
+            if (limitDepthOfPrevStepsSearch == -1)
+                limitDepthOfPrevStepsSearch = fullItemN;
+
+            var sts = steps.Values.Where(s => s.Level > 1 && s.Level <= limitDepthOfPrevStepsSearch).Select(s => s).ToList();
+            if (combosByLevel == null)
+                combosByLevel = GetAllCombosItemsListsBasedLevel(combosWithCountOfMarkers, limitDepthOfPrevStepsSearch);
+            
+            Parallel.ForEach(sts, (item) =>
+            {
+                var prevsteps = GetDialogueStepPossiblePrevious(allBaseItems, item.Marker, combosByLevel[item.Level - 2]);
+                if (steps.TryGetValue(item.MarkerHash, out var step))
+                    step.PossiblePreviousSteps = new List<string>(prevsteps);
+                prevsteps = null;
+            });
+
+            if (steps != null)
+            {
+                var stepsValues = steps.Values.ToList();
+                if (stepsValues == null)
+                    stepsValues = new List<DialogueStep>();
+
+                var result = new Dialogue()
+                {
+                    Steps = stepsValues,
+                    SessionId = sessionId,
+                    Participatns = new List<string>() { "Client", "Assistant" },
+                };
+
+                if (stepsValues.Count > 1)
+                    foreach (var val in stepsValues)
+                        if (val != null && val.MessageRecord != null)
+                            result.Messages.Add(val.MessageRecord);
+
+                return result;
+            }
+
+            return new Dialogue();
+        }
+
+        /// <summary>
+        /// Convert Data Item to Mermaid class diagram
+        /// </summary>
+        /// <param name="dataitem"></param>
+        /// <returns></returns>
         public static string GetMermaidFromDataItem(AnalyzedObjectDataItem dataitem)
         {
             var result = string.Empty;
@@ -460,6 +723,12 @@ namespace BlazorClippyWatson.Analzyer
                 result += line;
             return result;
         }
+        /// <summary>
+        /// Get separated lines of mermaid diagram from DataItem.
+        /// Lines are combined together in function: GetMermaidFromDataItem
+        /// </summary>
+        /// <param name="dataitem"></param>
+        /// <returns></returns>
         public static IEnumerable<string> GetMermaidFromDataItemLines(AnalyzedObjectDataItem dataitem)
         {
             yield return $"\tclass {dataitem.Name + "{"}\r\n";
@@ -474,7 +743,143 @@ namespace BlazorClippyWatson.Analzyer
                 else
                     yield return $"\t\t+Entity {entity.Entity}:{entity.Value}\r\n";
             }
-            yield return "\t}";
+            yield return "\t}\r\n";
         }
+
+
+        public static List<string> DefaultTestIntents = new List<string>()
+        {
+            "Co_je_to",
+            "detektor_formát_dat",
+            "detektor_připojení",
+            "detektor_rozlišení",
+            "detektor_scintilátor",
+            "detektor_typ",
+            "kontrola_pájení",
+            "kontrola_svárů",
+            "kontrola_umístění_komponenty",
+            "manipulace_pozicování",
+            "manipulace_vyložení",
+            "manipulace_založení",
+            "materiál_produktu",
+            "my_máme",
+            "onlinecall",
+            "parametry",
+            "potřeba_nečeho",
+            "rentgenka_typ",
+            "rentgenka_údržba",
+            "rentgen_stínění",
+            "ukládání_dat",
+            "úvod",
+            "velikost_detailu",
+            "velikost_produktu",
+            "využiji_rentgen"
+        };
+        public static List<string> DefaultTestEntities = new List<string>()
+        {
+            "defekt:",
+            "defekt:prasklina",
+            "defekt:void",
+            "defekt:obecný",
+            "defekt:studený spoj",
+            "detektor:",
+            "detektor:scintilátor",
+            "detektor:detektor",
+            "detektor:detekční element",
+            "elektronika:",
+            "elektronika:transformátor",
+            "elektronika:plošný spoj",
+            "elektronika:dioda",
+            "elektronika:tranzistor",
+            "elektronika:kondenzátor",
+            "elektronika:rezistor",
+            "elektronika:mikroprocesor",
+            "elektronika:piny",
+            "elektronika:cívka",
+            "elektronika:pájení",
+            "elektronika:klasické nožičky",
+            "elektronika:smd",
+            "itinfrastruktura:",
+            "itinfrastruktura:firewall",
+            "itinfrastruktura:kabel",
+            "itinfrastruktura:cloud",
+            "itinfrastruktura:tagy",
+            "itinfrastruktura:RPI",
+            "itinfrastruktura:monitor",
+            "itinfrastruktura:server",
+            "itinfrastruktura:notebook",
+            "itinfrastruktura:mobil",
+            "itinfrastruktura:myš",
+            "itinfrastruktura:router",
+            "itinfrastruktura:",
+            "itinfrastruktura:počítač",
+            "ittsoftware:",
+            "ittsoftware:hosting",
+            "ittsoftware:zdrojový kód",
+            "ittsoftware:browser",
+            "ittsoftware:backup",
+            "ittsoftware:ransomware",
+            "ittsoftware:local",
+            "ittsoftware:databáze",
+            "ittsoftware:IoT",
+            "ittsoftware:NFT",
+            "ittsoftware:aplikace",
+            "ittsoftware:FTP",
+            "ittsoftware:IPFS",
+            "ittsoftware:UI",
+            "ittsoftware:blockchain",
+            "ittsoftware:node",
+            "ittsoftware:UX",
+            "ittsoftware:deployment",
+            "ittsoftware:OpenSource",
+            "ittsoftware:licence",
+            "ittsoftware:orchestrační platforma",
+            "ittsoftware:transakce",
+            "Jára_Cimrman",
+            "Jára_Cimrman:jára",
+            "komponenta:",
+            "komponenta:komponenta",
+            "malý_produkt:",
+            "malý_produkt:malý",
+            "manipulace:",
+            "manipulace:manipulace",
+            "materiál:",
+            "materiál:težký kov",
+            "materiál:plast",
+            "materiál:lehký kov",
+            "parametry_RTG:",
+            "parametry_RTG:rtg parametry",
+            "podklady:",
+            "podklady:3d model",
+            "podklady:rozměry",
+            "podklady:výkres",
+            "podklady:vzorové snímky",
+            "podklady:schéma",
+            "produkt:",
+            "produkt:produkt",
+            "rentgen:",
+            "rentgen:filament",
+            "rentgen:zákony",
+            "rentgen:kolimátor",
+            "rentgen:poziční systém",
+            "rentgen:stínění",
+            "rentgen:rentgen",
+            "rentgenka:",
+            "rentgenka:rentgenka",
+            "rentgenka:anodové napětí",
+            "rentgenka:ohnisko",
+            "rentgenka:anodový proud",
+            "snímek:",
+            "snímek:geometrická neostrost",
+            "snímek:bitová hloubka",
+            "snímek:rozlišení",
+            "snímek:snímek",
+            "snímek:digitální filtry",
+            "snímek:zvětšení",
+            "svár:",
+            "svár:svár",
+            "velký_produkt:",
+            "velký_produkt:velký"
+        };
     }
 }
