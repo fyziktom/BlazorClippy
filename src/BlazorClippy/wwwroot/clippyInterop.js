@@ -61,7 +61,16 @@ class BlazorClippy {
     copyToClipboard(text) {
         navigator.clipboard.writeText(text);
     }
-
+    MermaidInitialize() {
+        mermaid.initialize({
+            startOnLoad: true,
+            securityLevel: "loose",
+            // Other options.
+        });
+    }
+    MermaidRender() {
+        mermaid.init();
+    }
 }
 
 window.blazorClippy = new BlazorClippy()

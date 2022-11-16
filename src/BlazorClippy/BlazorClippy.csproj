@@ -34,12 +34,15 @@ The simple wrapper for the clippyjs package.</Description>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
     <PackageReference Include="Blazorise" Version="1.1.3.1" />
     <PackageReference Include="Blazorise.Bootstrap" Version="1.1.3.1" />
     <PackageReference Include="Blazorise.Components" Version="1.1.3.1" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.1.3.1" />
     <PackageReference Include="Blazorise.LoadingIndicator" Version="1.1.3.1" />
     <PackageReference Include="Blazorise.Snackbar" Version="1.1.3.1" />
+    <PackageReference Include="BlazorPanzoom" Version="0.2.1" />
+    <PackageReference Include="Markdig" Version="0.30.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

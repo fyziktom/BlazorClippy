@@ -1,7 +1,8 @@
 ﻿<Modal @ref="stepModal">
     <ModalContent Centered Size="ModalSize.ExtraLarge">
         <ModalHeader>
-            <ModalTitle>Step</ModalTitle>
+            <ModalTitle>Step - @Step.MarkerHash</ModalTitle>
+            <HashToCopy Hash="@Step.MarkerHash" Float="Float.Default" />
             <CloseButton />
         </ModalHeader>
         <ModalBody>

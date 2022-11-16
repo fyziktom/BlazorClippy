@@ -1,8 +1,10 @@
 using BlazorClippy;
 using BlazorClippy.Demo;
+using Blazored.LocalStorage;
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
+using BlazorPanzoom;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -21,5 +23,8 @@ builder.Services
     })
     .AddBootstrapProviders()
     .AddFontAwesomeIcons();
+
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazorPanzoomServices();
 
 await builder.Build().RunAsync();

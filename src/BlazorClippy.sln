@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClippyWatson", "Blazo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClippy.Demo.Console", "BlazorClippy.Demo.Console\BlazorClippy.Demo.Console.csproj", "{126E96A8-5403-457E-9AF0-B88DDF74995C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorClippy.Tests", "BlazorClippy.Tests\BlazorClippy.Tests.csproj", "{C0B5ED8A-7695-4AF0-9267-C72A2BE21EDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorClippy.Tests", "BlazorClippy.Tests\BlazorClippy.Tests.csproj", "{C0B5ED8A-7695-4AF0-9267-C72A2BE21EDE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

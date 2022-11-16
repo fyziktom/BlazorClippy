@@ -13,7 +13,7 @@
                     <Column>
                         <Field>
                             <FieldLabel>Name</FieldLabel>
-                            <TextEdit Placeholder="Item Name" @bind-Text="@Item.Name" />
+                            <TextEdit Placeholder="Item Name" Text="@Item.Name" TextChanged="@onNameChanged" />
                         </Field>
                     </Column>
                 </Row>
@@ -81,6 +81,11 @@
                         <EntitiesList Item="@Item" />
                     </Column>
                 </Row>
+                <Row Margin="Margin.Is2.FromTop">
+                    <Column>
+                        <PanzoomMermaid @ref="mermaidViewRef" />
+                    </Column>
+                </Row>
                 <Row>
                     <Column>
                         @if (changing)
@@ -138,12 +143,14 @@
     [Parameter]
     public AnalyzedObjectDataItem? Item { get; set; }
 
+    PanzoomMermaid? mermaidViewRef;
     Modal? AddModal;
     bool changing = false;
     string newIntent = string.Empty;
     string newIntentAutocompleted = string.Empty;
     string newEntity = string.Empty;
     string newEntityAutocompleted = string.Empty;
+    string mermaidText = string.Empty;
 
     List<string> intentsAutocomplete = AnalyzerHelpers.DefaultTestIntents;
     List<string> entitiesAutocomplete = AnalyzerHelpers.DefaultTestEntities;
@@ -154,17 +161,45 @@
     {
         if (input != null)
             Item = input;
+
         if (showmodal)
         {
             if (AddModal != null)
             {
                 await AddModal.Show();
                 await InvokeAsync(StateHasChanged);
+                await loadMermaid();
             }
         }
         changing = changeofitem;
         await InvokeAsync(StateHasChanged);
     }
+
+    private async Task onNameChanged(string name)
+    {
+        if (Item != null && name != null)
+            Item.Name = name;
+        await loadMermaid();
+    }
+
+    private async Task loadMermaid()
+    {
+        if (Item != null)
+        {
+            if (string.IsNullOrEmpty(Item.Name))
+                Item.Name = "default";
+
+            mermaidText = "classDiagram\r\n";
+            mermaidText += AnalyzerHelpers.GetMermaidFromDataItem(Item);
+
+            if (Item.Name == "default")
+                Item.Name = string.Empty;
+
+            if (mermaidViewRef != null)
+                await mermaidViewRef.LoadText(mermaidText);
+        }
+    }
+
     private async Task openAddModal()
     {
         if (AddModal != null)
@@ -175,37 +210,39 @@
         }
     }
 
-    private void onInputKeyPressIntent(KeyboardEventArgs e)
+    private async Task onInputKeyPressIntent(KeyboardEventArgs e)
     {
         if (e != null && e.Key == "Enter")
-            AddIntent(null);
+            await AddIntent(null);
     }
 
-    private void onInputKeyPressEntity(KeyboardEventArgs e)
+    private async Task onInputKeyPressEntity(KeyboardEventArgs e)
     {
         if (e != null && e.Key == "Enter")
-            AddEntity(null);
+            await AddEntity(null);
     }
 
-    private void AddIntent(MouseEventArgs e)
+    private async Task AddIntent(MouseEventArgs e)
     {
         if (!string.IsNullOrEmpty(newIntent))
         {
             if (Item != null && Item.Intents.FirstOrDefault(i => i.Intent == newIntent) == null)
             {
                 Item.Intents.Add(new RuntimeIntent()
-            {
-                 Intent = newIntent
-            });
-                StateHasChanged();
+                {
+                     Intent = newIntent
+                });
+                await loadMermaid();
+                await InvokeAsync(StateHasChanged);
             }
         }
     }
 
-    private void AddEntity(MouseEventArgs e)
+    private async Task AddEntity(MouseEventArgs e)
     {
         if (!string.IsNullOrEmpty(newEntity))
         {
+            var refresh = false;
             var split = newEntity.Split(':', StringSplitOptions.RemoveEmptyEntries);
             if (split != null && split.Length > 1)
             {
@@ -219,7 +256,7 @@
                             Value = value
                         });
                 }
-                StateHasChanged();
+                refresh = true;
             }
             else if (split != null && split.Length == 1)
             {
@@ -231,7 +268,7 @@
                             Entity = entity
                         });
                 }
-                StateHasChanged();
+                refresh = true;
             }
             else if (split != null && split.Length == 0)
             {
@@ -242,7 +279,12 @@
                             Entity = newEntity
                         });
                 }
-                StateHasChanged();
+                refresh = true;
+            }
+            if (refresh)
+            {
+                await loadMermaid();
+                await InvokeAsync(StateHasChanged);                
             }
         }
     }
