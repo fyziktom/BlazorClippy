@@ -5,7 +5,7 @@
 
 <Div Class="panzoom-parent">
     <Panzoom @ref="_panzoom" WheelMode="@(WheelMode.Custom)" OnWheel="@OnWheel">
-        <div @ref="@context.ElementReference" class="panzoom" style="width: auto; min-width:@(InitWidth)px; height: @(InitHeight)px; margin: 0 auto;">
+        <div @ref="@context.ElementReference" class="panzoom" style="width: 100%; min-width:@(InitWidth)px; min-height: @(InitHeight)px; height: 100%; margin: 0 auto;">
             @((MarkupString)NFTTextMarkuptext)
         </div>
     </Panzoom>

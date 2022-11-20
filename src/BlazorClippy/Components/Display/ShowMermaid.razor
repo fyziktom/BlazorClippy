@@ -1,0 +1,95 @@
+﻿@inject ClippyService clippy
+
+<Modal @ref="modalRef">
+    <ModalContent Centered Size="ModalSize.Fullscreen">
+        <ModalHeader>
+            <ModalTitle>Mermaid Diagram</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Row Margin="Margin.Is2.FromTop">
+                <Column>
+                    <PanzoomMermaid @ref="mermaidViewRef" />
+                </Column>
+            </Row>
+            <Row>
+                <Column>
+                    <Small>Hold shift and scroll to zoom in and out.</Small>
+                </Column>
+            </Row>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@if (WithButton)
+{
+    <Button Color="Color.Primary" Block="@BlockButton" Outline Float="@FloatButton" Clicked="@openModal">
+        <Row>
+            @if (WithButtonIcon)
+            {
+                <Column>
+                    <Icon Name="IconName.Add" />
+                </Column>
+            }
+            @if (WithButtonText)
+            {
+                <Column Margin="Margin.Is2.FromStart">
+                    @ButtonText
+                </Column>
+            }
+        </Row>
+    </Button>
+}
+
+@code {
+    [Inject] IMessageService MessageService { get; set; }
+
+    [Parameter]
+    public bool WithButton { get; set; } = false;
+    [Parameter]
+    public bool BlockButton { get; set; } = false;
+    [Parameter]
+    public Float FloatButton { get; set; } = Float.Default;
+    [Parameter]
+    public bool WithButtonIcon { get; set; } = false;
+    [Parameter]
+    public bool WithButtonText { get; set; } = false;
+    [Parameter]
+    public string ButtonText { get; set; } = "Show Diagram";
+    [Parameter]
+    public string ModalTitle { get; set; } = "Diagram";
+    [Parameter]
+    public string? MermaidText { get; set; }
+
+    PanzoomMermaid? mermaidViewRef;
+    Modal? modalRef;
+
+    [Inject] INotificationService NotificationService { get; set; }
+
+    public async Task Load(string mermaidText, bool showmodal = false)
+    {
+        if (mermaidText != null)
+            MermaidText = mermaidText;
+
+        if (showmodal)
+            await openModal();
+        else
+            await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task loadMermaid()
+    {
+        if (mermaidViewRef != null && MermaidText != null)
+            await mermaidViewRef.LoadText(MermaidText);
+    }
+
+    private async Task openModal()
+    {
+        if (modalRef != null)
+        {
+            await modalRef.Show();
+            await InvokeAsync(StateHasChanged);
+            await loadMermaid();
+        }
+    }
+}

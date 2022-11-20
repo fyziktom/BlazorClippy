@@ -105,6 +105,7 @@
 
 @if (WithButton)
 {
+    <Tooltip Float="@FloatButton" Text="@ToolTipText">
     <Button Color="Color.Primary" Block="@BlockButton" Outline Float="@FloatButton" Clicked="@openAddModal">
         <Row>
             @if (WithButtonIcon)
@@ -121,6 +122,7 @@
             }
         </Row>
     </Button>
+    </Tooltip>
 }
 
 @code {
@@ -138,6 +140,8 @@
     public bool WithButtonText { get; set; } = false;
     [Parameter]
     public string ButtonText { get; set; } = "Add Item";
+    [Parameter]
+    public string ToolTipText { get; set; } = "Add New Item";
     [Parameter]
     public EventCallback<string> Added { get; set; }
     [Parameter]

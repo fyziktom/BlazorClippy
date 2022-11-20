@@ -11,7 +11,12 @@
                              WithButtonText="false" 
                              FloatButton="Float.End" 
                              Item="@(new AnalyzedObjectDataItem())" />
-        <Button Float="Float.End" Color="Color.Light" Clicked="@BackupDataItems"><Icon Name="IconName.Download" /></Button>
+        <Tooltip Float="Float.End" Text="Download Items as file">
+            <Button Color="Color.Light" Clicked="@BackupDataItems"><Icon Name="IconName.Download" /></Button>
+        </Tooltip>
+        <Tooltip Float="Float.End" Text="Show Items as MindMap">
+            <Button Color="Color.Light" Clicked="@(async () => await loadMermaid())"><Icon Name="IconName.Map" /></Button>
+        </Tooltip>
     </CardHeader>
     <CardBody>
         @if (Analyzer != null && Analyzer.DataItems.Count > 0)
@@ -55,6 +60,8 @@
     </CardBody>
 </Card>
 
+<ShowMermaid @ref=showMermaidRef BlockButton="false" WithButton="false" ModalTitle="Data Items" />
+
 @code {
     [Inject] IMessageService MessageService { get; set; }
 
@@ -63,6 +70,8 @@
 
     public Dictionary<string, bool> visibleItems { get; set; } = new Dictionary<string, bool>();
 
+    string mermaidText = string.Empty;
+    ShowMermaid? showMermaidRef;
     AddAnalyzedDataItem? addAnalyzedDataItemRef;
 
     private bool IsVisibleItem(string id)
@@ -91,6 +100,21 @@
                 await InvokeAsync(StateHasChanged);
                 if (visibleItems.ContainsKey(id))
                     visibleItems.Remove(id);
+            }
+        }
+    }
+
+    private async Task loadMermaid()
+    {
+        if (clippy != null)
+        {
+            var data = clippy.Analyzer.DataItemsOrderedByName.Where(v => v.Value != null).Select(v => v.Value).ToList();
+            if (data != null && data.Count > 0)
+            {
+                mermaidText = AnalyzerHelpers.GetMermaidMindMapFromAnalyzedDataItems(data);
+
+                if (showMermaidRef != null)
+                    await showMermaidRef.Load(mermaidText, true);
             }
         }
     }

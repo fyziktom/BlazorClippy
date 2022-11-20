@@ -67,6 +67,8 @@ class BlazorClippy {
             securityLevel: "loose",
             // Other options.
         });
+        var mindmap = window["mermaid-mindmap"];
+        mermaid.registerExternalDiagrams([mindmap]);
     }
     MermaidRender() {
         mermaid.init();

@@ -22,6 +22,10 @@ namespace BlazorClippyWatson.Analzyer
         /// </summary>
         public static readonly string mermaidDataItemDiagramType = "classDiagram";
         /// <summary>
+        /// type of mermaid diagram for Display DataItems list as mindmap
+        /// </summary>
+        public static readonly string mermaidDataItemMindmapDiagramType = "mindmap";
+        /// <summary>
         /// Default name of Client
         /// </summary>
         public static readonly string defaultClientName = "Client";
@@ -176,6 +180,48 @@ namespace BlazorClippyWatson.Analzyer
                         stepline += $"{MermaidEntityMark}{entity.Entity}:{entity.Value}, ";
                 }
                 stepline += LineEnd;
+                result += stepline;
+            }
+
+            return result;
+        }
+
+        public static string GetMermaidMindMapFromAnalyzedDataItems(List<AnalyzedObjectDataItem> items)
+        {
+            var lineEnd = "\n";
+            var result = mermaidDataItemMindmapDiagramType + lineEnd;
+            result += "\troot(To Discover)" + lineEnd;
+            result += "\t::icon(fa fa-question)" + lineEnd;
+
+            foreach (var item in items)
+            {
+                var stepline = $"\t\t{item.Name}" + lineEnd;
+                if (item.IsIdentified)
+                    stepline += "\t\t::icon(fa fa-check)" + lineEnd;
+                else
+                    stepline += "\t\t::icon(fa fa-question)" + lineEnd;
+
+                foreach (var intent in item.Intents)
+                {
+                    stepline += $"\t\t\t{intent.Intent}" + lineEnd;
+                    stepline += "\t\t\t::icon(fa fa-hashtag)" + lineEnd;
+                }
+                foreach (var entity in item.Entities)
+                {
+                    if (string.IsNullOrEmpty(entity.Value))
+                    {
+                        stepline += $"\t\t\t{entity.Entity}" + lineEnd;
+                        stepline += "\t\t\t::icon(fa fa-at)" + lineEnd;
+                    }
+                    else
+                    {
+                        stepline += $"\t\t\t{entity.Entity}" + lineEnd;
+                        stepline += "\t\t\t::icon(fa fa-at)" + lineEnd;
+                        stepline += $"\t\t\t\t{entity.Value}" + lineEnd;
+                        stepline += "\t\t\t\t::icon(fa fa-tags)" + lineEnd;
+                    }
+                }
+                stepline += lineEnd;
                 result += stepline;
             }
 
