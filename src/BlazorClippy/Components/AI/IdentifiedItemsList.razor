@@ -15,7 +15,7 @@
             <Button Color="Color.Light" Clicked="@BackupDataItems"><Icon Name="IconName.Download" /></Button>
         </Tooltip>
         <Tooltip Float="Float.End" Text="Show Items as MindMap">
-            <Button Color="Color.Light" Clicked="@(async () => await loadMermaid())"><Icon Name="IconName.Map" /></Button>
+            <Button Color="Color.Light" Clicked="@(async () => await showMermaid())"><Icon Name="IconName.Map" /></Button>
         </Tooltip>
     </CardHeader>
     <CardBody>
@@ -104,15 +104,14 @@
         }
     }
 
-    private async Task loadMermaid()
+    private async Task showMermaid()
     {
         if (clippy != null)
         {
-            var data = clippy.Analyzer.DataItemsOrderedByName.Where(v => v.Value != null).Select(v => v.Value).ToList();
-            if (data != null && data.Count > 0)
-            {
-                mermaidText = AnalyzerHelpers.GetMermaidMindMapFromAnalyzedDataItems(data);
+            var mermaidText = await clippy.GetDataItemsAsMermaidMindMap();
 
+            if (!string.IsNullOrEmpty(mermaidText))
+            {
                 if (showMermaidRef != null)
                     await showMermaidRef.Load(mermaidText, true);
             }

@@ -285,6 +285,36 @@ namespace BlazorClippy
         }
 
         /// <summary>
+        /// Get Mermaid MindMap from DataItems
+        /// </summary>
+        /// <returns></returns>
+        public async Task<string> GetDataItemsAsMermaidMindMap()
+        {
+            var result = string.Empty;
+
+            var data = Analyzer.DataItemsOrderedByName.Where(v => v.Value != null).Select(v => v.Value).ToList();
+            if (data != null && data.Count > 0)
+                result = AnalyzerHelpers.GetMermaidMindMapFromAnalyzedDataItems(data);
+            
+            return result;
+        }
+        /// <summary>
+        /// Save Data Items as Mermaid Mind Map to file
+        /// </summary>
+        /// <returns></returns>
+        public async Task SaveDataItemsAsMermaidMindMap()
+        {
+            var result = await GetDataItemsAsMermaidMindMap();
+            if (!string.IsNullOrEmpty(result))
+            {
+                var filename = $"Backup-SessionId-{SessionId}-DataItems_MindMap_Time_" + 
+                                DateTime.UtcNow.ToString("dd-MM-yyyyThh_mm_ss") + ".txt";
+
+                await js.InvokeVoidAsync("blazorClippy.downloadText", result, filename);
+            }
+        }
+
+        /// <summary>
         /// Load Clippy
         /// </summary>
         /// <returns></returns>
